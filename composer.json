@@ -1,0 +1,25 @@
+{
+	"name": "offerel/pictures",
+	"description": "A simple pictures/gallery plugin for Roundcube",
+	"keywords": ["pictures","plugin","gallery","photos","images","camera","roundcube"],
+	"homepage": "https://github.com/Offerel/roundcube_primitivenotes",
+	"type": "roundcube-plugin",
+	"license": "AGPL-3.0",
+	"authors": [
+	{
+		"name": "Offerel",
+		"homepage": "https://github.com/Offerel",
+		"role": "Developer"
+	}
+	],
+	"version": "0.9.0",
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "https://plugins.roundcube.net"
+		}
+	],
+	"require": {
+		"roundcube/plugin-installer": ">=0.1.6"
+	}
+}
