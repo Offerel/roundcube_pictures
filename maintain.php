@@ -59,7 +59,7 @@ if ($argv[1] == "clean") {
 	$diff_t = $end_t - $start_t;
 	if(count($del_files) > 0) {
 		$message = "Hello,\n\nThe thumbnail clean-up script was run from ".date("d.m.Y H:i:s",$start_t)." until ".date("d.m.Y H:i:s",$end_t)." and took ".date("H:i:s",$diff_t).". The script has found ".count($del_files)." orphaned thumbnails and deleted them. For details, which thumbnails are deleted, you can look in the logfile at ".$log_path;
-		mail("sebastian@pfohlnet.de", "Thumbnail clean-up", $message);
+		mail($receiver, "Thumbnail clean-up", $message);
 	}
 }
 elseif ($argv[1] == "add") {
