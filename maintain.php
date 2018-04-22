@@ -1,201 +1,208 @@
 <?php
-/**
- * Roundcube Pictures Plugin
- *
- * @version 0.9.0
- * @author Offerel
- * @copyright Copyright (c) 2018, Offerel
- * @license GNU General Public License, version 3
- */
-define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
-include INSTALL_PATH . 'program/include/iniset.php';
-$rcmail = rcmail::get_instance();
-/*
-// Login
-if (!empty($rcmail->user->ID)) {
-	$username = $rcmail->user->get_username();
-	$pictures_path = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
-	$thumb_path = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
-	
-	if(substr($pictures_path, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'pictures_path\'], the path must end with a backslash.');
-		die();
-	}
-	
-	if(substr($thumb_path, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'thumb_path\'], the path must end with a backslash.');
-		die();
-	}
-	
-	if (!is_dir($pictures_path))
-	{
-		if(!mkdir($pictures_path, 0774, true)) {
-			error_log('Pictures Plugin: Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
-			die();
-		}
-	}
-}
+$modes = array("clean","add","all");
+if(!in_array($argv[1], $modes)) {
+	die("Please specify working mode. Allowed modes are \"all\", \"clean\" or \"all\".\n");
+} 
 else {
-	error_log('Pictures Plugin: Login failed. User is not logged in.');
-	die();
+	$mode = $argv[1];
 }
-*/
-error_log("Logged IN!!!!");
-die();
+define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
+require INSTALL_PATH.'program/include/clisetup.php';
+$rcmail = rcube::get_instance();
+$users = array();
+$thumbsize = $rcmail->config->get('thumb_size', false);
 
-error_reporting(-1);
-require_once "config-default.php";
-include_once "config.php";
-set_error_handler("myErrorHandler");
-$start_t = time();
+$db = $rcmail->get_dbh();
+$result = $db->query("SELECT username FROM users;");
+$rcount = $db->num_rows($result);
 
-$photos = "photos";
-$thumbs = dirname(__FILE__)."/thumbs";
-
-if ($argv[1] == "clean") {
-	$del_files = array();
-	$del_files = clean_thumbs($thumbs);
-	$end_t = time();
-	$diff_t = $end_t - $start_t;
-	if(count($del_files) > 0) {
-		$message = "Hello,\n\nThe thumbnail clean-up script was run from ".date("d.m.Y H:i:s",$start_t)." until ".date("d.m.Y H:i:s",$end_t)." and took ".date("H:i:s",$diff_t).". The script has found ".count($del_files)." orphaned thumbnails and deleted them. For details, which thumbnails are deleted, you can look in the logfile at ".$log_path;
-		mail($receiver, "Thumbnail clean-up", $message);
-	}
+for ($x = 0; $x < $rcount; $x++) {
+	$users[] = $db->fetch_array($result)[0];
 }
-elseif ($argv[1] == "add") {
-	$files = array();
-	$errff = array();
-	$errff = read_photos($photos);
-	$end_t = time();
 
-	$datetime1 = new DateTime("@$start_t");
-	$datetime2 = new DateTime("@$end_t");
-	$interval = date_diff($datetime1, $datetime2);
-	$timestr = "";
-	foreach ($interval as $key => $val){
-		if( $val ) {
-		$timestr.= " ".$val."%".$key;
+foreach($users as $username) {
+	$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
+	$thumb_basepath = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
+
+	if($mode == "add" || $mode == "all")
+		read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+
+	if($mode == "clean" || $mode == "all") {
+		if(is_dir($thumb_basepath)) {
+			$path = $thumb_basepath;
+			read_thumbs($path, $thumb_basepath, $pictures_basepath);
 		}
 	}
-	$timestr = str_replace ( "%d", " days" , $timestr );
-	$timestr = str_replace ( "%h", " hours" , $timestr );
-	$timestr = str_replace ( "%i", " minutes" , $timestr );
-	$timestr = str_replace ( "%s", " seconds" , $timestr );
-	
-	if(count($errff) > 0) {
-		$errcount = count($errff);
-		$errortext = "For $errcount pictures the thumbnails couldn't be created. Attached you find a list of this pictures.";
-		$attfile = "add_errors.log";
-		file_put_contents($attfile, implode("\r\n", $errff));
-	}
-	$message = "Hello,\r\n\r\nThe thumbnail add script was run from ".date("d.m.Y H:i:s",$start_t)." until ".date("d.m.Y H:i:s",$end_t)." and took $timestr. $errortext\r\n\r\nYou can find the logfile at $log_path";
-
-	mail_att("sebastian@pfohlnet.de", "Thumbnail Script", $message, "add_errors.log");
 }
 
-function clean_thumbs($path) {
-	global $del_files;
-	$files = array();
+function read_photos($path, $thumb_basepath, $pictures_basepath) {
+	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
 	
-	if ($handle = opendir($path)) {
-		while (false !== ($file = readdir($handle))) {
-			if($file === '.' || $file === '..') {
-				continue;
-			}
-			if(is_dir($path."/".$file."/")) {
-				$files[$file] = clean_thumbs($path."/".$file."");
-			}
-			else {
-				$files[] = $path."/".$file;
-				$npath = str_replace("thumbs/","",$path)."/".pathinfo($file)['filename'].".*";
-				$img_match = glob($npath);
-				if(count($img_match) < 1) {
-					$del_files[] = $path."/".$file;
-					unlink($path."/".$file);
-					errorlog("Thumbnail (".$path."/".$file.") was deleted by cleanup Script","cleanup");
+	if(file_exists($path)) {
+		if($handle = opendir($path)) {
+			while (false !== ($file = readdir($handle))) {
+				if($file === '.' || $file === '..') {
+					continue;
+				}
+				
+				if(is_dir($path."/".$file."/")) {
+					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath);
+				}
+				else {
+					if ( in_array( strtolower(pathinfo($file)['extension']), $support_arr ) ) {
+						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
+					}
 				}
 			}
+			closedir($handle);
 		}
-		closedir($handle);
 	}
-	return $del_files;
 }
 
-function read_photos($path) {
-	$files = array();
-	global $errff;
-	chdir(dirname(__FILE__));
-	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
-	if ($handle = opendir($path)) {
+function read_thumbs($path, $thumb_basepath, $picture_basepath) {
+	if($handle = opendir($path)) {
 		while (false !== ($file = readdir($handle))) {
 			if($file === '.' || $file === '..') {
 				continue;
 			}
 			
 			if(is_dir($path."/".$file."/")) {
-				$files[$file] = read_photos($path."/".$file."");
+				read_thumbs($path."/".$file, $thumb_basepath, $picture_basepath);
+				if(count(glob($path."/".$file."/*")) === 0) {
+					rmdir($path."/".$file);
+				}
 			}
 			else {
-				if ( in_array( strtolower(pathinfo($file)['extension']), $support_arr ) ) {
-					$files[] = $path."/".$file;
-					if (exec("/usr/bin/php ".dirname(__FILE__)."/createthumb.php \"".$path."/".$file."\" 220")) {
-						$errff[] = $path."/".$file;
-					}
-				}
+				deletethumb($path."/".$file, $thumb_basepath, $picture_basepath);
 			}
 		}
 		closedir($handle);
 	}
-	return $errff;
 }
 
-function mail_att($to, $subject, $message, $dateien) {   
-   if(!is_array($dateien)) {
-      $dateien = array($dateien);
-   }   
-   
-   $attachments = array();
-   foreach($dateien AS $key => $val) {
-      if(is_int($key)) {
-        $datei = $val;
-        $name = basename($datei);
-     } else {
-        $datei = $key;
-        $name = basename($val);
-     }
-     
-      $size = filesize($datei);
-      $data = file_get_contents($datei);
-      $type = mime_content_type($datei);
-     
-      $attachments[] = array("name"=>$name, "size"=>$size, "type"=>$type, "data"=>$data);
-   }
- 
-   $mime_boundary = "-----=" . md5(uniqid(microtime(), true));
- 
-   $header = "MIME-Version: 1.0\r\n";
-   $header.= "Content-Type: multipart/mixed;\r\n";
-   $header.= " boundary=\"".$mime_boundary."\"\r\n";
- 
-   $encoding = mb_detect_encoding($message, "utf-8, iso-8859-1, cp-1252");
-   $content = "This is a multi-part message in MIME format.\r\n\r\n";
-   $content.= "--".$mime_boundary."\r\n";
-   $content.= "Content-Type: text/plain; charset=\"$encoding\"\r\n";
-   $content.= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-   $content.= $message."\r\n";
- 
-   foreach($attachments AS $dat) {
-         $data = chunk_split(base64_encode($dat['data']));
-         $content.= "--".$mime_boundary."\r\n";
-         $content.= "Content-Disposition: attachment;\r\n";
-         $content.= "\tfilename=\"".$dat['name']."\";\r\n";
-         $content.= "Content-Length: .".$dat['size'].";\r\n";
-         $content.= "Content-Type: ".$dat['type']."; name=\"".$dat['name']."\"\r\n";
-         $content.= "Content-Transfer-Encoding: base64\r\n\r\n";
-         $content.= $data."\r\n";
-   }
-   $content .= "--".$mime_boundary."--"; 
-   
-   return mail($to, $subject, $content, $header);
+function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
+	$thumbnail = str_replace('//','/',$thumbnail);
+	
+	$org_pinfo = pathinfo(str_replace($thumb_basepath, $picture_basepath, $thumbnail));
+	if(!file_exists($org_pinfo['dirname']."/".$org_pinfo['filename'])) {
+		unlink($thumbnail);
+	}
+}
+
+function createthumb($image, $thumb_basepath, $pictures_basepath) {
+	global $thumbsize;
+	$org_pic = str_replace('//','/',$image);
+	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
+	if(file_exists($thumb_pic)) {
+		return false;
+	}
+	$target = "";
+	$xoord = 0;
+	$yoord = 0;
+	$degrees = 0;
+	$flip = '';
+	
+	$thumbpath = pathinfo($thumb_pic)['dirname'];
+		
+	if (!is_dir($thumbpath)) {
+		if(!mkdir($thumbpath, 0755, true)) {
+			error_log("Pictures Plugin(Maintain): Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
+		}
+	}
+
+	if (preg_match("/.jpg$|.jpeg$|.png$/i", $org_pic)) {
+		list($width, $height, $type) = getimagesize($org_pic);
+		if ($width > $height) {
+			$xoord = ceil(($width - $height) / 2);
+		}
+		else {
+			$yoord = ceil(($height - $width) / 2);
+		}
+		
+		if (function_exists('exif_read_data') && function_exists('imagerotate')) {
+			if (preg_match("/.jpg$|.jpeg$/i", $org_pic)) {
+				$exif = @exif_read_data($org_pic, 0, true);
+				if(isset($exif['IFD0']['Orientation'])) {
+					$ort = $exif['IFD0']['Orientation'];
+					switch ($ort) {
+						case 3:	// 180 rotate right
+							$degrees = 180;
+							break;
+						case 6:	// 90 rotate right
+							$degrees = 270;
+							break;
+						case 8:	// 90 rotate left
+							$degrees = 90;
+							break;
+						case 2:	// flip vertical
+							$flip = 'vertical';
+							break;
+						case 7:	// flipped
+							$degrees = 90;
+							$flip = 'vertical';
+							break;
+						case 5:	// flipped
+							$degrees = 270;
+							$flip = 'vertical';
+							break;
+						case 4:	// flipped
+							$degrees = 180;
+							$flip = 'vertical';
+							break;
+					}
+				}
+			}
+		}
+		else {
+			error_log("Pictures Plugin(Maintain): PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.");
+		}
+		
+		$newwidth = ceil($width / ($height / $thumbsize));
+		if($newwidth <= 0) {
+			error_log("Pictures Plugin(Maintain): Calculating the width ($newwidth) of \"$get_filename\" failed.");
+		}
+
+		$target = imagecreatetruecolor($newwidth, $thumbsize);
+		
+		switch ($type) {
+			case 1: $source = imagecreatefromgif($org_pic); break;
+			case 2: $source = imagecreatefromjpeg($org_pic); break;
+			case 3: $source = imagecreatefrompng($org_pic); break;
+			default: error_log("Pictures Plugin(Maintain): Unsupported fileformat ($org_pic $type)."); die();
+		}
+		
+		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		imagedestroy($source);
+		
+		if ($degrees != 0) {
+			$target = imagerotate($target, $degrees, 0);
+		}
+		
+		if(is_writable($thumbpath)) {
+			if ($flip == 'vertical') {
+				imagejpeg(imageflip($target, IMG_FLIP_VERTICAL),$thumb_pic,80);
+			}
+			else {
+				imagejpeg($target, $thumb_pic, 80);
+			}
+		}
+		else {
+			error_log("Pictures Plugin(Maintain): Can't write Thumbnail ($thumbpath). Please check your directory permissions.");
+		}
+	}
+	elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $org_pic)) {
+		$avconv = exec("which avconv");
+		if($avconv == "" ) {
+			$avconv = exec("which ffmpeg");
+		}
+
+		if(file_exists($avconv)) {
+			$cmd = $avconv." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1";
+			exec($cmd);
+		}
+		else {
+			error_log("Pictures Plugin(Maintain): ffmpeg or avconv is not installed, so video formats are not supported.");
+		}
+	}
 }
 ?>

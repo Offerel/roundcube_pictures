@@ -66,7 +66,7 @@ function rename_album() {
 		,success: function(data){
 			if(data == 1) {
 				document.getElementById('album_edit').style.display = "none";
-				document.getElementById('picturescontentframe').contentWindow.location.href = "plugins/pictures/photos.php";
+				document.getElementById('picturescontentframe').contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(album_org);
 				getsubs();
 			}
 		}
@@ -88,7 +88,7 @@ function move_album() {
 		,success: function(data){
 			if(data == 1) {
 				document.getElementById('album_edit').style.display = "none";
-				document.getElementById('picturescontentframe').contentWindow.location.href = "plugins/pictures/photos.php?p=" + album_target;
+				document.getElementById('picturescontentframe').contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(album_target);
 				getsubs();
 			}
 		}
@@ -160,7 +160,7 @@ function mv_img() {
 	}
 	album = decodeURI(album);
 	
-	$('#img_edit').contents().find("h2").html("Bild verschieben");
+	$('#img_edit').contents().find("h2").html(rcmail.gettext('move_image', 'pictures'));
 	$('#album_name_img').attr("placeholder", rcmail.gettext('new_album', 'pictures'));
 	$('#album_org_img').val(album);
 	

@@ -1,11 +1,9 @@
 <?php
-// Absolute path to the photos of the logged in user. Use %u for the username
-$config['pictures_path'] = '/path/to/%u/files/Pictures/';
-
-// Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
-$config['thumb_path'] = '/path/to/gal_thmbs/%u/photos/';
-
-$config['thumbs_pr_page'] = "39"; // Number of thumbnails on a single page
+$config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
+$config['thumb_path'] = '/path/to/gal_thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
+$config['date_format'] = "d.m.Y"; // please see https://secure.php.net/manual/de/function.date.php
+$config['time_format'] = "H:i"; // please see https://secure.php.net/manual/de/function.date.php 
+$config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page
 $config['sorting_folders'] = "name"; // Sort folders by: name / date
 $config['sortdir_folders'] = SORT_ASC; // Sort direction of folders: SORT_ASC / SORT_DESC
 $config['sortdir_files'] = SORT_DESC; // Sort direction of files: SORT_ASC / SORT_DESC
@@ -13,5 +11,5 @@ $config['lazyload'] = 1; // 0 is pagination, 1 is display all pictures on one pa
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
-$config['display_exif'] = 0; // Take care, even if not diplayed EXIF are still readable for visitors. May be a good idea to erase EXIF data...
+$config['display_exif'] = 1; // Take care, even if not displayed EXIF are still readable for visitors. May be a good idea to erase EXIF data...
 ?>

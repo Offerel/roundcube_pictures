@@ -1,6 +1,7 @@
 <?php
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
+@ini_set('gd.jpeg_ignore_warning', 1);
 $rcmail = rcmail::get_instance();
 
 // Login
@@ -10,52 +11,42 @@ if (!empty($rcmail->user->ID)) {
 	$thumb_basepath = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
 	
 	if(substr($pictures_basepath, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'pictures_path\'], the path must end with a backslash.');
+		error_log('Pictures Plugin(Thumbs): check $config[\'pictures_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if(substr($thumb_basepath, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'thumb_path\'], the path must end with a backslash.');
+		error_log('Pictures Plugin(Thumbs): check $config[\'thumb_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if (!is_dir($pictures_basepath))
 	{
-		if(!mkdir($pictures_basepath, 0774, true)) {
-			error_log('Pictures Plugin: Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
+		if(!mkdir($pictures_basepath, 0755, true)) {
+			error_log('Pictures Plugin(Thumbs): Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
 			die();
 		}
 	}
 }
 else {
-	error_log('Pictures Plugin: Login failed. User is not logged in.');
+	error_log('Pictures Plugin(Thumbs): User is not logged in.');
 	die();
 }
 
-if (PHP_SAPI === 'cli') {
-	$get_filename = $argv[1];
-	$get_size = $argv[2];
-	$cli = true;
+$get_filename = $_GET['filename'];
+if (preg_match("/^\/.*/i", $get_filename)) {
+	error_log("Pictures Plugin(Thumbs): Unauthorized access! Filepath ($get_filename) has potential risky chars inside.");
+	die("Unauthorized access!");
 }
-else {
-	$get_filename = $_GET['filename'];
-	
-	if (preg_match("/^\/.*/i", $get_filename)) {
-		error_log("Pictures Plugin: Unauthorized access! Filepath ($get_filename) has potential risky chars inside.");
-		die("Unauthorized access!");
-	}
-	if( isset($_GET['size']) ) {
-		$get_size = $_GET['size'];
-	}
-	
-	$cli = false;
+if( isset($_GET['size']) ) {
+	$get_size = $_GET['size'];
 }
 
 $get_filename = $pictures_basepath.$get_filename;
 
 if (empty($get_size)) {
 	$get_size = 220;
-	error_log("Pictures Plugin: No image dimensions given, using default (".$get_size."px)");
+	error_log("Pictures Plugin(Thumbs): No image dimensions given, using default (".$get_size."px)");
 }
 
 if (preg_match("/.jpe?g$/i", $get_filename)) {
@@ -76,8 +67,7 @@ if (preg_match("/.mp4$/i", $get_filename)) {
 
 function folderimg($image, $size) {
 	global $thumb_basepath, $pictures_basepath;
-
-	$thmb_path = sanitize(substr($image, strlen($pictures_basepath))).".jpg";
+	$thmb_path = substr($image, strlen($pictures_basepath)).".jpg";
 	$thumbname = $thumb_basepath.$thmb_path;
 
 	if (file_exists($thumbname)) {
@@ -87,7 +77,7 @@ function folderimg($image, $size) {
 		header("Content-Type: image/jpeg");
 		echo ($cacheContent);
 		exit;
-	} 
+	}
 	else {
 		$tsize = $size;
 		$image = imagecreatefromstring(file_get_contents($image));
@@ -115,69 +105,32 @@ function folderimg($image, $size) {
 	die();
 }
 
-function flipVertical(&$img) {
-	$size_x = imagesx($img);
-	$size_y = imagesy($img);
-	$temp = imagecreatetruecolor($size_x, $size_y);
-	$x = imagecopyresampled($temp, $img, 0, 0, 0, ($size_y - 1), $size_x, $size_y, $size_x, 0 - $size_y);
-	if ($x) {
-		$img = $temp;
-	} else {
-		error_log("Pictures Plugin: Unable to flip image vertical.");
-		die("Unable to flip image");
-	}
-}
-
-function flipHorizontal(&$img) {
-	$size_x = imagesx($img);
-	$size_y = imagesy($img);
-	$temp = imagecreatetruecolor($size_x, $size_y);
-	$x = imagecopyresampled($temp, $img, 0, 0, ($size_x - 1), 0, $size_x, $size_y, 0 - $size_x, $size_y);
-	if ($x) {
-		$img = $temp;
-	} else {
-		error_log("Pictures Plugin: Unable to flip image horizontal");
-		die("Unable to flip image");
-	}
-}
-
-function sanitize($name) {
-	$path_parts = pathinfo($name)['dirname'].'/'.pathinfo($name)['filename'];
-	return preg_replace("/[^[:alnum:] \/_.-]/u", "_", $path_parts);
-}
-
 if (isset($_GET['folder'])) {
 	folderimg($get_filename, $get_size);
 }
 
 if (!is_dir($thumb_basepath) && is_writable($thumb_basepath)) {
 	mkdir($thumb_basepath, 0700, true);
-	error_log("Pictures Plugin: Thumbnail folder does not exist, creating folder ($thumb_basepath) automatically.");
+	error_log("Pictures Plugin(Thumbs): Thumbnail folder does not exist, creating folder ($thumb_basepath) automatically.");
 }
 
-// display thumbnail, if it is available and not called via maintenance script
-$thumbname = $thumb_basepath.sanitize(substr($get_filename, strlen($pictures_basepath))).".jpg";
-
+$thumbname = $thumb_basepath.substr($get_filename, strlen($pictures_basepath)).".jpg";
 if (file_exists($thumbname)) {
-	if(!$cli) {
-		$fd = fopen($thumbname, "r");
-		$cacheContent = fread($fd, filesize($thumbname));
-		fclose($fd);
-		header("Content-Type: image/jpeg");
-		echo ($cacheContent);
-	}
+	$fd = fopen($thumbname, "r");
+	$cacheContent = fread($fd, filesize($thumbname));
+	fclose($fd);
+	header("Content-Type: image/jpeg");
+	echo ($cacheContent);
 	exit;
 }
 
-// write error if file isn't found
 if (!is_file($get_filename)) {
-	error_log("Pictures Plugin: (createthumb) Image ($get_filename) not found.");
+	error_log("Pictures Plugin(Thumbs): Image ($get_filename) not found.");
 	exit;
 }
 
-// Display error if file exists, but can't be opened
 if (!is_readable($get_filename)) {
-	error_log("Pictures Plugin: Image ($get_filename) can't be opened.");
+	error_log("Pictures Plugin(Thumbs): Image ($get_filename) can't be opened.");
 	exit;
 }
 
@@ -234,18 +187,17 @@ if (preg_match("/.jpg$|.jpeg$|.png$|.tif$/i", $get_filename)) {
 		}
 	} 
 	else {
-		error_log("Pictures Plugin: PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.");
+		error_log("Pictures Plugin(Thumbs): PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.");
 	}
 	
 	$newwidth = ceil($width / ($height / $get_size));
-	if(!is_int($newwidth)) {
-		error_log("Pictures Plugin: Calculating the width of \"$get_filename\" failed.");
+	if($newwidth <= 0) {
+		error_log("Pictures Plugin(Thumbs): Calculating the width ($newwidth) of \"$get_filename\" failed.");
 	}
 
 	$target = imagecreatetruecolor($newwidth, $get_size);
 }
 
-// if the picture can be transparent, add a white background
 if (in_array($get_filename_type, array("GIF", "PNG"))) {
 	$backgroundColor = imagecolorallocate($target, 255, 255, 255);
 	imagefill($target, 0, 0, $backgroundColor);
@@ -285,10 +237,11 @@ if ($get_filename_type != "MP4") {
 	ob_end_flush();
 
 	$path = pathinfo($thumbname)['dirname'];
+
 	if (!is_dir($path))
 	{
-		if(!mkdir($path, 0774, true)) {
-			error_log("Pictures Plugin: Thumbnail subfolder creation failed ($path). Please check your directory permissions.");
+		if(!mkdir($path, 0755, true)) {
+			error_log("Pictures Plugin(Thumbs): Thumbnail subfolder creation failed ($path). Please check your directory permissions.");
 		}
 	}
 	
@@ -301,7 +254,7 @@ if ($get_filename_type != "MP4") {
 	}
 	else 
 	{
-		error_log("Pictures Plugin: Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
+		error_log("Pictures Plugin(Thumbs): Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 		die("Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 	}
 }
@@ -323,6 +276,6 @@ else {
 	}
 	else 
 	{
-		error_log("Pictures Plugin: ffmpeg or avconv not installed, so video formats are supported.");
+		error_log("Pictures Plugin(Thumbs): ffmpeg or avconv not installed, so video formats are supported.");
 	}
 }

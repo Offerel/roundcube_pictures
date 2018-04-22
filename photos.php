@@ -18,26 +18,28 @@ if (!empty($rcmail->user->ID)) {
 	$thumb_path = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
 	
 	if(substr($pictures_path, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'pictures_path\'], the path must end with a backslash.');
+		error_log('Pictures Plugin(Photos): check $config[\'pictures_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if(substr($thumb_path, -1) != '/') {
-		error_log('Pictures Plugin: check $config[\'thumb_path\'], the path must end with a backslash.');
+		error_log('Pictures Plugin(Photos): check $config[\'thumb_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if (!is_dir($pictures_path))
 	{
-		if(!mkdir($pictures_path, 0774, true)) {
-			error_log('Pictures Plugin: Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
+		if(!mkdir($pictures_path, 0755, true)) {
+			error_log('Pictures Plugin(Photos): Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
 			die();
 		}
 	}
 }
 else {
-	error_log('Pictures Plugin: Login failed. User is not logged in.');
-	die();
+	error_log('Pictures Plugin(Photos): Login failed. User is not logged in.');
+	http_response_code(403);
+	header('location: ../../');
+    die('Login failed. User is not logged in.');
 }
 
 $page_navigation = "";
@@ -86,7 +88,7 @@ if(isset($_POST['img_action'])) {
 		case 'move':	if($_POST['newPath'] != "") {
 							$newPath = $_POST['newPath']."/";
 							if (!is_dir($album_target.$newPath)) {
-								mkdir($album_target.$newPath, 0777, true);
+								mkdir($album_target.$newPath, 0755, true);
 							}
 						}
 						else {
@@ -117,7 +119,9 @@ function removeDirectory($path) {
 }
 
 if( isset($_GET['p']) ) {
-	echo showPage(showGallery($_GET['p']));
+	$dir = $_GET['p'];
+	guardAgainstDirectoryTraversal($dir);
+	echo showPage(showGallery($dir));
 	die();
 }
 else {
@@ -199,12 +203,11 @@ function showPage($thumbnails) {
 				var li_str = '<ul class=\"breadcrumb\"><li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php\'\" href=\"#\">Start</a></li>';
 				var path = '';
 				for (var i = 0; i < len; i++) {
-					path += album_arr[i];
+					path += encodeURIComponent(album_arr[i]);
 					li_str += '<li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php?p=' + path + '\'\" href=\"#\">' + album_arr[i] + '</a></li>';
 					path += '/';
 				}
 				li_str += '</ul>';
-				console.log(li_str);
 				$('#bcn', window.parent.document).html(li_str);
 				window.parent.document.getElementById('editalbum').classList.remove('disabled');
 			}
@@ -223,6 +226,11 @@ function showPage($thumbnails) {
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 			}
 		 }
+/*
+		var bLazy = new Blazy({
+			// Options
+		});
+*/
     </script>
 	";	
 
@@ -311,10 +319,8 @@ function showGallery($requestedDir) {
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {
 						$exifReaden = readEXIF($current_dir."/".$file);
-						$img_captions[$file] = basename($file,".jpg").$exifReaden;
 					} else {
-						$img_captions[$file] = basename($file,".jpg");
-						$exifReaden = null;
+						$exifReaden = array();
 					}
 
 					checkpermissions($current_dir."/".$file);
@@ -322,22 +328,65 @@ function showGallery($requestedDir) {
 					$imgParams = http_build_query(array('filename' => "$requestedDir/$file", 
 														'size' => $rcmail->config->get('thumb_size', false)));
 					$imgUrl = "createthumb.php?$imgParams";
+
+					$taken = $exifReaden[5];
 					
-					if ($rcmail->config->get('lazyload', false) == 1) {
-						$imgopts = "class=\"b-lazy\" src=data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw== data-src=\"$imgUrl\"";
-					} else {
-						$imgopts = "src=\"$imgUrl\"";
+					$exifInfo = "";
+
+					if($exifReaden[0] != "-" && $exifReaden[8] != "-")
+						$exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
+
+					if($exifReaden[1] != "-")
+						$exifInfo.= $rcmail->gettext('exif_focalength','pictures').": ".$exifReaden[1]."<br>";
+
+					if($exifReaden[3] != "-")
+						$exifInfo.= $rcmail->gettext('exif_fstop','pictures').": ".$exifReaden[3]."<br>";
+
+					if($exifReaden[4] != "-")
+						$exifInfo.= $rcmail->gettext('exif_ISO','pictures').": ".$exifReaden[4]."<br>";
+
+					if($exifReaden[5] != "-") {
+						$dformat = $rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', '');
+						$exifInfo.= $rcmail->gettext('exif_date','pictures').": ".date($dformat, $exifReaden[5])."<br>";
+					}
+
+					if($exifReaden[6] != "-")
+						$exifInfo.= $rcmail->gettext('exif_desc','pictures').": ".$exifReaden[6]."<br>";
+
+					if($exifReaden[9] != "-")
+						$exifInfo.= $rcmail->gettext('exif_sw','pictures').": ".$exifReaden[9]."<br>";
+
+					if($exifReaden[10] != "-")
+						$exifInfo.= $rcmail->gettext('exif_expos','pictures').": ".$exifReaden[10]."<br>";
+
+					if($exifReaden[11] != "-")
+						$exifInfo.= $rcmail->gettext('exif_flash','pictures').": ".$exifReaden[11]."<br>";
+
+					if($exifReaden[12] != "-")
+						$exifInfo.= $rcmail->gettext('exif_meter','pictures').": ".$exifReaden[12]."<br>";
+
+					if($exifReaden[13] != "-")
+						$exifInfo.= $rcmail->gettext('exif_whiteb','pictures').": ".$exifReaden[13]."<br>";
+
+					if($exifReaden[14] != "-" && $exifReaden[15] != "-") {
+						$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
+																'mlon' => str_replace(',','.',$exifReaden[15])
+															),'','&amp;');
+						$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
 					}
 					
-					$exif_arr = explode(" | ",$exifReaden);
-
-					$taken = $exif_arr[5];					
+					if(count(exifReaden) > 0) {
+						$caption = "$file<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
+					}
+					else {
+						$caption = "$file";
+					}
 					
 					$files[] = array(
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"image\" href=\"$linkUrl\"><img $imgopts alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
+						"html" => "<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
 				}
 				
 				// video files
@@ -350,7 +399,6 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						//"html" => "<a class=\"image\" data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /></a>");
 						"html" => "<div><a class=\"image\" data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
 				}
 			}
@@ -359,22 +407,10 @@ function showGallery($requestedDir) {
 		closedir($handle);
 	}
 	else {
-		error_log('Pictures Plugin: Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" folder for reading!');
+		error_log('Pictures Plugin(Photos): Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		die("ERROR: Could not open \"".htmlspecialchars(stripslashes($current_dir))."\" folder for reading!");
 	}
-	/*
-	$breadcrumb_nav = explode("/",$requestedDir);
-	$path = "";
-	$bcn = "<ul class=\"breadcrumb\"><li><a href='photos.php' onclick=\"album_w('')\" title=\"".$rcmail->gettext('home','pictures')."\">".$rcmail->gettext('home','pictures')."</a></li>";
-	foreach ($breadcrumb_nav as $nav_part) {
-		if($nav_part != "") {
-			$path.= $nav_part."/";
-			$bcn.= "<li><a href='photos.php?p=$path' title=\"$path\">$nav_part</a></li>";
-		}
-	}
-	$bcn.= "</ul>";
-	$thumbnails.= "<div id=\"bc\">$bcn</div>";
-	*/
+
 	// sort folders
 	if (sizeof($dirs) > 0) {
 		$thumbnails.= "<div id=\"folders\">";
@@ -396,7 +432,7 @@ function showGallery($requestedDir) {
 
 	// sort images
 	if (sizeof($files) > 0) {
-		$thumbnails.= "<div id=\"images\">";
+		$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
 		foreach ($files as $key => $row) {
 			if ($row["name"] == "") {
 				unset($files[$key]);
@@ -407,11 +443,31 @@ function showGallery($requestedDir) {
 			$size[$key] = strtolower($row['size']);
 		}
 		array_multisort($files, $rcmail->config->get('sortdir_files', false), $date);
-		$start = 0;
-		foreach ($files as $image) {
-			$thumbnails.= "\n".$image["html"];
-			$start++;
+		
+		
+		// build navigation links
+		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
+		if(isset($_GET['page'])) {
+			$offset_start = ($_GET["page"] * $thumbs_pr_page) - $thumbs_pr_page;
+		} else {
+			$offset_start = 0;
 		}
+		
+		$pages = ceil(sizeof($files)/$thumbs_pr_page);
+		$gal= $_GET['p'];
+		$offset_end = $offset_start + $thumbs_pr_page;
+		
+		for ($y = $offset_start; $y < $offset_end; $y++) {
+			$thumbnails.= "\n".$files[$y]["html"];
+		}
+		
+		$pnavigation = "<div id=\"blindspot\"><div id=\"pnavigation\">";
+		for ($page = 1; $page <= $pages; $page++) {
+			$pnavigation.= "<a href=\"?p=$gal&page=$page\">$page</a>";
+		}
+		$pnavigation.= "</div></div>";
+		// navigation links end
+
 		if(sizeof($videos) > 0){
 			foreach($videos as $video) {
 				$hidden_vid.= $video["html"];
@@ -420,11 +476,12 @@ function showGallery($requestedDir) {
 		$thumbnails.= "</div>";
 	}
 
-	$thumbnails.= $hidden_vid;
+	$thumbnails.= $hidden_vid.$pnavigation;
 	return $thumbnails;
 }
 
 function getAllSubDirectories($directory, $directory_seperator = "/") {
+	global $rcmail;
 	$dirs = array_map(function($item)use($directory_seperator){return $item.$directory_seperator;},array_filter(glob($directory.'*' ),'is_dir'));
 	foreach($dirs AS $dir)
 	{
@@ -435,18 +492,7 @@ function getAllSubDirectories($directory, $directory_seperator = "/") {
 }
 
 if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', false) == 1) {
-	error_log('Pictures Plugin: PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
-}
-
-function padstring($name, $length) {
-	global $label_max_length;
-	if (!isset($length)) {
-		$length = $label_max_length;
-	}
-	if (strlen($name) > $length) {
-		return substr($name, 0, $length) . "...";
-	}
-	return $name;
+	error_log('Pictures Plugin(Photos): PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
 }
 
 function getfirstImage($dirname) {
@@ -524,9 +570,9 @@ function readEXIF($file) {
 		
 		//5	
 		if(isset($exif_data['DateTimeDigitized']))
-			$exif_arr[] = date("d.m.Y H:i",strtotime($exif_data['DateTimeDigitized']));
+			$exif_arr[] = strtotime($exif_data['DateTimeDigitized']);
 		else
-			$exif_arr[] = date("d.m.Y H:i",filemtime($file));
+			$exif_arr[] = filemtime($file);
 		
 		//6	
 		if(isset($exif_data['ImageDescription']))
@@ -598,19 +644,45 @@ function readEXIF($file) {
 		else
 			$exif_arr[] = "-";
 		
-		if (count($exif_arr) > 0) {
-			$exif_str = "::".implode(" | ", $exif_arr);
-			return $exif_str;
-		}
+		//14
+		if(isset($exif_data["GPSLatitude"]))
+			$exif_arr[] = gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']);
+		else
+			$exif_arr[] = "-";
+		
+		//15
+		if(isset($exif_data["GPSLongitude"]))
+			$exif_arr[] = gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']);
+		else
+			$exif_arr[] = "-";
 	}
 	return $exif_arr;
+}
+	
+function gps($coordinate, $hemisphere) {
+  if (is_string($coordinate)) {
+    $coordinate = array_map("trim", explode(",", $coordinate));
+  }
+  for ($i = 0; $i < 3; $i++) {
+    $part = explode('/', $coordinate[$i]);
+    if (count($part) == 1) {
+      $coordinate[$i] = $part[0];
+    } else if (count($part) == 2) {
+      $coordinate[$i] = floatval($part[0])/floatval($part[1]);
+    } else {
+      $coordinate[$i] = 0;
+    }
+  }
+  list($degrees, $minutes, $seconds) = $coordinate;
+  $sign = ($hemisphere == 'W' || $hemisphere == 'S') ? -1 : 1;
+  return $sign * ($degrees + $minutes/60 + $seconds/3600);
 }
 
 function checkpermissions($file) {
 	global $messages;
 
 	if (!is_readable($file)) {
-		error_log('Pictures Plugin: Can\'t read image $file, check your permissions.');
+		error_log('Pictures Plugin(Photos): Can\'t read image $file, check your permissions.');
 	}
 }
 
@@ -619,13 +691,11 @@ function guardAgainstDirectoryTraversal($path) {
     $directory_traversal = preg_match($pattern, $path);
 
     if ($directory_traversal === 1) {
-		error_log('Pictures Plugin: Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
+		error_log('Pictures Plugin(Photos): Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
         die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
     }
 }
-
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
 $current_dir = $thumbdir;
-
 guardAgainstDirectoryTraversal($current_dir);
 ?>

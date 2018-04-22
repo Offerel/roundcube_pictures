@@ -33,6 +33,7 @@ class pictures extends rcube_plugin
 		if ($rcmail->task == 'pictures') {
 			$this->register_action('index', array($this, 'action'));
 			$this->register_action('gallery', array($this, 'change_requestdir'));
+			$rcmail->output->set_env('refresh_interval', 0);
 		}
 	}
 	

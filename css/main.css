@@ -7,6 +7,67 @@ html{
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
+.exinfo img {
+	margin-right: 5px;
+	vertical-align: sub;
+}
+.exinfo a {
+	color: aliceblue;
+}
+.exinfo {
+	position: absolute;
+	height: 150px;
+	width: 250px;
+	bottom: 30px;
+	overflow: auto;
+	right: -15px;
+	background: #00000080;
+	transition: all 0.5s ease 0s;
+	opacity: 0;
+	font-size: 0.8em;
+	text-align: left;
+	padding: 5px;
+}
+.exname {
+	position: absolute;
+	right: 80px;
+	cursor: help;
+}
+.exname:hover .exinfo {
+	opacity: 1;
+}
+#pnavigation {
+	text-align: center;
+	z-index: 200;
+	position: fixed;
+	background: transparent;
+	bottom: 15px;
+	width: 100%;
+	display: none;
+}
+#pnavigation a {
+	color: hsla(199, 99%, 36%, 1);
+	background: hsla(195, 60%, 66%, 1);
+	margin: 0 1px;
+	padding: 3px 5px;
+	border: 1px solid hsla(195, 60%, 66%, 1);
+	border-radius: 3px;
+}
+#pnavigation a:hover {
+	background: hsla(199, 99%, 36%, 1);
+	border: 1px solid hsla(199, 99%, 36%, 1);
+	color: white;
+}
+#blindspot {
+	height: 70px;
+	position: fixed;
+	width: 100%;
+	z-index: 10;
+	bottom: 0px;
+}
+#blindspot:hover #pnavigation {
+	display: block;
+}
 #bc {
 	margin: 0 0 10px 0;
 }
@@ -298,6 +359,7 @@ body {
 	background: #ccd3d7;
 	color: #333333;
 	margin: 0;
+	overflow-y: scroll;
 }
 a {
 	color: #333333;

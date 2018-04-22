@@ -12,6 +12,7 @@ $labels['album'] = "Album";
 $labels['new_album'] = "New Album";
 $labels['rename'] = "Rename";
 $labels['move'] = "Move";
+$labels['move_image'] = "Move picture";
 $labels['delete'] = "Delete";
 
 $labels['exif_undefined'] = "Undefined";
@@ -33,4 +34,17 @@ $labels['exif_multi-spot'] = "Multi-Spot";
 $labels['exif_multi'] = "Multi-field";
 $labels['exif_partial'] = "Partial";
 $labels['exif_other'] = "Other";
+
+$labels['exif_camera'] = "Camera";
+$labels['exif_focalength'] = "Focal Length";
+$labels['exif_fstop'] = "F-Stop";
+$labels['exif_ISO'] = "ISO";
+$labels['exif_date'] = "Date";
+$labels['exif_desc'] = "Description";
+$labels['exif_sw'] = "Software";
+$labels['exif_expos'] = "Exposure";
+$labels['exif_flash'] = "Flash";
+$labels['exif_meter'] = "Metering Mode";
+$labels['exif_whiteb'] = "Whitebalance";
+$labels['exif_geo'] = "Show on map";
 ?>
