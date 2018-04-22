@@ -399,7 +399,7 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"image\" data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
+						"html" => "<div><a class=\"image\" data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
 				}
 			}
 			}

@@ -7,6 +7,14 @@ html{
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
+.video {
+	background: url(../images/video-play.png) no-repeat center center;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	cursor: pointer;
+	opacity: 0.75;
+}
 .exinfo img {
 	margin-right: 5px;
 	vertical-align: sub;
