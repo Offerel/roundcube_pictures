@@ -5,6 +5,7 @@ $config['date_format'] = "d.m.Y"; // please see https://secure.php.net/manual/de
 $config['time_format'] = "H:i"; // please see https://secure.php.net/manual/de/function.date.php 
 $config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page
 $config['sorting_folders'] = "name"; // Sort folders by: name / date
+$config['sorting_files'] = "date"; // Sort folders by: name / date / size
 $config['sortdir_folders'] = SORT_ASC; // Sort direction of folders: SORT_ASC / SORT_DESC
 $config['sortdir_files'] = SORT_DESC; // Sort direction of files: SORT_ASC / SORT_DESC
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed

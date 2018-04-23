@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.0
+ * @version 0.9.2
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -422,7 +422,8 @@ function showGallery($requestedDir) {
 			$name[$key] = strtolower($row['name']);
 			$date[$key] = strtolower($row['date']);
 		}
-		array_multisort($dirs, $rcmail->config->get('sortdir_folders', false), $name);
+		$sorting_folders = $rcmail->config->get('sorting_folders', false);
+		array_multisort($dirs, $rcmail->config->get('sortdir_folders', false), $$sorting_folders);
 		foreach ($dirs as $folder) {
 			$thumbnails.= $folder["html"];
 			$start++;
@@ -442,8 +443,8 @@ function showGallery($requestedDir) {
 			$date[$key] = strtolower($row['date']);
 			$size[$key] = strtolower($row['size']);
 		}
-		array_multisort($files, $rcmail->config->get('sortdir_files', false), $date);
-		
+		$sorting_files = $rcmail->config->get('sorting_files', false);
+		array_multisort($$sorting_files, $rcmail->config->get('sortdir_files', false), $files);
 		
 		// build navigation links
 		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
