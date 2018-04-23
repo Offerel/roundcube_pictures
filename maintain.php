@@ -1,7 +1,15 @@
 <?php
+/**
+ * Roundcube Pictures Plugin - CLI Maintenance script
+ *
+ * @version 0.9.1
+ * @author Offerel
+ * @copyright Copyright (c) 2018, Offerel
+ * @license GNU General Public License, version 3
+ */
 $modes = array("clean","add","all");
 if(!in_array($argv[1], $modes)) {
-	die("Please specify working mode. Allowed modes are \"all\", \"clean\" or \"all\".\n");
+	die("No working mode given, please specify one mode. Allowed modes are \"add\", \"clean\" or \"all\".\n");
 } 
 else {
 	$mode = $argv[1];
@@ -49,7 +57,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath) {
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath);
 				}
 				else {
-					if ( in_array( strtolower(pathinfo($file)['extension']), $support_arr ) ) {
+					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 					}
 				}
