@@ -24,9 +24,7 @@ html{
 }
 .exinfo {
 	position: absolute;
-	height: 150px;
-	width: 250px;
-	bottom: 30px;
+	bottom: 35px;
 	overflow: auto;
 	right: -15px;
 	background: #00000080;
@@ -35,6 +33,7 @@ html{
 	font-size: 0.8em;
 	text-align: left;
 	padding: 5px;
+	white-space: nowrap;
 }
 .exname {
 	position: absolute;

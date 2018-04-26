@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.2
+ * @version 0.9.3
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -173,9 +173,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
 		switch ($type) {
-			case 1: $source = imagecreatefromgif($org_pic); break;
-			case 2: $source = imagecreatefromjpeg($org_pic); break;
-			case 3: $source = imagecreatefrompng($org_pic); break;
+			case 1: $source = @imagecreatefromgif($org_pic); break;
+			case 2: $source = @imagecreatefromjpeg($org_pic); break;
+			case 3: $source = @imagecreatefrompng($org_pic); break;
 			default: error_log("Pictures Plugin(Maintain): Unsupported fileformat ($org_pic $type)."); die();
 		}
 		

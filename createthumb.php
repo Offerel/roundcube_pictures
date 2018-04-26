@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.2
+ * @version 0.9.3
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -17,6 +17,7 @@ if (!empty($rcmail->user->ID)) {
 	$username = $rcmail->user->get_username();
 	$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
 	$thumb_basepath = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
+	$get_size = $rcmail->config->get('thumb_size', false);
 	
 	if(substr($pictures_basepath, -1) != '/') {
 		error_log('Pictures Plugin(Thumbs): check $config[\'pictures_path\'], the path must end with a backslash.');
@@ -46,16 +47,8 @@ if (preg_match("/^\/.*/i", $get_filename)) {
 	error_log("Pictures Plugin(Thumbs): Unauthorized access! Filepath ($get_filename) has potential risky chars inside.");
 	die("Unauthorized access!");
 }
-if( isset($_GET['size']) ) {
-	$get_size = $_GET['size'];
-}
 
 $get_filename = $pictures_basepath.$get_filename;
-
-if (empty($get_size)) {
-	$get_size = 220;
-	error_log("Pictures Plugin(Thumbs): No image dimensions given, using default (".$get_size."px)");
-}
 
 if (preg_match("/.jpe?g$/i", $get_filename)) {
 	$get_filename_type = "JPG";

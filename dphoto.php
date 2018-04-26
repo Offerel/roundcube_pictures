@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.2
+ * @version 0.9.3
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -107,7 +107,7 @@ if (file_exists($file)) {
 		$flip = '';
 		
 		if (function_exists('exif_read_data') && function_exists('imagerotate')) {
-			$exif = exif_read_data($file,0,true);
+			$exif = @exif_read_data($file,0,true);
 			
 			if(isset($exif['IFD0']['Orientation'])) {
 				$or = $exif['IFD0']['Orientation'];

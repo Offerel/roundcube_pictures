@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.2
+ * @version 0.9.3
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -52,13 +52,15 @@ $messages = "";
 $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
+$skip_objects = $rcmail->config->get('skip_objects', false);
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
 	$select = "<select name=\"target\" id=\"target\" size=\"10\" onchange=\"$('#mvb').removeClass('disabled');\">";
 	foreach ($subdirs as $dir) {
 		$dir = substr($dir,strlen($pictures_path));
-		$select.= "<option>".$dir."</option>";
+		if(!strposa($dir, $skip_objects))
+			$select.= "<option>".$dir."</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -121,20 +123,20 @@ function removeDirectory($path) {
 if( isset($_GET['p']) ) {
 	$dir = $_GET['p'];
 	guardAgainstDirectoryTraversal($dir);
-	echo showPage(showGallery($dir));
+	echo showPage(showGallery($dir), $dir);
 	die();
 }
 else {
-	echo showPage(showGallery(""));
+	echo showPage(showGallery(""), '');
 	die();
 }
 
-function showPage($thumbnails) {
+function showPage($thumbnails, $dir) {
 	$page = "
 	<!DOCTYPE html>
 	<html>
 		<head>
-			
+			<title>$dir</title>
 			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
@@ -142,14 +144,14 @@ function showPage($thumbnails) {
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/jquery.justifiedGallery.min.js\"></script>
 			<script src=\"js/lightgallery-all.min.js\"></script>";
-	$page.= "</head><body onload=\"count_checks();\"><div id=\"galdiv\">";
+	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id=\"galdiv\">";
 	$page.= $thumbnails;
 	$page.="
 	<script>
 		$('#folders').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 2,
+			margins: 4,
 			border: 0,
 			rel: 'folders',
 			lastRow: 'justify',
@@ -160,7 +162,7 @@ function showPage($thumbnails) {
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 2,
+			margins: 4,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'justify',
@@ -212,6 +214,7 @@ function showPage($thumbnails) {
 				window.parent.document.getElementById('editalbum').classList.remove('disabled');
 			}
 			else {
+				$('#bcn', window.parent.document).html('');
 				window.parent.document.getElementById('editalbum').classList.add('disabled');
 			}
 		}
@@ -225,12 +228,7 @@ function showPage($thumbnails) {
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 			}
-		 }
-/*
-		var bLazy = new Blazy({
-			// Options
-		});
-*/
+		}
     </script>
 	";	
 
@@ -254,15 +252,14 @@ function showGallery($requestedDir) {
 				if ($file != "." && $file != "..") {
 					checkpermissions($current_dir."/".$file);
 					
+					if($requestedDir != "")
+						$requestedDir = $requestedDir."/";
+					else
+						$requestedDir = "";
+					
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
-						$imgParams = http_build_query(
-							array(
-								'filename' => "$file/folder.jpg",
-								'size' => $rcmail->config->get("thumb_size", false),
-							),
-							'',
-							'&amp;'
-						);
+						$imgParams = http_build_query(array('filename' => "$requestedDir$file/folder.jpg"
+															), '', '&amp;');
 						
 						$arr_params = array('p' => $file);
 						$fparams = http_build_query($arr_params,'','&amp;');
@@ -278,14 +275,8 @@ function showGallery($requestedDir) {
 						unset($firstimage);					
 						$firstimage = getfirstImage("$current_dir/".$file);
 						
-						if ($requestedDir)
-							$path = "$requestedDir/$file/$firstimage";
-						else
-							$path = "$file/$firstimage";
-						
 						if ($firstimage != "") {
-							$params = array('filename' 	=> $path,
-											'size' 		=> $rcmail->config->get("thumb_size", false),
+							$params = array('filename' 	=> "$requestedDir$file/$firstimage",
 											'folder' 	=> '1');
 							$imgParams = http_build_query($params);
 							$imgUrl = "createthumb.php?$imgParams";
@@ -293,18 +284,13 @@ function showGallery($requestedDir) {
 						else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
-						
-						if ($requestedDir)
-							$path = "$requestedDir/$file";
-						else
-							$path = "$file";
-						
-						$arr_params = array('p' => $path);
+
+						$arr_params = array('p' => "$requestedDir$file");
 						$fparams = http_build_query($arr_params,'','&amp;');
 						
 						$dirs[] = array("name" => $file,
 										"date" => filemtime($current_dir."/".$file),
-										"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$path')\" title=\"$path\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
+										"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$requestedDir$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
 									);
 					}
 				}
@@ -314,7 +300,7 @@ function showGallery($requestedDir) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg") {
 				$filename_caption = "";
 				
-				$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir/$file"));
+				$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir$file"));
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {
@@ -325,8 +311,7 @@ function showGallery($requestedDir) {
 
 					checkpermissions($current_dir."/".$file);
 					
-					$imgParams = http_build_query(array('filename' => "$requestedDir/$file", 
-														'size' => $rcmail->config->get('thumb_size', false)));
+					$imgParams = http_build_query(array('filename' => "$requestedDir$file"));
 					$imgUrl = "createthumb.php?$imgParams";
 
 					$taken = $exifReaden[5];
@@ -391,8 +376,7 @@ function showGallery($requestedDir) {
 				
 				// video files
 				if (preg_match("/\.ogv$|\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
-					$thmbParams = http_build_query(array('filename' => "$requestedDir/$file",
-														 'size' => $rcmail->config->get('thumb_size', false)));
+					$thmbParams = http_build_query(array('filename' => "$requestedDir$file"));
 					$thmbUrl = "createthumb.php?$thmbParams";
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$files[] = array(
@@ -494,6 +478,14 @@ function getAllSubDirectories($directory, $directory_seperator = "/") {
 
 if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', false) == 1) {
 	error_log('Pictures Plugin(Photos): PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
+}
+
+function strposa($haystack, $needle, $offset=0) {
+    if(!is_array($needle)) $needle = array($needle);
+    foreach($needle as $query) {
+        if(strpos($haystack, $query, $offset) !== false) return true;
+    }
+    return false;
 }
 
 function getfirstImage($dirname) {

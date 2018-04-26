@@ -1,3 +1,11 @@
+/**
+ * Roundcube Pictures Plugin
+ *
+ * @version 0.9.3
+ * @author Offerel
+ * @copyright Copyright (c) 2018, Offerel
+ * @license GNU General Public License, version 3
+ */
 window.rcmail && rcmail.addEventListener('init', function(evt) {
 	rcmail.register_command('editalbum', edit_album, true);
 	rcmail.register_command('rename_alb', rename_album, true);
