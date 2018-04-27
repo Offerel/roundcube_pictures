@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.3
+ * @version 0.9.4
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -204,7 +204,7 @@ function showPage($thumbnails, $dir) {
 				var len = album_arr.length;
 				var li_str = '<ul class=\"breadcrumb\"><li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php\'\" href=\"#\">Start</a></li>';
 				var path = '';
-				for (var i = 0; i < len; i++) {
+				for (var i = 0; i < len; i++) {	
 					path += encodeURIComponent(album_arr[i]);
 					li_str += '<li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php?p=' + path + '\'\" href=\"#\">' + album_arr[i] + '</a></li>';
 					path += '/';
@@ -252,8 +252,9 @@ function showGallery($requestedDir) {
 				if ($file != "." && $file != "..") {
 					checkpermissions($current_dir."/".$file);
 					
-					if($requestedDir != "")
-						$requestedDir = $requestedDir."/";
+					if($requestedDir != "") {
+						$requestedDir = rtrim($requestedDir,"/")."/";
+					}
 					else
 						$requestedDir = "";
 					
@@ -285,6 +286,7 @@ function showGallery($requestedDir) {
 							$imgUrl = "images/defaultimage.jpg";
 						}
 
+						//$arr_params = array('p' => "$requestedDir$file");
 						$arr_params = array('p' => "$requestedDir$file");
 						$fparams = http_build_query($arr_params,'','&amp;');
 						
@@ -300,7 +302,7 @@ function showGallery($requestedDir) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg") {
 				$filename_caption = "";
 				
-				$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir$file"));
+				$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir/$file"));
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {
@@ -311,7 +313,7 @@ function showGallery($requestedDir) {
 
 					checkpermissions($current_dir."/".$file);
 					
-					$imgParams = http_build_query(array('filename' => "$requestedDir$file"));
+					$imgParams = http_build_query(array('filename' => "$requestedDir/$file"));
 					$imgUrl = "createthumb.php?$imgParams";
 
 					$taken = $exifReaden[5];

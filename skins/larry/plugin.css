@@ -183,29 +183,39 @@
 .breadcrumb {
 	list-style: none;
 	overflow: hidden;
-	font-size: 0.7em;
-	z-index: 100;
+	font-size: 11px;
 	margin: 0;
-	padding: 0;
+	padding: 0 10px;
+	font-family: "Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
+	border: 1px solid #ababab;
+	border-radius: 4px;
+	background: #efefef;
 }
-.breadcrumb li { 
-  float: left; 
+.breadcrumb li {
+	float: left;
+	display: table-cell;
+	vertical-align: middle;
+	height: 26px;
+	line-height: 24px;
 }
 .breadcrumb li a {
-	color: white;
+	color: #333;
 	text-decoration: none;
-	padding: 6px 0px 6px 40px;
-	background: linear-gradient(to right, rgba(75,176,210,0) 0%,rgba(75,176,210,1) 80%,rgba(75,176,210,1) 100%);
 	position: relative;
-	display: block;
-	float: left;
+	vertical-align: middle;
+	height: 26px;
+	font-weight: bold;
 }
+.breadcrumb li a:hover {
+	color: #aaaaaa;
+}
+/*
 .breadcrumb li a::after { 
   content: " "; 
   display: block; 
   width: 0; 
   height: 0;
-  border-top: 50px solid transparent; /* Go big on the size, and let overflow hide */
+  border-top: 50px solid transparent; 
   border-bottom: 50px solid transparent;
   border-left: 30px solid hsla(195, 60%, 56%, 1);
   position: absolute;
@@ -214,28 +224,27 @@
   left: 100%;
   z-index: 2; 
 }
+*/
 #bcn {
 	float: right;
 	top: 5px;
-	font-size: 1.5em;
 	position: relative;
 	right: 15px;
 }
-.breadcrumb li a::before {
-	content: " ";
-	display: block;
-	width: 0;
-	height: 0;
-	border-top: 50px solid transparent;
-	border-bottom: 50px solid transparent;
-	border-left: 30px solid #cad2d9;
-	position: absolute;
-	top: 50%;
-	margin-top: -50px;
-	margin-left: 1px;
-	left: 100%;
-	z-index: 1;
+.breadcrumb li:not(:first-child)::before {
+	content: "›";
+	display: inline-block;
+	vertical-align: top;
+	margin: 0 10px 0 8px;
+	padding: ;
 }
+.breadcrumb li:last-child a {
+  color: #017db6;
+  pointer-events: none;
+  cursor: default;
+}
+
+/*
 .breadcrumb li:first-child a {
   padding-left: 10px;
 }
@@ -262,3 +271,4 @@
 .breadcrumb li a:hover:after { 
   border-left-color: hsla(199, 99%, 36%, 1) !important; 
 }
+*/
