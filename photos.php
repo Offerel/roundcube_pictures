@@ -285,8 +285,6 @@ function showGallery($requestedDir) {
 						else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
-
-						//$arr_params = array('p' => "$requestedDir$file");
 						$arr_params = array('p' => "$requestedDir$file");
 						$fparams = http_build_query($arr_params,'','&amp;');
 						
@@ -378,7 +376,7 @@ function showGallery($requestedDir) {
 				
 				// video files
 				if (preg_match("/\.ogv$|\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
-					$thmbParams = http_build_query(array('filename' => "$requestedDir$file"));
+					$thmbParams = http_build_query(array('filename' => "$requestedDir/$file"));
 					$thmbUrl = "createthumb.php?$thmbParams";
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$files[] = array(
