@@ -130,7 +130,7 @@ function move_picture() {
 	var org_path = document.getElementById('album_org_img').value;
 	var new_path = document.getElementById('album_name_img').value;
 	var album_target = document.querySelector('#mv_target_img #target').value;
-	
+
 	$("#picturescontentframe").contents().find(':checkbox:checked').each(function(){
 		selected.push($(this).val());
 	});
@@ -163,6 +163,8 @@ function mv_img() {
 		var arr = queryString.split('&');
 		for (var i=0; i<arr.length; i++) {
 			var a = arr[i].split('=');
+			if (a[0] == 'p')
+				break;
 		}
 		album = a[1];
 	}
@@ -198,6 +200,8 @@ function delete_picture() {
 		var arr = queryString.split('&');
 		for (var i=0; i<arr.length; i++) {
 			var a = arr[i].split('=');
+			if (a[0] == 'p')
+				break;
 		}
 		album = a[1];
 	}
