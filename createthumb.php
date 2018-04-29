@@ -232,8 +232,8 @@ if ($flip == 'vertical') {
 if ($get_filename_type != "MP4") {
 	ob_start();
 	header("Content-Type: image/jpeg");
-	imagejpeg($target, null, 80);
-	imagedestroy($target);
+	@imagejpeg($target, null, 80);
+	@imagedestroy($target);
 	$cachedImage = ob_get_contents();
 	ob_end_flush();
 

@@ -1,7 +1,9 @@
 #taskbar a.button-pictures span.button-inner {
 	background: url(images/camera002.png) no-repeat;
+	/*
 	width: 24px !important;
 	height: 23px !important;
+	*/
 	background-position: 1px 1px;
 	display: inline-block;
 }
