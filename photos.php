@@ -258,19 +258,14 @@ function showGallery($requestedDir) {
 					else
 						$requestedDir = "";
 					
+					$arr_params = array('p' => $requestedDir.$file);
+					$fparams = http_build_query($arr_params,'','&amp;');
+					
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
 						$imgParams = http_build_query(array('filename' => "$requestedDir$file/folder.jpg"
 															), '', '&amp;');
 						
-						$arr_params = array('p' => $file);
-						$fparams = http_build_query($arr_params,'','&amp;');
-						
 						$imgUrl = "createthumb.php?$imgParams";
-						
-						$dirs[] = array("name" => $file,
-										"date" => filemtime($current_dir."/".$file),
-										"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
-						);
 					}
 					else {
 						unset($firstimage);					
@@ -285,15 +280,13 @@ function showGallery($requestedDir) {
 						else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
-						$arr_params = array('p' => "$requestedDir$file");
-						$fparams = http_build_query($arr_params,'','&amp;');
-						
-						$dirs[] = array("name" => $file,
-										"date" => filemtime($current_dir."/".$file),
-										"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$requestedDir$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
-									);
 					}
 				}
+				
+				$dirs[] = array("name" => $file,
+								"date" => filemtime($current_dir."/".$file),
+								"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
+								);
 			}
 			
 			// Gallery images
