@@ -1,34 +1,88 @@
-#taskbar a.button-pictures span.button-inner {
-	background: url(images/camera002.png) no-repeat;
-	background-position: 1px 1px;
-	display: inline-block;
-}
-#taskbar a.button-pictures:hover span.button-inner, #taskbar a.button-pictures.button-selected span.button-inner {
-	background-position: 1px -26px;
+#taskbar a.button-pictures {
+	background: url(images/photos.png) 0px 1px/23px no-repeat;
 }
 #picturestoolbar {
-	top: -6px;
+	top: -41px;
 	position: absolute;
-	width: 100%;
+	width: calc(100% - 185px);
+	left: 185px;
 }
 .toolbar a.button:focus {
 	color: #fff;
 	background-color: rgba(30,150,192,0.5) !important;
 	border-radius: 3px;
 }
-
+#picturestoolbar a.button {
+	display: block;
+	float: left;
+	color: transparent;
+	height: 32px;
+	width: 32px;
+	padding: 0;
+	margin: 0 5px;
+	overflow: hidden;
+}
 #picturestoolbar a.button.edit {
-	background: url(../../images/button_edit.png) 18px 2px no-repeat transparent;
+	background: url(../../images/button_edit.png) 0 0 no-repeat transparent;
 }
 #picturestoolbar a.button.move {
-	background: url(../../images/button_move.png) 18px 2px no-repeat transparent;
+	background: url(../../images/button_move.png) 0 0 no-repeat transparent;
 }
 #picturestoolbar a.button.delete {
-	background: url(../../images/button_delete.png) 18px 2px no-repeat transparent;
+	background: url(../../images/button_delete.png) 0 0 no-repeat transparent;
 }
 #picturestoolbar .disabled {
 	pointer-events: none;
+	opacity: 0.5;
 }
+#bcn {
+	float: right;
+	top: 5px;
+	position: absolute;
+	right: 0;
+}
+.breadcrumb {
+	list-style: none;
+	overflow: hidden;
+	font-size: 11px;
+	margin: 0;
+	padding: 0 10px;
+	font-family: "Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
+	border: 1px solid #ababab;
+	border-radius: 0;
+	background: unset;
+}
+.breadcrumb li {
+	float: left;
+	display: table-cell;
+	vertical-align: middle;
+	height: 26px;
+	line-height: 24px;
+}
+.breadcrumb li a {
+	color: #333;
+	text-decoration: none;
+	position: relative;
+	vertical-align: middle;
+	height: 26px;
+	font-weight: bold;
+}
+.breadcrumb li a:hover {
+	color: #aaaaaa;
+}
+.breadcrumb li:not(:first-child)::before {
+	content: "›";
+	display: inline-block;
+	vertical-align: top;
+	margin: 0 10px 0 8px;
+	padding: ;
+}
+.breadcrumb li:last-child a {
+  color: #017db6;
+  pointer-events: none;
+  cursor: default;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -38,7 +92,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow: auto;/
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
 }
@@ -84,7 +138,6 @@
     from {top:-300px; opacity:0} 
     to {top:0; opacity:1}
 }
-
 @keyframes animatetop {
     from {top:-300px; opacity:0}
     to {top:0; opacity:1}
@@ -166,51 +219,4 @@
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
-}
-.breadcrumb {
-	list-style: none;
-	overflow: hidden;
-	font-size: 11px;
-	margin: 0;
-	padding: 0 10px;
-	font-family: "Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
-	border: 1px solid #ababab;
-	border-radius: 4px;
-	background: #efefef;
-}
-.breadcrumb li {
-	float: left;
-	display: table-cell;
-	vertical-align: middle;
-	height: 26px;
-	line-height: 24px;
-}
-.breadcrumb li a {
-	color: #333;
-	text-decoration: none;
-	position: relative;
-	vertical-align: middle;
-	height: 26px;
-	font-weight: bold;
-}
-.breadcrumb li a:hover {
-	color: #aaaaaa;
-}
-#bcn {
-	float: right;
-	top: 5px;
-	position: relative;
-	right: 15px;
-}
-.breadcrumb li:not(:first-child)::before {
-	content: "›";
-	display: inline-block;
-	vertical-align: top;
-	margin: 0 10px 0 8px;
-	padding: ;
-}
-.breadcrumb li:last-child a {
-  color: #017db6;
-  pointer-events: none;
-  cursor: default;
 }

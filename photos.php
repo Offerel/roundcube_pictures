@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 0.9.4
+ * @version 1.0.0
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -281,12 +281,12 @@ function showGallery($requestedDir) {
 							$imgUrl = "images/defaultimage.jpg";
 						}
 					}
-				}
-				
-				$dirs[] = array("name" => $file,
+					
+					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
 								"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
 								);
+				}
 			}
 			
 			// Gallery images
