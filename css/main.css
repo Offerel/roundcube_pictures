@@ -7,6 +7,33 @@ html{
 	left: 50%;
 	transform: translate(-50%, -50%);
 }
+.mmn-drop {
+	background: url(../images/upload.png) no-repeat center;
+	background-color: #4788c7;
+	opacity: 0.8;
+	border: 1px dashed #00386f;
+	width: calc(100% - 2px) !important;
+	height: calc(100% - 2px) !important;
+}
+.progress {
+	background-image: -webkit-linear-gradient( -45deg, transparent 33%, rgba(0, 0, 0, .1) 33%, rgba(0, 0, 0, .1) 66%, transparent 66% ), -webkit-linear-gradient( top, rgba(255, 255, 255, .25), rgba(0, 0, 0, .25) ), -webkit-linear-gradient(left, #335EC4, #1F71F4);
+	background-size: 35px 20px, 100% 100%, 100% 100%;
+	height: 15px;
+	position: absolute;
+	bottom: 0px;
+	opacity: 0.6;
+	border-top: 1px solid #0059b1;
+	border-right: 1px solid #00386f;
+	visibility: hidden;
+}
+.progressbar {
+	width: 100%;
+	text-align: center;
+	vertical-align: middle;
+	color: white;
+	font-weight: normal;
+	font-size: 0.8em;
+}
 .jg-entry:hover .icheckbox {
 	visibility: visible;
 }

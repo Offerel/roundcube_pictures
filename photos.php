@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.0.0
+ * @version 1.1.0
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -64,6 +64,53 @@ if(isset($_POST['getsubs'])) {
 	}
 	$select.="</select>";
 	die($select);
+}
+
+if(isset($_FILES['galleryfiles'])) {
+	$files = $_FILES['galleryfiles'];
+	$folder = $_POST['folder'];
+	$aAllowedMimeTypes = [ 'image/jpeg', 'video/mp4' ];
+
+	foreach($_FILES['galleryfiles']['error'] as $key => $error) {
+		$err = 0;
+		if ($error == UPLOAD_ERR_OK) {
+			$tmp_name = $_FILES['galleryfiles']['tmp_name'][$key];
+			$name = basename($_FILES["galleryfiles"]["name"][$key]);
+			
+			if (!in_array($_FILES['galleryfiles']['type'][$key], $aAllowedMimeTypes)) {
+				$errmsg = 'The filetype of \"$name\" is not supported by this script.';
+				$test[] = array('message' => $errmsg, 'type' => 'error');
+				error_log("Pictures Plugin(Photos): $errmsg");
+				$err = 1;
+			}
+			
+			if(file_exists($pictures_path.$folder."/".$name)) {
+				$errmsg = 'The file "'.$folder."/".$name.'" already exists.';
+				$test[] = array('message' => $errmsg, 'type' => 'warning');
+				error_log("Pictures Plugin(Photos): $errmsg");
+				$err = 1;
+			}
+			if($err == 0) {
+				if(!@move_uploaded_file($tmp_name, "$pictures_path$folder/$name")) {
+					$errmsg = 'Upload of "'.$folder."/".$name.'" failed. Please check permissions.';
+					$test[] = array('message' => $errmsg, 'type' => 'error');
+					error_log("Pictures Plugin(Photos): $errmsg");
+				}
+				else {
+					$errmsg = 'Upload successfully.';
+					$test[] = array('message' => $errmsg, 'type' => 'info');
+				}
+			}
+		}
+		else {
+			$errmsg = 'There was some error during upload. Please check your configuration. Exiting now.';
+			error_log("Pictures Plugin(Photos): $errmsg");
+			$test[] = array('message' => $errmsg, 'type' => 'error');
+			break;
+		}
+	}
+	//json_encode($test);
+	die(json_encode($test));
 }
 
 if(isset($_POST['alb_action'])) {
@@ -132,6 +179,7 @@ else {
 }
 
 function showPage($thumbnails, $dir) {
+	$maxfiles = ini_get("max_file_uploads");
 	$page = "
 	<!DOCTYPE html>
 	<html>
@@ -151,7 +199,7 @@ function showPage($thumbnails, $dir) {
 		$('#folders').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 4,
+			margins: 7,
 			border: 0,
 			rel: 'folders',
 			lastRow: 'justify',
@@ -162,7 +210,7 @@ function showPage($thumbnails, $dir) {
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 4,
+			margins: 7,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'justify',
@@ -229,6 +277,98 @@ function showPage($thumbnails, $dir) {
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 			}
 		}
+		
+		var dropZones = document.getElementsByClassName('dropzone');
+		
+		for (var i = 0; i < dropZones.length; i++) {
+			dropZones[i].addEventListener('dragover', handleDragOver, false);
+			dropZones[i].addEventListener('dragleave', handleDragLeave, false);
+			dropZones[i].addEventListener('drop', handleDrop, false);
+		}
+		
+		function handleDragOver(event){
+			event.preventDefault();
+			this.classList.add('mmn-drop');
+		}
+		
+		function handleDragLeave(event){
+			event.preventDefault();
+			this.classList.remove('mmn-drop');
+		}
+		
+		function handleDrop(event){
+			event.stopPropagation();
+			event.preventDefault();
+			this.classList.remove('mmn-drop');
+			var url_parameters = this.parentElement.href.split('?')[1];
+			var params_arr = url_parameters.split('&');
+			var folder = '';
+			for (var i = 0; i < params_arr.length; i++) {
+				var tmparr = params_arr[i].split('=');
+				if(tmparr[0]=='p') {
+					folder = tmparr[1];
+					break;
+				}
+			}
+			startUpload(event.dataTransfer.files, folder);
+		}
+		
+		function startUpload(files, folder) {
+			var formdata = new FormData();
+			xhr = new XMLHttpRequest();
+			var maxfiles = $maxfiles;
+			var mimeTypes = ['image/jpeg', 'video/mp4'];
+			folder = decodeURIComponent(folder);
+			var progressBar = document.getElementById('' + folder + '').getElementsByClassName('progress')[0];
+			if (files.length > maxfiles) {
+				console.log('You try to upload more than the max count of allowed files(' + maxfiles + ')');
+				return false;
+			}
+			else {
+				for (var i = 0; i < files.length; i++) {
+					if (mimeTypes.indexOf(files.item(i).type) == -1) {
+						console.log('Unsupported filetype(' + files.item(i).name + '), exiting');
+						return false;
+				} 
+				else {
+					formdata.append('galleryfiles[]', files.item(i), files.item(i).name);
+					formdata.append('folder',folder);
+				}
+				}
+				
+				xhr.upload.addEventListener('progress', function(event) {
+					var percentComplete = Math.ceil(event.loaded / event.total * 100);
+					progressBar.style.width = percentComplete + '%';
+					progressBar.style.visibility = 'visible';
+					progressBar.firstChild.innerHTML = percentComplete + '%';
+				});
+
+				xhr.onload = function() {
+					if (xhr.status === 200) {
+						data = JSON.parse(xhr.responseText);
+						for (var i = 0; i < data.length; i++) {
+							if(data[i].type == 'error') {
+								progressBar.style.background = 'red';
+								console.log(data[i].message);
+								return false;
+							}
+							if(data[i].type == 'warning') {
+								progressBar.style.background = 'orange';
+								console.log(data[i].message);
+							}
+							else {
+								progressBar.style.background = 'green';
+								console.log(data[i].message);
+							}
+								
+						}
+					}
+				}
+				
+				xhr.open('POST', 'photos.php');
+				xhr.send(formdata);
+			}
+		}
     </script>
 	";	
 
@@ -284,7 +424,7 @@ function showGallery($requestedDir) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "<a href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span>$file</span></a>"
+								"html" => "<a id=\"$requestedDir$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
 								);
 				}
 			}
@@ -303,49 +443,35 @@ function showGallery($requestedDir) {
 					}
 
 					checkpermissions($current_dir."/".$file);
-					
 					$imgParams = http_build_query(array('filename' => "$requestedDir/$file"));
 					$imgUrl = "createthumb.php?$imgParams";
 
 					$taken = $exifReaden[5];
-					
 					$exifInfo = "";
-
 					if($exifReaden[0] != "-" && $exifReaden[8] != "-")
 						$exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
-
 					if($exifReaden[1] != "-")
 						$exifInfo.= $rcmail->gettext('exif_focalength','pictures').": ".$exifReaden[1]."<br>";
-
 					if($exifReaden[3] != "-")
 						$exifInfo.= $rcmail->gettext('exif_fstop','pictures').": ".$exifReaden[3]."<br>";
-
 					if($exifReaden[4] != "-")
 						$exifInfo.= $rcmail->gettext('exif_ISO','pictures').": ".$exifReaden[4]."<br>";
-
 					if($exifReaden[5] != "-") {
 						$dformat = $rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', '');
 						$exifInfo.= $rcmail->gettext('exif_date','pictures').": ".date($dformat, $exifReaden[5])."<br>";
 					}
-
 					if($exifReaden[6] != "-")
 						$exifInfo.= $rcmail->gettext('exif_desc','pictures').": ".$exifReaden[6]."<br>";
-
 					if($exifReaden[9] != "-")
 						$exifInfo.= $rcmail->gettext('exif_sw','pictures').": ".$exifReaden[9]."<br>";
-
 					if($exifReaden[10] != "-")
 						$exifInfo.= $rcmail->gettext('exif_expos','pictures').": ".$exifReaden[10]."<br>";
-
 					if($exifReaden[11] != "-")
 						$exifInfo.= $rcmail->gettext('exif_flash','pictures').": ".$exifReaden[11]."<br>";
-
 					if($exifReaden[12] != "-")
 						$exifInfo.= $rcmail->gettext('exif_meter','pictures').": ".$exifReaden[12]."<br>";
-
 					if($exifReaden[13] != "-")
 						$exifInfo.= $rcmail->gettext('exif_whiteb','pictures').": ".$exifReaden[13]."<br>";
-
 					if($exifReaden[14] != "-" && $exifReaden[15] != "-") {
 						$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
 																'mlon' => str_replace(',','.',$exifReaden[15])
@@ -409,8 +535,9 @@ function showGallery($requestedDir) {
 	}
 
 	// sort images
+	$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
 	if (sizeof($files) > 0) {
-		$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
+		//$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
 		foreach ($files as $key => $row) {
 			if ($row["name"] == "") {
 				unset($files[$key]);
@@ -423,7 +550,6 @@ function showGallery($requestedDir) {
 		$sorting_files = $rcmail->config->get('sorting_files', false);
 		array_multisort($$sorting_files, $rcmail->config->get('sortdir_files', false), $files);
 		
-		// build navigation links
 		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
 		if(isset($_GET['page'])) {
 			$offset_start = ($_GET["page"] * $thumbs_pr_page) - $thumbs_pr_page;
@@ -444,16 +570,15 @@ function showGallery($requestedDir) {
 			$pnavigation.= "<a href=\"?p=$gal&page=$page\">$page</a>";
 		}
 		$pnavigation.= "</div></div>";
-		// navigation links end
 
 		if(sizeof($videos) > 0){
 			foreach($videos as $video) {
 				$hidden_vid.= $video["html"];
 			}
 		}
-		$thumbnails.= "</div>";
+		//$thumbnails.= "</div>";
 	}
-
+	$thumbnails.= "</div>";
 	$thumbnails.= $hidden_vid.$pnavigation;
 	return $thumbnails;
 }
