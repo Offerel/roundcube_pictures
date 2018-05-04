@@ -25,6 +25,9 @@
 #picturestoolbar a.button.edit {
 	background: url(../../images/button_edit.png) 0 0 no-repeat transparent;
 }
+#picturestoolbar a.button.add {
+	background: url(../../images/album_add.png) 0 0 no-repeat transparent;
+}
 #picturestoolbar a.button.move {
 	background: url(../../images/button_move.png) 0 0 no-repeat transparent;
 }
@@ -39,7 +42,7 @@
 	float: right;
 	top: 5px;
 	position: absolute;
-	right: 0;
+	right: -2px;
 }
 .breadcrumb {
 	list-style: none;

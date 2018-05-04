@@ -2,11 +2,11 @@
 $labels = array();
 $labels['pictures'] = 'Photos';
 
-$labels['home'] = "Home"; // Name of home link in breadcrumb navigation
-$labels['new'] = "New"; // Text to display for new images.
-$labels['page'] = "Page"; // Text used for page navigation
-$labels['all'] = "All"; // Text used for link to display all images in one page
-$labels['noimages'] = "No images... yet !"; // Empty folder text
+$labels['home'] = "Home";
+$labels['create'] = "Create";
+$labels['page'] = "Page";
+$labels['all'] = "All";
+$labels['noimages'] = "No images... yet !";
 $labels['edit'] = "Edit";
 $labels['album'] = "Album";
 $labels['new_album'] = "New Album";

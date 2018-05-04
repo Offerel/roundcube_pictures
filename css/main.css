@@ -351,9 +351,9 @@ textarea.edit {
 body {
 	position: relative;
 	font-size: 1.5rem;
-	font-family:Helvetica, Arial, sans-serif;
+	font-family: Helvetica, Arial, sans-serif;
 	color: #333333;
-	margin: 0;
+	margin: 7px;
 	overflow-y: scroll;
 }
 a {

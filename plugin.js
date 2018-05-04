@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.0.0
+ * @version 1.1.1
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -11,26 +11,69 @@ window.rcmail && rcmail.addEventListener('init', function(evt) {
 	rcmail.register_command('rename_alb', rename_album, true);
 	rcmail.register_command('move_alb', move_album, true);
 	rcmail.register_command('delete_alb', delete_album, true);
+	rcmail.register_command('addalbum', add_album, true);
+	rcmail.register_command('add_alb', create_album, true);
 	
 	rcmail.register_command('movepicture', mv_img, true);
 	rcmail.register_command('move_image', move_picture, true);
 	rcmail.register_command('delpicture', delete_picture, true);
 });
 
-function edit_album() {
-	var queryString = window.frames['picturescontentframe'].location.search.slice(1);
-	var album = "";
+function add_album() {
+	var album = get_currentalbum();
+	$('#album_edit').contents().find("h2").html(rcmail.gettext('new_album', 'pictures'));
+	$('#album_org').val(album);
+	$('#album_name').val('');
+	document.getElementById('mv_target').style.display = "none";
+	document.getElementById('albedit').style.display = "none";
+	document.getElementById('albadd').style.display = "block";
+	document.getElementById('album_edit').style.display = "block";
+}
+
+function create_album() {
+	var album_org = document.getElementById('album_org').value;
+	var album_name = document.getElementById('album_name').value;
 	
-	if (queryString) {
+	$.ajax({
+		type: "POST"
+		,url: "plugins/pictures/photos.php"
+		,data: {
+			'alb_action': 'create',
+			'target':	album_name,
+			'src': 		album_org
+		}
+		,success: function(data){
+			if(data == 1) {
+				document.getElementById('album_edit').style.display = "none";
+				document.getElementById('picturescontentframe').contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(album_org);
+				getsubs();
+			}
+		}
+	});
+}
+
+function get_currentalbum() {
+	var queryString = window.frames['picturescontentframe'].location.search.substring(1).replace(/\+/g, '%20');
+	if (queryString != '') {
 		queryString = queryString.split('#')[0];
 		var arr = queryString.split('&');
 		for (var i=0; i<arr.length; i++) {
 			var a = arr[i].split('=');
+			if (a[0] == 'p') {
+				var album = a[1];
+				return album;
+			}
+			else {
+				return false;
+			}
 		}
-		album = a[1];
 	}
+	else
+		return false;
+}
 
-	album = decodeURIComponent(album.replace(/\+/g, ' '));
+function edit_album() {
+	album = decodeURIComponent(get_currentalbum());
 	
 	var arr_album = album.split("/")	
 	var la = arr_album.length - 1;
@@ -42,7 +85,9 @@ function edit_album() {
 	if(document.getElementById('mv_target').innerHTML.indexOf('div') !== -1) {
 		getsubs();
 	}
-
+	document.getElementById('albedit').style.display = "block";
+	document.getElementById('albadd').style.display = "none";
+	document.getElementById('mv_target').style.display = "block";
 	document.getElementById('album_edit').style.display = "block";
 }
 

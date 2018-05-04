@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.1.0
+ * @version 1.1.1
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -116,13 +116,12 @@ if(isset($_FILES['galleryfiles'])) {
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
 	$src = $pictures_path.$_POST['src'];
-	
-	error_log($action);
 
 	switch($action) {
 		case 'move':	$target = $pictures_path.$_POST['target'].basename($src); die(rename($src, $target)); break;
 		case 'rename':	$target = dirname($src)."/".trim(trim($_POST['target']),"/"); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src)); break;
+		case 'create':	die(mkdir(dirname($src)."/".trim(trim($_POST['target']),"/"), 0755, true)); break;
 	}
 	die();
 }
