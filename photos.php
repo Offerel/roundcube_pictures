@@ -345,22 +345,32 @@ function showPage($thumbnails, $dir) {
 				xhr.onload = function() {
 					if (xhr.status === 200) {
 						data = JSON.parse(xhr.responseText);
+						var message = '';
 						for (var i = 0; i < data.length; i++) {
+							
 							if(data[i].type == 'error') {
 								progressBar.style.background = 'red';
 								console.log(data[i].message);
+								message+='<span style=\'text-transform: capitalize; color: red;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: red;\'>' + data[i].message + '</span></br>';
+								window.parent.document.getElementById('info').style.display = 'block';
 								return false;
 							}
 							if(data[i].type == 'warning') {
 								progressBar.style.background = 'orange';
+								message+='<span style=\'text-transform: capitalize; color: orange;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: orange;\'>' + data[i].message + '</span></br>';
+								window.parent.document.getElementById('info').style.display = 'block';
 								console.log(data[i].message);
 							}
 							else {
+								message+='<span style=\'text-transform: capitalize; color: green;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: green;\'>' + data[i].message + '</span></br>';
 								progressBar.style.background = 'green';
 								console.log(data[i].message);
 							}
 								
 						}
+						window.parent.document.getElementById('mheader').innerHTML = 'Upload Messages';
+						window.parent.document.getElementById('modal-body').classList.add('modal-body-text');
+						window.parent.document.getElementById('modal-body').innerHTML = message;
 					}
 				}
 				

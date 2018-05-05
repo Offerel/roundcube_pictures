@@ -11,6 +11,19 @@
 	position: absolute;
 	width: 100%;
 }
+#info {
+	width: 50px;
+	position: relative;
+	background: url(../../images/error.png) 18px 2px no-repeat transparent;
+	height: 30px;
+	margin-left: auto;
+	margin-right: auto;
+	top: 35px;
+	z-index: 1000;
+	margin-top: -30px;
+	cursor: pointer;
+	display: none;
+}
 .toolbar a.button:focus {
 	color: #fff;
 	background-color: rgba(30,150,192,0.5) !important;
@@ -68,6 +81,14 @@
 }
 #albedit, #albadd {
 	display: none;
+}
+.modal-body-text {
+	padding: 2px 8px !important;
+	text-align: left !important;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 #modal-body a.button {
 	width: 24%;
