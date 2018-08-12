@@ -1,11 +1,8 @@
 html{
 	font-size: 62.5%;
 }
-.vdo {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+#galdiv a {
+	border: 1px solid #0000001a;
 }
 .mmn-drop {
 	background: url(../images/upload.png) no-repeat center;

@@ -91,7 +91,7 @@ if(isset($_FILES['galleryfiles'])) {
 				$err = 1;
 			}
 			if($err == 0) {
-				if(!@move_uploaded_file($tmp_name, "$pictures_path$folder/$name")) {
+				if(!move_uploaded_file($tmp_name, "$pictures_path$folder/$name")) {
 					$errmsg = 'Upload of "'.$folder."/".$name.'" failed. Please check permissions.';
 					$test[] = array('message' => $errmsg, 'type' => 'error');
 					error_log("Pictures Plugin(Photos): $errmsg");
@@ -109,7 +109,6 @@ if(isset($_FILES['galleryfiles'])) {
 			break;
 		}
 	}
-	//json_encode($test);
 	die(json_encode($test));
 }
 
