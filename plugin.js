@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.1.1
+ * @version 1.4.0
  * @author Offerel
  * @copyright Copyright (c) 2018, Offerel
  * @license GNU General Public License, version 3
@@ -57,7 +57,7 @@ function get_currentalbum() {
 	if (queryString != '') {
 		queryString = queryString.split('#')[0];
 		var arr = queryString.split('&');
-		for (var i=0; i<arr.length; i++) {
+		for (var i=0; i < arr.length; i++) {
 			var a = arr[i].split('=');
 			if (a[0] == 'p') {
 				var album = a[1];

@@ -1,0 +1,73 @@
+<roundcube:include file="includes/layout.html" />
+<roundcube:include file="includes/menu.html" />
+<h1 class="voice"><roundcube:label name="pictures.pictures" /></h1>
+<div id="content" class="content selected" role="main">
+	<div class="header">
+		<a class="button icon menu-button" href="#menu"><span class="inner"><roundcube:label name="menu" /></span></a>
+		<span class="header-title picturestitle"><roundcube:label name="pictures.pictures" /></span>
+	</div>
+	<div class="iframe-wrapper">	
+		<div id="picturestoolbar" class="toolbar" role="toolbar">
+			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
+			<roundcube:button id="editalbum" command="editalbum" type="link" class="button edit disabled" label="pictures.album" title="pictures.album" />
+			<roundcube:button id="addalbum" command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" />
+			<span class="divider"></span>
+			<roundcube:button id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
+			<roundcube:button id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
+			<div id="bcn"></div>
+		</div>
+		<div id="pluginbody" class="offset">
+			<div class="iframebox pictures_<roundcube:var name='env:action' />">
+				<roundcube:object name="picturescontent" id="picturescontentframe" style="width:100%; height:100%" frameborder="0" src="/watermark.html" />
+			</div>
+		</div>
+		
+		<div id="album_edit" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" onClick="document.getElementById('album_edit').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<h2 id="mheader"></h2>
+				</div>
+				<div id="modal-body" class="modal-body">
+					<form>
+						<input type="text" name="album_name" id="album_name" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
+						<input type="hidden" name="album_org" id="album_org" value="">
+						<div id="mv_target"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
+						<div id="albedit">
+							<roundcube:button command="rename_alb" id="rnb" type="link" class="button disabled" label="pictures.rename">
+							<roundcube:button command="move_alb" id="mvb" type="link" class="button disabled" label="pictures.move">
+							<roundcube:button command="delete_alb" type="link" class="button" label="pictures.delete">
+						</div>
+						<div id="albadd">
+							<roundcube:button command="add_alb" id="addb" type="link" class="button disabled" label="pictures.create">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<h3></h3>
+				</div>
+			</div>
+		</div>
+		
+		<div id="img_edit" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" onClick="document.getElementById('img_edit').style.display='none';return false;">&times;</span>
+					<h2></h2>
+				</div>
+				<div id="modal-body" class="modal-body">
+					<form>
+						<input type="text" name="album_name_img" id="album_name_img" value="">
+						<input type="hidden" name="album_org_img" id="album_org_img" value="">
+						<div id="mv_target_img"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
+						<roundcube:button command="move_image" id="mvb" type="link" class="button disabled" label="pictures.move">
+					</form>
+				</div>
+				<div class="modal-footer">
+					<h3></h3>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<roundcube:include file="includes/footer.html" />
