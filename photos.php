@@ -184,7 +184,7 @@ function showPage($thumbnails, $dir) {
 		<head>
 			<title>$dir</title>
 			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\" />
+			<link rel=\"stylesheet\" href=\"css/main.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
 			
 			<script src=\"../../program/js/jquery.min.js\"></script>

@@ -16,7 +16,7 @@ class pictures extends rcube_plugin
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
 		$this->add_texts('localization/', true);
-		$this->include_stylesheet($this->local_skin_path().'/plugin.css');
+		$this->include_stylesheet($this->local_skin_path().'/plugin.min.css');
 		
 		$this->register_task('pictures');
 		
@@ -57,7 +57,7 @@ class pictures extends rcube_plugin
 	function content($attrib)
 	{
 		$rcmail = rcmail::get_instance();
-		$this->include_script('plugin.js');
+		$this->include_script('plugin.min.js');
 
 		$attrib['src'] = 'plugins/pictures/photos.php';
 
