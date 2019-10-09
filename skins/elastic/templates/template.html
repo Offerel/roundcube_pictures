@@ -4,16 +4,15 @@
 <div id="content" class="content selected" role="main">
 	<div class="header">
 		<a class="button icon menu-button" href="#menu"><span class="inner"><roundcube:label name="menu" /></span></a>
-		<span class="header-title picturestitle"><roundcube:label name="pictures.pictures" /></span>
 	</div>
 	<div class="iframe-wrapper">	
 		<div id="picturestoolbar" class="toolbar" role="toolbar">
 			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
-			<roundcube:button id="editalbum" command="editalbum" type="link" class="button edit disabled" label="pictures.album" title="pictures.album" />
-			<roundcube:button id="addalbum" command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" />
+			<roundcube:button innerclass="inner" id="editalbum" command="editalbum" type="link" class="button edit disabled" label="pictures.album" title="pictures.album" />
+			<roundcube:button innerclass="inner" id="addalbum" command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" />
 			<span class="divider"></span>
-			<roundcube:button id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
-			<roundcube:button id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
+			<roundcube:button innerclass="inner" id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
+			<roundcube:button innerclass="inner" id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
 			<div id="bcn"></div>
 		</div>
 		<div id="pluginbody" class="offset">
