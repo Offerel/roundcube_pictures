@@ -1,6 +1,6 @@
 ### v1.4.2
 - Remove refresh when plugin is loaded
-- Moved project to Codeberg.org
+- Try to move project to Codeberg.org
   
 ### v1.4.1
 - Fix for Roundcube 1.4 RC2
