@@ -2,13 +2,13 @@
 	"name": "offerel/pictures",
 	"description": "A simple pictures/gallery plugin for Roundcube",
 	"keywords": ["pictures","plugin","gallery","photos","images","camera","roundcube"],
-	"homepage": "https://github.com/Offerel/roundcube_primitivenotes",
+	"homepage": "https://codeberg.org/offerel/roundcube_pictures",
 	"type": "roundcube-plugin",
 	"license": "AGPL-3.0",
 	"authors": [
 	{
 		"name": "Offerel",
-		"homepage": "https://github.com/Offerel",
+		"homepage": "https://codeberg.org/offerel",
 		"role": "Developer"
 	}
 	],

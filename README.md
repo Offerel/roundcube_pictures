@@ -6,8 +6,8 @@ I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to 
 # History
 This plugin was originally based on MinigalNano (https://github.com/sebsauvage/MinigalNano), but was changed so far that there is hardly any code left from this project. 
 
-# [Changelog](../../wiki/Changelog)
+# [Changelog](../wiki/Changelog)
 
-# [Installation](../../wiki/Installation)
+# [Installation](../wiki/Installation)
 
-# [FAQ](../../wiki/FAQ)
+# [FAQ](../wiki/FAQ)

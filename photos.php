@@ -4,7 +4,7 @@
  *
  * @version 1.4.2
  * @author Offerel
- * @copyright Copyright (c) 2018, Offerel
+ * @copyright Copyright (c) 2021, Offerel
  * @license GNU General Public License, version 3
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
