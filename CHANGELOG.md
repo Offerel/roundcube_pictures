@@ -1,3 +1,4 @@
+test
 ### v1.4.2
 - Remove refresh when plugin is loaded
 - Try to move project to Codeberg.org
