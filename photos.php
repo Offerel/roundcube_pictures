@@ -2,9 +2,9 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.2
+ * @version 1.4.3
  * @author Offerel
- * @copyright Copyright (c) 2021, Offerel
+ * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
@@ -385,6 +385,10 @@ function showPage($thumbnails, $dir) {
 }
 
 function showGallery($requestedDir) {
+	$files = array();
+	$hidden_vid = "";
+	$pnavigation = "";
+	
 	global $pictures_path, $rcmail, $label_max_length;
 	$thumbdir = rtrim($pictures_path.$requestedDir,'/');
 	$current_dir = $thumbdir;
@@ -521,6 +525,9 @@ function showGallery($requestedDir) {
 		error_log('Pictures Plugin(Photos): Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		die("ERROR: Could not open \"".htmlspecialchars(stripslashes($current_dir))."\" folder for reading!");
 	}
+
+	$thumbnails = "";
+	$start = 0;
 
 	// sort folders
 	if (sizeof($dirs) > 0) {
