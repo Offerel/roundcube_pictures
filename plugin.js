@@ -10,14 +10,19 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
     rcmail.register_command("editalbum", edit_album, !0);
     rcmail.register_command("rename_alb", rename_album, !0);
     rcmail.register_command("move_alb", move_album, !0);
+    rcmail.register_command("to_col", to_collection, !0);
     rcmail.register_command("delete_alb", delete_album, !0);
     rcmail.register_command("addalbum", add_album, !0);
     rcmail.register_command("add_alb", create_album, !0);
     rcmail.register_command("movepicture", mv_img, !0);
     rcmail.register_command("move_image", move_picture, !0);
-    rcmail.register_command("delpicture",
-        delete_picture, !0)
+    rcmail.register_command("delpicture", delete_picture, !0);
 });
+
+function to_collection() {
+    //$("#album_edit").contents().find("h2").html(rcmail.gettext("new_album", "pictures"));
+    $("#album_edit").contents().find("h2").html("New Collection");
+}
 
 function add_album() {
     var a = get_currentalbum();
