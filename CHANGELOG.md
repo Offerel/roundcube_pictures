@@ -1,3 +1,6 @@
+### v1.4.4
+- Fixes for PHP8
+  
 ### v1.4.3
 - Fixes for PHP8
   

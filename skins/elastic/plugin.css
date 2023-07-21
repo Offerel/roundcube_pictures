@@ -49,6 +49,9 @@
 	content: "\f03e";
 	font-weight: normal;
 }
+#picturestoolbar #sharepicture::before {
+	content: "\f14d";
+}
 #picturestoolbar #delpicture::before {
 	content: "\f2ed";
 }

@@ -14,6 +14,7 @@ $labels['rename'] = "Rename";
 $labels['move'] = "Move";
 $labels['move_image'] = "Move picture";
 $labels['delete'] = "Delete";
+$labels['share'] = "Share";
 
 $labels['exif_undefined'] = "Undefined";
 $labels['exif_manual'] = "Manual";

@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.3
+ * @version 1.4.4
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -11,7 +11,6 @@ define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 $rcmail = rcmail::get_instance();
 
-// Login
 if (!empty($rcmail->user->ID)) {
 	$username = $rcmail->user->get_username();
 	$pictures_path = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
@@ -34,8 +33,7 @@ if (!empty($rcmail->user->ID)) {
 			die();
 		}
 	}
-}
-else {
+} else {
 	error_log('Pictures Plugin(Photos): Login failed. User is not logged in.');
 	http_response_code(403);
 	header('location: ../../');
@@ -61,6 +59,18 @@ if(isset($_POST['getsubs'])) {
 		$dir = substr($dir,strlen($pictures_path));
 		if(!strposa($dir, $skip_objects))
 			$select.= "<option>".$dir."</option>";
+	}
+	$select.="</select>";
+	die($select);
+}
+
+if(isset($_POST['getshares'])) {
+	$shares = getExistingShares();
+	$select = "<select name=\"shares\" id=\"shares\" size=\"10\">";
+	foreach ($shares as $share) {
+		$name = $share['shareName'];
+		$id = $share['shareID'];
+		$select.= "<option value=\"$id\">$name</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -170,8 +180,7 @@ if( isset($_GET['p']) ) {
 	guardAgainstDirectoryTraversal($dir);
 	echo showPage(showGallery($dir), $dir);
 	die();
-}
-else {
+} else {
 	echo showPage(showGallery(""), '');
 	die();
 }
@@ -269,10 +278,12 @@ function showPage($thumbnails, $dir) {
 			if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
 				window.parent.document.getElementById('movepicture').classList.remove('disabled');
 				window.parent.document.getElementById('delpicture').classList.remove('disabled');
+				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
 			}
 			else {
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
+				window.parent.document.getElementById('sharepicture').classList.add('disabled');
 			}
 		}
 		
@@ -601,12 +612,25 @@ function showGallery($requestedDir) {
 function getAllSubDirectories($directory, $directory_seperator = "/") {
 	global $rcmail;
 	$dirs = array_map(function($item)use($directory_seperator){return $item.$directory_seperator;},array_filter(glob($directory.'*' ),'is_dir'));
-	foreach($dirs AS $dir)
-	{
+	foreach($dirs AS $dir) {
 		$dirs = array_merge($dirs,getAllSubDirectories($dir,$directory_seperator) );
 	}
 	asort($dirs);
 	return $dirs;
+}
+
+function getExistingShares() {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$user_id = $rcmail->user->ID;
+	$query = "SELECT * FROM picture_shares WHERE user_id = $user_id";
+	$erg = $dbh->query($query);
+	$rowc = $dbh->num_rows();
+	$shares = [];
+	for ($i = 0; $i < $rowc; $i++) {
+		array_push($shares, $dbh->fetch_assoc());
+	}
+	return $shares;
 }
 
 if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', false) == 1) {
@@ -821,6 +845,7 @@ function guardAgainstDirectoryTraversal($path) {
         die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
     }
 }
+
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
 $current_dir = $thumbdir;
 guardAgainstDirectoryTraversal($current_dir);

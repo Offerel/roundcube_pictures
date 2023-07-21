@@ -14,6 +14,7 @@ $labels['rename'] = "Umbenennen";
 $labels['move'] = "Verschieben";
 $labels['move_image'] = "Bild verschieben";
 $labels['delete'] = "Löschen";
+$labels['share'] = "Teilen";
 
 $labels['exif_undefined'] = "Undefiniert";
 $labels['exif_manual'] = "Manuell";
