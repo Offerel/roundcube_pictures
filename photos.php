@@ -70,7 +70,8 @@ if(isset($_POST['getshares'])) {
 	foreach ($shares as $share) {
 		$name = $share['shareName'];
 		$id = $share['shareID'];
-		$select.= "<option value=\"$id\">$name</option>";
+		$link = $share['shareLink'];
+		$select.= "<option value=\"$id\" data-link=\"$link\">$name</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -161,6 +162,10 @@ if(isset($_POST['img_action'])) {
 							unlink($org_path."/".$image);
 						}
 						die(true);
+						break;
+		case 'share':	$bilder = var_dump($images);
+						file_put_contents('/tmp/erg.txt', print_r($_POST, true), FILE_APPEND);
+						//if($_POST['shareid'])
 						break;
 	}
 	die();

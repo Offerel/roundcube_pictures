@@ -79,11 +79,12 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
-						<input type="text" name="share_name" id="share_name" value="" onInput="$('#sharetarget').removeClass('disabled'); $('#addb').removeClass('disabled');">
-						<input type="text" name="lid" id="lid" value="">
+						<input type="text" name="sname" id="sname" value="" >
+						<input type="text" name="slink" id="slink" value="">
+						<input type="text" name="sid" id="sid" value="">
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<div id="shareedit">
-							<roundcube:button command="ca_share" type="link" class="button" label="pictures.share">
+							<roundcube:button command="sharepic" id="sbtn" type="link" class="button" label="pictures.share">
 						</div>
 					</form>
 				</div>

@@ -11,26 +11,47 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
 	rcmail.register_command("sharepicture", selectShare, !0);
+	rcmail.register_command("sharepic", sharepicture, !0);
 	rcmail.register_command("delete_alb", delete_album, !0);
 	rcmail.register_command("addalbum", add_album, !0);
 	rcmail.register_command("add_alb", create_album, !0);
 	rcmail.register_command("movepicture", mv_img, !0);
 	rcmail.register_command("move_image", move_picture, !0);
 	rcmail.register_command("delpicture", delete_picture, !0);
+
+	document.getElementById('sname').addEventListener('input', function(e) {
+		const snames = [];
+		const slinks = [];
+		let shares = document.getElementById("shares");
+		for (i = 0; i < shares.length; i++) {
+			snames.push(shares.options[i].text);
+			slinks.push(shares.options[i].dataset.link);
+		}
+
+		if(!snames.includes(document.getElementById('sname').value) && slinks.includes(document.getElementById('slink').value)) {
+			document.getElementById('slink').value = makeid(55);
+			document.getElementById('sid').value = '';
+		}
+	});
 });
 
-function selectShare() {
-	const randomAlphaNumeric = length => {
-		let s = '';
-		Array.from({ length }).some(() => {
-			s += Math.random().toString(36).slice(2);
-			return s.length >= length;
-		});
-		return s.slice(0, length);
-	};
+function makeid(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+}
 
+function selectShare() {
 	getshares();
-	document.getElementById('lid').value = randomAlphaNumeric(55);
+	document.getElementById('slink').value = makeid(55);
+	document.getElementById('sid').value = '';
+	document.getElementById('sname').value = '';
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
 }
@@ -105,7 +126,9 @@ function getshares() {
 		success: function(a) {
 			$("#share_target").html(a);
 			document.getElementById('shares').addEventListener('change', function(name){
-				console.log(name.target.option);
+				document.getElementById('sname').value = name.target.selectedOptions[0].text;
+				document.getElementById('sid').value = name.target.selectedOptions[0].value;
+				document.getElementById('slink').value = name.target.selectedOptions[0].dataset.link;
 			});
 		}
 	})
@@ -160,6 +183,29 @@ function delete_album() {
 			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs())
 		}
 	})
+}
+
+function sharepicture() {
+	var pictures = [];
+	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
+		const urlParams = new URL($(this)[0].previousElementSibling.href).searchParams;
+		pictures.push(urlParams.get('file'));
+	});
+
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			img_action: "share",
+			images: pictures,
+			shareid: document.getElementById('sid').value,
+			sharename: document.getElementById('sname').value,
+			sharelink: document.getElementById('slink').value
+		},
+		success: function(a) {
+			//1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0))
+		}
+	});
 }
 
 function move_picture() {
