@@ -11,8 +11,7 @@ class pictures extends rcube_plugin
 {
 	public $task = '?(?!login|logout).*';
 	
-	public function init()
-	{
+	public function init() {
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
 		$this->add_texts('localization/', true);
@@ -45,26 +44,20 @@ class pictures extends rcube_plugin
 		$rcmail->output->send('pictures.template');
 	}
 	
-	function action()
-	{
+	function action() {
 		$rcmail = rcmail::get_instance();	
-
 		$rcmail->output->add_handlers(array('picturescontent' => array($this, 'content'),));
 		$rcmail->output->set_pagetitle($this->gettext('pictures'));
 		$rcmail->output->send('pictures.template');
 	}
 	
-	function content($attrib)
-	{
+	function content($attrib) {
 		$rcmail = rcmail::get_instance();
 		$this->include_script('js/plugin.js');
-
 		$attrib['src'] = 'plugins/pictures/photos.php';
-
 		if (empty($attrib['id']))
 			$attrib['id'] = 'rcmailpicturescontent';
 		$attrib['name'] = $attrib['id'];
-
 		return $rcmail->output->frame($attrib);
 	}
 }

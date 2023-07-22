@@ -66,7 +66,7 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select name=\"shares\" id=\"shares\" size=\"10\">";
+	$select = "<select name=\"shares\" id=\"shares\" >";
 	foreach ($shares as $share) {
 		$name = $share['shareName'];
 		$id = $share['shareID'];
@@ -137,6 +137,9 @@ if(isset($_POST['alb_action'])) {
 }
 
 if(isset($_POST['img_action'])) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$user_id = $rcmail->user->ID;
 	$action = $_POST['img_action'];	
 	$images = $_POST['images'];
 	$org_path = $pictures_path.urldecode($_POST['orgPath']);
@@ -163,9 +166,38 @@ if(isset($_POST['img_action'])) {
 						}
 						die(true);
 						break;
-		case 'share':	$bilder = var_dump($images);
-						file_put_contents('/tmp/erg.txt', print_r($_POST, true), FILE_APPEND);
-						//if($_POST['shareid'])
+		case 'share':	$shareid = $_POST['shareid'];
+						$cdate = date("Y-m-d");
+						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate":$_POST['sharename'];
+						$sharelink = bin2hex(random_bytes(25));
+						$edate = intval($_POST['expiredate']);
+						$expiredate = ($edate > 0) ? $edate:"NULL";
+						$dbh = rcmail_utils::db();
+
+						if(empty($shareid)) {
+							$query = "INSERT INTO 'pic_shares' ('shareName','shareLink','expireDate','user_id') VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
+							$ret = $dbh->query($query);
+							if ($ret === false) {
+								$dbid = "";
+							} else {
+								$dbid = $dbh->insert_id("pic_shares");
+							}
+
+							foreach($images as $image) {
+								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath') VALUES ('$dbid','$image')";
+								$ret = $dbh->query($query);
+							}
+						} else {
+							foreach($images as $image) {
+								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath') VALUES ('$shareid','$image')";
+								$ret = $dbh->query($query);
+							}
+							$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
+							
+							$dbh->query($query);
+							$sharelink = $dbh->fetch_assoc()['shareLink'];
+						}
+						die($sharelink);
 						break;
 	}
 	die();
@@ -628,7 +660,7 @@ function getExistingShares() {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$query = "SELECT * FROM picture_shares WHERE user_id = $user_id";
+	$query = "SELECT * FROM pic_shares WHERE user_id = $user_id";
 	$erg = $dbh->query($query);
 	$rowc = $dbh->num_rows();
 	$shares = [];

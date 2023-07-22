@@ -79,10 +79,11 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
-						<input type="text" name="sname" id="sname" value="" >
-						<input type="text" name="slink" id="slink" value="">
-						<input type="text" name="sid" id="sid" value="">
+						<input type="text" id="sname">
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
+						<input type="hidden" id="sid">
+						<input type="date" id="expiredate">
+						<input type="text" id="link">
 						<div id="shareedit">
 							<roundcube:button command="sharepic" id="sbtn" type="link" class="button" label="pictures.share">
 						</div>

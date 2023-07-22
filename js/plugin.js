@@ -21,37 +21,25 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 
 	document.getElementById('sname').addEventListener('input', function(e) {
 		const snames = [];
-		const slinks = [];
 		let shares = document.getElementById("shares");
 		for (i = 0; i < shares.length; i++) {
 			snames.push(shares.options[i].text);
-			slinks.push(shares.options[i].dataset.link);
 		}
 
-		if(!snames.includes(document.getElementById('sname').value) && slinks.includes(document.getElementById('slink').value)) {
-			document.getElementById('slink').value = makeid(55);
+		if(!snames.includes(document.getElementById('sname').value)) {
 			document.getElementById('sid').value = '';
+			document.getElementById('expiredate').value = '';
+			document.getElementById('link').value = '';
 		}
 	});
 });
 
-function makeid(length) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
-}
-
 function selectShare() {
 	getshares();
-	document.getElementById('slink').value = makeid(55);
 	document.getElementById('sid').value = '';
 	document.getElementById('sname').value = '';
+	document.getElementById('expiredate').value = '';
+	document.getElementById('link').value = '';
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
 }
@@ -128,7 +116,7 @@ function getshares() {
 			document.getElementById('shares').addEventListener('change', function(name){
 				document.getElementById('sname').value = name.target.selectedOptions[0].text;
 				document.getElementById('sid').value = name.target.selectedOptions[0].value;
-				document.getElementById('slink').value = name.target.selectedOptions[0].dataset.link;
+				document.getElementById('link').value = '';
 			});
 		}
 	})
@@ -191,7 +179,7 @@ function sharepicture() {
 		const urlParams = new URL($(this)[0].previousElementSibling.href).searchParams;
 		pictures.push(urlParams.get('file'));
 	});
-
+	
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -200,10 +188,13 @@ function sharepicture() {
 			images: pictures,
 			shareid: document.getElementById('sid').value,
 			sharename: document.getElementById('sname').value,
-			sharelink: document.getElementById('slink').value
+			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000)
 		},
 		success: function(a) {
-			//1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0))
+			let link = document.getElementById('link');
+			link.value = a;
+			link.style.visibility = "visible";
+			document.getElementById('sbtn').style.visibility = "hidden";
 		}
 	});
 }

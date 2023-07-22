@@ -1,6 +1,9 @@
 #taskmenu a.pictures::before{
     content:"\f03e"
 }
+#link {
+	visibility: hidden;
+}
 .iframebox.pictures_{
     height:100%
 }
