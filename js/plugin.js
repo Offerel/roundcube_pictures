@@ -40,6 +40,7 @@ function selectShare() {
 	document.getElementById('sname').value = '';
 	document.getElementById('expiredate').value = '';
 	document.getElementById('link').value = '';
+	document.getElementById('sbtn').style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
 }

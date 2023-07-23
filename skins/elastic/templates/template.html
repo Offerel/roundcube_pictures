@@ -77,11 +77,13 @@
 					<span class="close" onClick="document.getElementById('share_edit').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
 					<h2 id="sheader"></h2>
 				</div>
-				<div id="modal-body" class="modal-body">
+				<div id="modal-body" class="modal-body sebody">
 					<form>
+						<label for="sname">Share Name</label>
 						<input type="text" id="sname">
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<input type="hidden" id="sid">
+						<label for="edate">Expire Date</label>
 						<input type="date" id="expiredate">
 						<input type="text" id="link">
 						<div id="shareedit">

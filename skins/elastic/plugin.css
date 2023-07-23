@@ -1,9 +1,3 @@
-#taskmenu a.pictures::before{
-    content:"\f03e"
-}
-#link {
-	visibility: hidden;
-}
 .iframebox.pictures_{
     height:100%
 }
@@ -297,4 +291,36 @@
     color:#017db6;
     pointer-events:none;
     cursor:default
+}
+#taskmenu a.pictures::before{
+    content:"\f03e"
+}
+#share_edit #link {
+	visibility: hidden;
+}
+#share_edit label {
+	text-align: left;
+	width: 100%;
+	margin-bottom: 0;
+}
+#share_edit input {
+	margin: 0 0 12px;
+	height: unset;
+}
+#shareedit {
+	text-align: center;
+}
+.sebody {
+    text-align:left !important;
+}
+#sname {
+	width: calc(100% - 20px) !important;
+	position: relative;
+	z-index: 2;
+}
+#share_target {
+	top: 23px;
+	position: absolute;
+	z-index: 1;
+	width: calc(100% - 33px);
 }

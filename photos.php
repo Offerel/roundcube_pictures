@@ -66,7 +66,7 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select name=\"shares\" id=\"shares\" >";
+	$select = "<select id=\"shares\" >";
 	foreach ($shares as $share) {
 		$name = $share['shareName'];
 		$id = $share['shareID'];
@@ -541,8 +541,7 @@ function showGallery($requestedDir) {
 					
 					if(count(exifReaden) > 0) {
 						$caption = "$file<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
-					}
-					else {
+					} else {
 						$caption = "$file";
 					}
 					
