@@ -16,14 +16,22 @@ $basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path'
 
 $shareID = $shares['shareID'];
 $shareName = $shares['shareName'];
-$query = "SELECT picturePath FROM pic_pictures WHERE shareID = $shareID";
+$query = "SELECT picturePath, pictureEXIF FROM pic_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
 $res = $dbh->query($query);
 $rc = $dbh->num_rows($res);
 
+/*
 for ($x = 0; $x < $rc; $x++) {
-	//$pictures[] = $basepath . "/" . $dbh->fetch_array($result)[0];
 	$pictures[] = $dbh->fetch_array($result)[0];
 }
+*/
+
+for ($x = 0; $x < $rc; $x++) {
+	$pictures[] = $dbh->fetch_array($result);
+}
+
+//file_put_contents("/tmp/erg.txt", print_r($pictures), FILE_APPEND);
+//die();
 
 /*
 foreach($pictures as $picture) {
@@ -42,64 +50,49 @@ foreach($pictures as $picture) {
 $thumbnails = "\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
 
 foreach($pictures as $picture) {
-	/*
-	if (preg_match("/.jpeg$|.jpg$/i", $picture)) {
-		if ($config['display_exif'] == 1 && preg_match("/.jpg$|.jpeg$/i", $picture)) {
-			$exifReaden = readEXIF($basepath . "/" . $picture);
-		} else {
-			$exifReaden = array();
-		}
-
-		checkpermissions($basepath . "/" . $picture);
-		//$imgParams = http_build_query(array('filename' => "$requestedDir/$file"));
-		//$imgUrl = "createthumb.php?$imgParams";
-
-		$taken = $exifReaden[5];
-		$exifInfo = "";
-		if($exifReaden[0] != "-" && $exifReaden[8] != "-")
-			$exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
-		if($exifReaden[1] != "-")
-			$exifInfo.= $rcmail->gettext('exif_focalength','pictures').": ".$exifReaden[1]."<br>";
-		if($exifReaden[3] != "-")
-			$exifInfo.= $rcmail->gettext('exif_fstop','pictures').": ".$exifReaden[3]."<br>";
-		if($exifReaden[4] != "-")
-			$exifInfo.= $rcmail->gettext('exif_ISO','pictures').": ".$exifReaden[4]."<br>";
-		if($exifReaden[5] != "-") {
-			$dformat = $rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', '');
-			$exifInfo.= $rcmail->gettext('exif_date','pictures').": ".date($dformat, $exifReaden[5])."<br>";
-		}
-		if($exifReaden[6] != "-")
-			$exifInfo.= $rcmail->gettext('exif_desc','pictures').": ".$exifReaden[6]."<br>";
-		if($exifReaden[9] != "-")
-			$exifInfo.= $rcmail->gettext('exif_sw','pictures').": ".$exifReaden[9]."<br>";
-		if($exifReaden[10] != "-")
-			$exifInfo.= $rcmail->gettext('exif_expos','pictures').": ".$exifReaden[10]."<br>";
-		if($exifReaden[11] != "-")
-			$exifInfo.= $rcmail->gettext('exif_flash','pictures').": ".$exifReaden[11]."<br>";
-		if($exifReaden[12] != "-")
-			$exifInfo.= $rcmail->gettext('exif_meter','pictures').": ".$exifReaden[12]."<br>";
-		if($exifReaden[13] != "-")
-			$exifInfo.= $rcmail->gettext('exif_whiteb','pictures').": ".$exifReaden[13]."<br>";
-		if($exifReaden[14] != "-" && $exifReaden[15] != "-") {
-			$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
-													'mlon' => str_replace(',','.',$exifReaden[15])
-												),'','&amp;');
-			$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
-		}
-		
-		if(count(exifReaden) > 0) {
-			$caption = $file['basename']."<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
-		} else {
-			$caption = $file['basename'];
-		}
+	$exifReaden = json_decode($picture[1]);
+	$exifInfo = "";
+	if($exifReaden[0] != "-" && $exifReaden[8] != "-")
+		$exifInfo.= "Camera: ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
+	if($exifReaden[1] != "-")
+		$exifInfo.= "FocalLength: ".$exifReaden[1]."<br>";
+	if($exifReaden[3] != "-")
+		$exifInfo.= "F-stop: ".$exifReaden[3]."<br>";
+	if($exifReaden[4] != "-")
+		$exifInfo.= "ISO: ".$exifReaden[4]."<br>";
+	if($exifReaden[5] != "-")
+		$exifInfo.= "Date: ".date("d.m.Y H:i", $exifReaden[5])."<br>";
+	if($exifReaden[6] != "-")
+		$exifInfo.= "Description: ".$exifReaden[6]."<br>";
+	if($exifReaden[9] != "-")
+		$exifInfo.= "Software: ".$exifReaden[9]."<br>";
+	if($exifReaden[10] != "-")
+		$exifInfo.= "Exposure: ".$exifReaden[10]."<br>";
+	if($exifReaden[11] != "-")
+		$exifInfo.= "Flash: ".$exifReaden[11]."<br>";
+	if($exifReaden[12] != "-")
+		$exifInfo.= "Metering Mode: ".$exifReaden[12]."<br>";
+	if($exifReaden[13] != "-")
+		$exifInfo.= "Whitebalance: ".$exifReaden[13]."<br>";
+	if($exifReaden[14] != "-" && $exifReaden[15] != "-") {
+		$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
+												'mlon' => str_replace(',','.',$exifReaden[15])
+											),'','&amp;');
+		$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>Show on map</a>";
 	}
-	*/
-	$file = pathinfo($picture);
-	$caption = $file['basename'];
-	$params = rawurlencode($picture);
-	$imgUrl = "createthumb.php?filename=$params";
-	$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$picture"));
-	$thumbnails.= "\n\t\t\t\t\t<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$caption\" /></a></div>";
+		
+	if(count(exifReaden) > 0) {
+		$caption = $file['basename']."<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
+	} else {
+		$caption = $file['basename'];
+	}
+
+	$file = pathinfo($picture[0]);
+	$img_name = $file['basename'];
+	$params = rawurlencode($picture[0]);
+	$imgUrl = "createthumb2.php?filename=$params";
+	$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode($picture[0]));
+	$thumbnails.= "\n\t\t\t\t\t<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$img_name\" /></a></div>";
 }
 
 $thumbnails.= "\n\t\t\t\t</div>";

@@ -137,7 +137,7 @@ if(isset($_POST['alb_action'])) {
 }
 
 if(isset($_POST['img_action'])) {
-	global $rcmail;
+	global $rcmail, $pictures_path;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
 	$action = $_POST['img_action'];	
@@ -178,25 +178,47 @@ if(isset($_POST['img_action'])) {
 							$query = "INSERT INTO 'pic_shares' ('shareName','shareLink','expireDate','user_id') VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
 							if ($ret === false) {
-								$dbid = "";
+								$shareid = "";
 							} else {
-								$dbid = $dbh->insert_id("pic_shares");
+								$shareid = $dbh->insert_id("pic_shares");
 							}
-
+							/*
 							foreach($images as $image) {
-								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath') VALUES ('$dbid','$image')";
+								$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
+								$taken = $exifReaden[5];
+								$exifJSON = json_encode($exifReaden);
+								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
 								$ret = $dbh->query($query);
 							}
-						} else {
+							*/
+						} //else {
+							/*
 							foreach($images as $image) {
-								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath') VALUES ('$shareid','$image')";
+								$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
+								$taken = $exifReaden[5];
+								$exifJSON = json_encode($exifReaden);
+								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
 								$ret = $dbh->query($query);
-							}
+							}*/
+							/*
 							$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
-							
 							$dbh->query($query);
 							$sharelink = $dbh->fetch_assoc()['shareLink'];
+							*/
+						//}
+
+						foreach($images as $image) {
+							$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
+							$taken = $exifReaden[5];
+							$exifJSON = json_encode($exifReaden);
+							$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
+							$ret = $dbh->query($query);
 						}
+
+						$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
+						$dbh->query($query);
+						$sharelink = $dbh->fetch_assoc()['shareLink'];
+
 						die($sharelink);
 						break;
 	}
@@ -599,7 +621,6 @@ function showGallery($requestedDir) {
 	// sort images
 	$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
 	if (sizeof($files) > 0) {
-		//$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
 		foreach ($files as $key => $row) {
 			if ($row["name"] == "") {
 				unset($files[$key]);
@@ -721,7 +742,7 @@ function parse_fraction($v, $round = 0) {
 function readEXIF($file) {
 	global $rcmail;
 	$exif_arr = array();
-	$exif_data = @exif_read_data($file);
+	$exif_data = exif_read_data($file);
 
 	if(count($exif_data) > 0) {
 		//0
