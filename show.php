@@ -16,7 +16,7 @@ $basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path'
 
 $shareID = $shares['shareID'];
 $shareName = $shares['shareName'];
-$query = "SELECT picturePath, pictureEXIF FROM pic_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
+$query = "SELECT picturePath, pictureEXIF, pictureID FROM pic_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
 $res = $dbh->query($query);
 $rc = $dbh->num_rows($res);
 
@@ -29,23 +29,6 @@ for ($x = 0; $x < $rc; $x++) {
 for ($x = 0; $x < $rc; $x++) {
 	$pictures[] = $dbh->fetch_array($result);
 }
-
-//file_put_contents("/tmp/erg.txt", print_r($pictures), FILE_APPEND);
-//die();
-
-/*
-foreach($pictures as $picture) {
-	$file = pathinfo($picture);
-	$taken = 123456789;
-	$caption = "Bild";
-	$files[] = array(
-		"name" => $file['basename'],
-		"date" => $taken,
-		"size" => filesize($picture),
-		"html" => "<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$file\" /></a></div>"
-	);
-}
-*/
 
 $thumbnails = "\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
 
@@ -90,8 +73,10 @@ foreach($pictures as $picture) {
 	$file = pathinfo($picture[0]);
 	$img_name = $file['basename'];
 	$params = rawurlencode($picture[0]);
-	$imgUrl = "createthumb2.php?filename=$params";
-	$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode($picture[0]));
+	//$imgUrl = "createthumb2.php?filename=$params";
+	$imgUrl = "simg.php?p=".$picture[2]."&t=1";
+	//$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode($picture[0]));
+	$linkUrl = "simg.php?p=".$picture[2]."&t=2";
 	$thumbnails.= "\n\t\t\t\t\t<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$img_name\" /></a></div>";
 }
 
