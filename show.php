@@ -20,12 +20,6 @@ $query = "SELECT picturePath, pictureEXIF, pictureID FROM pic_pictures WHERE sha
 $res = $dbh->query($query);
 $rc = $dbh->num_rows($res);
 
-/*
-for ($x = 0; $x < $rc; $x++) {
-	$pictures[] = $dbh->fetch_array($result)[0];
-}
-*/
-
 for ($x = 0; $x < $rc; $x++) {
 	$pictures[] = $dbh->fetch_array($result);
 }
@@ -73,9 +67,7 @@ foreach($pictures as $picture) {
 	$file = pathinfo($picture[0]);
 	$img_name = $file['basename'];
 	$params = rawurlencode($picture[0]);
-	//$imgUrl = "createthumb2.php?filename=$params";
 	$imgUrl = "simg.php?p=".$picture[2]."&t=1";
-	//$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode($picture[0]));
 	$linkUrl = "simg.php?p=".$picture[2]."&t=2";
 	$thumbnails.= "\n\t\t\t\t\t<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$img_name\" /></a></div>";
 }
@@ -89,7 +81,6 @@ $page = "<!DOCTYPE html>
 			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/main.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
-			
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/jquery.justifiedGallery.min.js\"></script>
 			<script src=\"js/lightgallery-all.min.js\"></script>";

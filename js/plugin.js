@@ -177,8 +177,10 @@ function delete_album() {
 function sharepicture() {
 	var pictures = [];
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		const urlParams = new URL($(this)[0].previousElementSibling.href).searchParams;
-		pictures.push(urlParams.get('file'));
+		const urlParams = new URL($(this)[0].previousElementSibling.firstChild.src).searchParams;
+		//console.log(urlParams.get('filename'));		
+		//const urlParams = new URL($(this)[0].previousElementSibling.href).searchParams;
+		pictures.push(urlParams.get('filename'));
 	});
 	
 	$.ajax({

@@ -10,8 +10,7 @@
 $modes = array("clean","add","all");
 if(!in_array($argv[1], $modes)) {
 	die("No working mode given, please specify one mode. Allowed modes are \"add\", \"clean\" or \"all\".\n");
-} 
-else {
+} else {
 	$mode = $argv[1];
 }
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');

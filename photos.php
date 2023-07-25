@@ -173,7 +173,7 @@ if(isset($_POST['img_action'])) {
 						$edate = intval($_POST['expiredate']);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
 						$dbh = rcmail_utils::db();
-
+						
 						if(empty($shareid)) {
 							$query = "INSERT INTO 'pic_shares' ('shareName','shareLink','expireDate','user_id') VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
@@ -209,9 +209,24 @@ if(isset($_POST['img_action'])) {
 
 						foreach($images as $image) {
 							$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
-							$taken = $exifReaden[5];
-							$exifJSON = json_encode($exifReaden);
-							$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
+							
+							if(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
+								$ffmpeg = exec("which ffmpeg");
+								$command = $ffmpeg." -i ".$pictures_path.$image." 2>&1";
+								$meta = shell_exec($command);
+								foreach(preg_split("/((\r?\n)|(\r\n?))/", $meta) as $line){
+									$pos = strpos($line, 'creation_time');
+									if(strpos($line, 'creation_time')) {
+										$timee = explode(' : ', $line)[1];
+									}
+								}
+							}
+
+							$mp4taken = strtotime($timee);
+							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
+							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
+							$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken, '$exifJSON')";
+							file_put_contents("/tmp/erg.txt", $query."\n", FILE_APPEND);
 							$ret = $dbh->query($query);
 						}
 
