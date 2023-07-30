@@ -1,4 +1,12 @@
 <?php
+/**
+ * Roundcube Pictures Plugin
+ *
+ * @version 1.4.4
+ * @author Offerel
+ * @copyright Copyright (c) 2023, Offerel
+ * @license GNU General Public License, version 3
+ */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/iniset.php';
 include_once('config.inc.php');
@@ -24,9 +32,10 @@ for ($x = 0; $x < $rc; $x++) {
 	$pictures[] = $dbh->fetch_array($result);
 }
 
-$thumbnails = "\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
+$thumbnails = "\n\t\t\t<div id=\"images\" class=\"justified-gallery shared\">";
 
 foreach($pictures as $picture) {
+	$type = explode('/',mime_content_type($basepath.'/'.$picture[0]))[0];
 	$exifReaden = json_decode($picture[1]);
 	$exifInfo = "";
 	if($exifReaden[0] != "-" && $exifReaden[8] != "-")
@@ -55,61 +64,56 @@ foreach($pictures as $picture) {
 		$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
 												'mlon' => str_replace(',','.',$exifReaden[15])
 											),'','&amp;');
-		$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>Show on map</a>";
+		$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'>Show on map</a>";
 	}
-		
-	if(count(exifReaden) > 0) {
-		$caption = $file['basename']."<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
+
+	$ecount = count($exifReaden);
+
+	$imgid = $picture[2];
+	$imgUrl = 'simg.php?p='.$imgid.'&t=1';
+	$linkUrl = 'simg.php?p='.$imgid.'&t=2';
+
+	if($ecount > 1) {
+		$caption = "<span id='exif_$imgid' class='exinfo'>$exifInfo</span>";
 	} else {
-		$caption = $file['basename'];
+		$caption = "";
 	}
 
 	$file = pathinfo($picture[0]);
 	$img_name = $file['basename'];
-	$params = rawurlencode($picture[0]);
-	$imgUrl = "simg.php?p=".$picture[2]."&t=1";
-	$linkUrl = "simg.php?p=".$picture[2]."&t=2";
-	$thumbnails.= "\n\t\t\t\t\t<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$img_name\" /></a></div>";
+
+	$thumbnails.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$caption";
 }
 
-$thumbnails.= "\n\t\t\t\t</div>";
+$thumbnails.= "\n\t\t\t</div>";
 
 $page = "<!DOCTYPE html>
 	<html>
 		<head>
-			<title>$shareName</title>
-			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"css/main.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
-			<script src=\"../../program/js/jquery.min.js\"></script>
-			<script src=\"js/jquery.justifiedGallery.min.js\"></script>
-			<script src=\"js/lightgallery-all.min.js\"></script>";
-	$page.= "\n\t\t</head>\n\t\t<body>\n\t\t\t<div id=\"galdiv\">\n";
-	$page.= $thumbnails;
-	$page.="
-	<script>	
-		$('#images').justifiedGallery({
-			rowHeight: 220,
-			maxRowHeight: 220,
-			margins: 7,
-			border: 0,
-			rel: 'gallery',
-			lastRow: 'justify',
-			captions: true,
-			randomize: false
-		}).on('jg.complete', function () {
-			$('#images').lightGallery({
-				share: false,
-				download: true,
-				fullScreen: false,
-				pager: false,
-				autoplay: false,
-				selector: '.image'
-			});
-		});
-    </script>
-	";	
-	$page.= "</div></body></html>";
+			<meta charset='UTF-8'>
+			<meta http-equiv='X-UA-Compatible' content='IE=Edge'>
+			<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
 
+			<link rel='apple-touch-icon' sizes='180x180' href='images/apple-touch-icon.png'>
+			<link rel='icon' type='image/png' sizes='32x32' href='images/favicon-32x32.png'>
+			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
+
+			<title>$shareName</title>
+			<link rel='stylesheet' href='css/justifiedGallery.min.css' type='text/css' />
+			<link rel='stylesheet' href='css/main.min.css' type='text/css' />
+			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
+			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
+
+			<script src='../../program/js/jquery.min.js'></script>
+			<script src='js/jquery.justifiedGallery.min.js'></script>
+			<script src='js/glightbox/glightbox.min.js'></script>
+			<script src='js/plyr/plyr.js'></script>
+			<script src='js/plugin.min.js'></script>
+			";
+	$page.= "\n\t\t</head>\n\t\t<body>";
+	$page.= "\n\t\t\t<div id='header'><h2>$shareName</h2>";
+	$page.= "\n\t\t\t</div>";
+	$page.= $thumbnails;
+	$page.= "\n\t\t</body>\n\t</html>";
 	echo $page;
 ?>

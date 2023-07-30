@@ -54,11 +54,11 @@ $skip_objects = $rcmail->config->get('skip_objects', false);
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
-	$select = "<select name=\"target\" id=\"target\" size=\"10\" onchange=\"$('#mvb').removeClass('disabled');\">";
+	$select = "<select name='target' id='target'>";
 	foreach ($subdirs as $dir) {
-		$dir = substr($dir,strlen($pictures_path));
+		$dir = rtrim(substr($dir,strlen($pictures_path)),'/');
 		if(!strposa($dir, $skip_objects))
-			$select.= "<option>".$dir."</option>";
+			$select.= "<option>$dir</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -142,27 +142,24 @@ if(isset($_POST['img_action'])) {
 	$user_id = $rcmail->user->ID;
 	$action = $_POST['img_action'];	
 	$images = $_POST['images'];
-	$org_path = $pictures_path.urldecode($_POST['orgPath']);
-	$album_target = $pictures_path.$_POST['target'];
+	$org_path = urldecode($_POST['orgPath']);
+	$album_target = rtrim($_POST['target'],'/');	
 
 	switch($action) {
 		case 'move':	if($_POST['newPath'] != "") {
-							$newPath = $_POST['newPath']."/";
-							if (!is_dir($album_target.$newPath)) {
-								mkdir($album_target.$newPath, 0755, true);
+							$newPath = $_POST['newPath'];
+							if (!is_dir($pictures_path.$album_target.$newPath)) {
+								mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 							}
 						}
-						else {
-							$newPath = "";
-						}
-						
+
 						foreach($images as $image) {
-							rename($org_path."/".$image, $album_target.$newPath.$image);
+							rename($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 						}
 						die(true);
 						break;
 		case 'delete':	foreach($images as $image) {
-							unlink($org_path."/".$image);
+							unlink($pictures_path.$org_path.'/'.$image);
 						}
 						die(true);
 						break;
@@ -182,34 +179,10 @@ if(isset($_POST['img_action'])) {
 							} else {
 								$shareid = $dbh->insert_id("pic_shares");
 							}
-							/*
-							foreach($images as $image) {
-								$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
-								$taken = $exifReaden[5];
-								$exifJSON = json_encode($exifReaden);
-								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
-								$ret = $dbh->query($query);
-							}
-							*/
-						} //else {
-							/*
-							foreach($images as $image) {
-								$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
-								$taken = $exifReaden[5];
-								$exifJSON = json_encode($exifReaden);
-								$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken,'$exifJSON')";
-								$ret = $dbh->query($query);
-							}*/
-							/*
-							$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
-							$dbh->query($query);
-							$sharelink = $dbh->fetch_assoc()['shareLink'];
-							*/
-						//}
+						}
 
 						foreach($images as $image) {
 							$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
-							
 							if(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
 								$ffmpeg = exec("which ffmpeg");
 								$command = $ffmpeg." -i ".$pictures_path.$image." 2>&1";
@@ -269,10 +242,12 @@ function showPage($thumbnails, $dir) {
 			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/main.min.css\" type=\"text/css\" />
 			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
-			
+			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/jquery.justifiedGallery.min.js\"></script>
-			<script src=\"js/lightgallery-all.min.js\"></script>";
+			<script src=\"js/lightgallery-all.min.js\"></script>
+			<script src='js/glightbox/glightbox.min.js'></script>
+			";
 	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id=\"galdiv\">";
 	$page.= $thumbnails;
 	$page.="
@@ -297,15 +272,36 @@ function showPage($thumbnails, $dir) {
 			lastRow: 'justify',
 			captions: true,
 			randomize: false
-		}).on('jg.complete', function () {
-			$('#images').lightGallery({
-				share: false,
-				download: false,
-				fullScreen: false,
-				pager: false,
-				autoplay: false,
-				selector: '.image'
-			});
+		});
+
+		const lightbox = GLightbox({
+			plyr: {
+				config: {
+					
+					muted: true,
+				}
+			},
+			autoplayVideos: false,
+			loop: false,
+		});
+
+		lightbox.on('slide_changed', (data) => {
+			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
+			if(document.getElementById(file)) {
+				let closebtn = document.querySelector('.gclose');
+				let infobtn = document.createElement('button');
+				infobtn.id = 'infbtn';
+				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
+				infobtn.addEventListener('mouseover', function() {
+					document.getElementById(file).classList.add('eshow');
+					document.getElementById(file).addEventListener('mouseover', function() {document.getElementById(file).classList.add('eshow')})
+				});
+				infobtn.addEventListener('mouseout', function() {
+					document.getElementById(file).classList.remove('eshow');
+					document.getElementById(file).addEventListener('mouseout', function() {document.getElementById(file).classList.remove('eshow')})
+				});
+				closebtn.before(infobtn);
+			}
 		});
 		
 		var chkboxes = $('.icheckbox');
@@ -320,7 +316,6 @@ function showPage($thumbnails, $dir) {
 			if(e.shiftKey) {
 				var start = chkboxes.index(this);
 				var end = chkboxes.index(lastChecked);
-
 				chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
 
 			}
@@ -576,17 +571,17 @@ function showGallery($requestedDir) {
 						$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
 					}
 					
-					if(count(exifReaden) > 0) {
-						$caption = "$file<span class='exname'><img src='images/info.png'><div class='exinfo'>$exifInfo</div></span>";
+					if(count($exifReaden) > 0) {
+						$caption = "<div id='$file' class='exinfo'>$exifInfo</div>";
 					} else {
-						$caption = "$file";
+						$caption = "";
 					}
 					
 					$files[] = array(
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"image\" href=\"$linkUrl\" data-sub-html=\"$caption\"><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
+						"html" => "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>");
 				}
 				
 				// video files
@@ -598,14 +593,13 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"image\" data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
+						"html" => "<div><a class=\"video glightbox\" href='$linkUrl' data-type='video' data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
 				}
 			}
 			}
 		}
 		closedir($handle);
-	}
-	else {
+	} else {
 		error_log('Pictures Plugin(Photos): Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		die("ERROR: Could not open \"".htmlspecialchars(stripslashes($current_dir))."\" folder for reading!");
 	}
@@ -614,7 +608,7 @@ function showGallery($requestedDir) {
 	$start = 0;
 
 	// sort folders
-	if (sizeof($dirs) > 0) {
+	if (isset($dirs) && sizeof($dirs) > 0) {
 		$thumbnails.= "<div id=\"folders\">";
 		foreach ($dirs as $key => $row) {
 			if ($row["name"] == "") {
@@ -646,7 +640,7 @@ function showGallery($requestedDir) {
 			$size[$key] = strtolower($row['size']);
 		}
 		$sorting_files = $rcmail->config->get('sorting_files', false);
-		array_multisort($$sorting_files, $rcmail->config->get('sortdir_files', false), $files);
+		@array_multisort($$sorting_files, $rcmail->config->get('sortdir_files', false), $files);
 		
 		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
 		if(isset($_GET['page'])) {
@@ -669,12 +663,11 @@ function showGallery($requestedDir) {
 		}
 		$pnavigation.= "</div></div>";
 
-		if(sizeof($videos) > 0){
+		if(isset($videos) && sizeof($videos) > 0){
 			foreach($videos as $video) {
 				$hidden_vid.= $video["html"];
 			}
 		}
-		//$thumbnails.= "</div>";
 	}
 	$thumbnails.= "</div>";
 	$thumbnails.= $hidden_vid.$pnavigation;

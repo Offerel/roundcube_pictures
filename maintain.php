@@ -7,14 +7,18 @@
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
  */
+define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
+require INSTALL_PATH.'program/include/clisetup.php';
+$starttime = time();
 $modes = array("clean","add","all");
 if(!in_array($argv[1], $modes)) {
-	die("No working mode given, please specify one mode. Allowed modes are \"add\", \"clean\" or \"all\".\n");
+    $message = "No working mode given, please specify one mode. Allowed modes are \"add\", \"clean\" or \"all\".\n";
+    logm($message);
+	die();
 } else {
 	$mode = $argv[1];
 }
-define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
-require INSTALL_PATH.'program/include/clisetup.php';
+
 $rcmail = rcube::get_instance();
 $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
@@ -28,23 +32,61 @@ for ($x = 0; $x < $rcount; $x++) {
 }
 
 foreach($users as $username) {
-	$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
-	$thumb_basepath = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
+	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
+	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
 
-	if($mode == "add" || $mode == "all")
-		read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+    $message = "Maintenance for $username with mode $mode";
+    logm($message);
 
-	if($mode == "clean" || $mode == "all") {
-		if(is_dir($thumb_basepath)) {
-			$path = $thumb_basepath;
-			read_thumbs($path, $thumb_basepath, $pictures_basepath);
-		}
-	}
+    switch($mode) {
+        case "add":
+            read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+            break;
+        case "clean":
+            if(is_dir($thumb_basepath)) {
+                $path = $thumb_basepath;
+                read_thumbs($path, $thumb_basepath, $pictures_basepath);
+            }
+            break;
+        case "all":
+            read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+            if(is_dir($thumb_basepath)) {
+                $path = $thumb_basepath;
+                read_thumbs($path, $thumb_basepath, $pictures_basepath);
+            }
+            break;
+        default:
+            $message = "Unknown Mode. Exit Script.";
+            logm($message, 2);
+            die();
+            break;
+    }
+}
+
+$endtime = time();
+$tdiff = gmdate("H:i:s", $endtime - $starttime);
+logm("Maintenance finished after $tdiff.");
+die();
+
+function logm($message, $mode = 4) {
+    global $rcmail;
+    $dtime = date("d.m.Y H:i:s");
+    switch($mode) {
+        case 1: $mode = " [ERRO] ";
+                break;
+        case 2: $mode = " [WARN] ";
+                break;
+        default: $mode = " [INFO] ";
+                break;
+    }
+    echo $message."\n";
+    $line = $dtime.$mode.$message."\n";
+    $logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+    file_put_contents($logfile, $line, FILE_APPEND);
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath) {
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
-	
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
 			while (false !== ($file = readdir($handle))) {
@@ -53,6 +95,8 @@ function read_photos($path, $thumb_basepath, $pictures_basepath) {
 				}
 				
 				if(is_dir($path."/".$file."/")) {
+                    $message = "Change to directory $path/$file/";
+                    logm($message);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath);
 				}
 				else {
@@ -113,7 +157,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {
-			error_log("Pictures Plugin(Maintain): Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
+            logm("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.", 2);
 		}
 	}
 
@@ -161,12 +205,12 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			}
 		}
 		else {
-			error_log("Pictures Plugin(Maintain): PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.");
+			logm("PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.", 2);
 		}
 		
 		$newwidth = ceil($width / ($height / $thumbsize));
 		if($newwidth <= 0) {
-			error_log("Pictures Plugin(Maintain): Calculating the width ($newwidth) of \"$get_filename\" failed.");
+            logm("Calculating the width ($newwidth) of \"$get_filename\" failed.", 2);
 		}
 
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
@@ -175,7 +219,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
 			case 2: $source = @imagecreatefromjpeg($org_pic); break;
 			case 3: $source = @imagecreatefrompng($org_pic); break;
-			default: error_log("Pictures Plugin(Maintain): Unsupported fileformat ($org_pic $type)."); die();
+			default: logm("Unsupported fileformat ($org_pic $type).", 2); die();
 		}
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
@@ -188,27 +232,39 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if(is_writable($thumbpath)) {
 			if ($flip == 'vertical') {
 				imagejpeg(imageflip($target, IMG_FLIP_VERTICAL),$thumb_pic,80);
-			}
-			else {
+			} else {
 				imagejpeg($target, $thumb_pic, 80);
 			}
+		} else {
+			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 2);
 		}
-		else {
-			error_log("Pictures Plugin(Maintain): Can't write Thumbnail ($thumbpath). Please check your directory permissions.");
-		}
-	}
-	elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $org_pic)) {
-		$avconv = exec("which avconv");
-		if($avconv == "" ) {
-			$avconv = exec("which ffmpeg");
-		}
+	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $org_pic)) {
+		$ffmpeg = exec("which ffmpeg");
 
-		if(file_exists($avconv)) {
-			$cmd = $avconv." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1";
+		if(file_exists($ffmpeg)) {
+			$pathparts = pathinfo($org_pic);
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			//$webm = $pathparts['dirname']."/.".$pathparts['filename'].".webm";
+			
+			$cmd = $ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1";
 			exec($cmd);
+
+			$startconv = time();
+			//$cogv = "$ffmpeg -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv";
+			//exec($cogv);
+			exec("$ffmpeg -loglevel quiet -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			//$endconv = time();
+			//$convdiff = gmdate("H:i:s", time() - $startconv);
+			//logm("OGV file converted within $convdiff");
+			logm("OGV file converted within ".gmdate("H:i:s", time() - $startconv));
+
+			//$cwebm = "$ffmpeg -i $org_pic -c:v libvpx-vp9 -crf 30 -b:v 0 -b:a 128k -c:a libopus $webm";
+			//exec($cwebm);
+			//$convdiff = gmdate("H:i:s", time() - $startconv);
+			//logm("WEBM file converted within $convdiff");
 		}
 		else {
-			error_log("Pictures Plugin(Maintain): ffmpeg or avconv is not installed, so video formats are not supported.");
+			logm("ffmpeg is not installed, so video formats are not supported.", 2);
 		}
 	}
 }

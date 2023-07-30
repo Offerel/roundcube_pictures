@@ -53,26 +53,37 @@ html{
 	color: aliceblue;
 }
 .exinfo {
-	position: absolute;
-	bottom: 35px;
+	position: fixed;
 	overflow: auto;
-	right: -15px;
-	background: #00000080;
-	transition: all 0.5s ease 0s;
-	opacity: 0;
-	font-size: 0.8em;
+	right: 60px;
+	background: #00000045;
 	text-align: left;
-	padding: 5px;
+	padding: 10px;
 	white-space: nowrap;
+	z-index: 0;
+	top: 50px;
+	border-radius: 5px;
+	color: #fff;
+	font-weight: 400;
+	visibility: hidden;
+}
+.eshow {
+	z-index: 1000000;
+	visibility: visible;
 }
 .exname {
-	position: absolute;
-	right: 80px;
+	position: fixed;
+	right: 55px;
 	cursor: help;
+	top: 22px;
+	z-index: 1000000;
 }
+/*
 .exname:hover .exinfo {
 	opacity: 1;
+	visibility: visible;
 }
+*/
 #pnavigation {
 	text-align: center;
 	z-index: 200;
@@ -348,10 +359,11 @@ textarea.edit {
 body {
 	position: relative;
 	font-size: 1.5rem;
-	font-family: Helvetica, Arial, sans-serif;
-	color: #333333;
+	font-family: Helvetica,Arial,sans-serif;
+	color: #333;
 	margin: 7px;
 	overflow-y: scroll;
+	padding-top: 40px;
 }
 a {
 	color: #333333;
@@ -517,4 +529,39 @@ footer a {
 		width: 100%;
 		padding-bottom: 100%;
 	}
+}
+#infbtn {
+	right: 60px;
+	opacity: .7;
+	background-color: rgba(0,0,0,.32);
+	position: absolute;
+	top: 15px;
+	width: 40px;
+	height: 35px;
+	border-radius: 4px;
+	cursor: pointer;
+	border: none;
+	fill: #fff;
+}
+#infbtn:hover {
+	opacity: 1;
+}
+#header {
+	height: 55px;
+	position: fixed;
+	top: 0;
+	transition: top .3s;
+	width: 100%;
+	display: block;
+	z-index: 1;
+	left: 0;
+	padding-left: 10px;
+}
+.shared {
+	top: 20px;
+	padding-bottom: 7px;
+}
+.shadow {
+	box-shadow: 0 10px 15px -3px rgba(0,0,0,.52);
+	background-image: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.36));
 }

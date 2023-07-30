@@ -31,7 +31,6 @@
 				<div id="modal-body" class="modal-body">
 					<form>
 						<input type="text" name="album_name" id="album_name" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
-						<input type="text" name="share_name" id="share_name" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
 						<input type="hidden" name="album_org" id="album_org" value="">
 						<div id="mv_target"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<div id="albedit">
@@ -59,10 +58,11 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
-						<input type="text" name="album_name_img" id="album_name_img" value="">
-						<input type="hidden" name="album_org_img" id="album_org_img" value="">
+						<input type="text" name="album_name_img" id="album_name_img">
+						<span id="rpath">&nbsp;</span>
+						<input type="hidden" name="album_org_img" id="album_org_img">
 						<div id="mv_target_img"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
-						<roundcube:button command="move_image" id="mvb" type="link" class="button disabled" label="pictures.move">
+						<roundcube:button command="move_image" id="mvp" type="link" class="button disabled" label="pictures.move">
 					</form>
 				</div>
 				<div class="modal-footer">

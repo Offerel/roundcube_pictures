@@ -239,8 +239,7 @@ if ($get_filename_type != "MP4") {
 
 	$path = pathinfo($thumbname)['dirname'];
 
-	if (!is_dir($path))
-	{
+	if (!is_dir($path)) {
 		if(!mkdir($path, 0755, true)) {
 			error_log("Pictures Plugin(Thumbs): Thumbnail subfolder creation failed ($path). Please check your directory permissions.");
 		}
@@ -258,8 +257,7 @@ if ($get_filename_type != "MP4") {
 		error_log("Pictures Plugin(Thumbs): Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 		die("Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 	}
-}
-else {
+} else {
 	$avconv = exec("which avconv");
 	if($avconv == "" ) {
 		$avconv = exec("which ffmpeg");
