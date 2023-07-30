@@ -10,6 +10,14 @@
 class pictures extends rcube_plugin
 {
 	public $task = '?(?!login|logout).*';
+	//public $task = '?.*';
+	public function onload() {
+		$rcmail = rcmail::get_instance();
+		if ($rcmail->task == 'pictures') {
+			echo 'teest';
+		}
+	}
+
 	public function init() {
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
