@@ -16,7 +16,7 @@ $dbh = $rcmail->get_dbh();
 
 $picture = $_GET['p'];
 $mode = $_GET['t'];
-$query = "SELECT a.pictureID, a.picturePath, c.username FROM pic_pictures a INNER JOIN pic_shares b ON a.shareID = b.shareID INNER JOIN users c ON b.user_id = c.user_id WHERE a.pictureID = $picture";
+$query = "SELECT a.pictureID, a.picturePath, c.username FROM pic_shared_pictures a INNER JOIN pic_shares b ON a.shareID = b.shareID INNER JOIN users c ON b.user_id = c.user_id WHERE a.pictureID = $picture";
 $res = $dbh->query($query);
 $rc = $dbh->num_rows($res);
 $data = $dbh->fetch_assoc($res);

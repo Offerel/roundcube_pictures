@@ -198,7 +198,7 @@ if(isset($_POST['img_action'])) {
 							$mp4taken = strtotime($timee);
 							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
 							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
-							$query = "INSERT INTO 'pic_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken, '$exifJSON')";
+							$query = "INSERT INTO 'pic_shared_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken, '$exifJSON')";
 							file_put_contents("/tmp/erg.txt", $query."\n", FILE_APPEND);
 							$ret = $dbh->query($query);
 						}
@@ -240,13 +240,11 @@ function showPage($thumbnails, $dir) {
 	<html>
 		<head>
 			<title>$dir</title>
-			<link rel=\"stylesheet\" href=\"css/justifiedGallery.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"css/main.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"css/lightgallery.min.css\" type=\"text/css\" />
+			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
+			<link rel=\"stylesheet\" href=\"skins/main.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
-			<script src=\"js/jquery.justifiedGallery.min.js\"></script>
-			<script src=\"js/lightgallery-all.min.js\"></script>
+			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			";
 	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id=\"galdiv\">";

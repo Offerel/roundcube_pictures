@@ -23,7 +23,7 @@ class pictures extends rcube_plugin {
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
 			$shareID = $shares['shareID'];
 			$shareName = $shares['shareName'];
-			$query = "SELECT picturePath, pictureEXIF, pictureID FROM pic_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
+			$query = "SELECT picturePath, pictureEXIF, pictureID FROM pic_shared_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
 
@@ -39,7 +39,7 @@ class pictures extends rcube_plugin {
 					$exifSpan = getEXIFSpan($picture[1], $picture[2]);
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = 'plugins/pictures/simg.php?p='.$picture[2].'&t=1';
-					$linkUrl = 'plugins/pictures/simg.php?p='.$picture[2].'&t=2';
+					$linkUrl =	'plugins/pictures/simg.php?p='.$picture[2].'&t=2';
 					$thumbnails.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
 				}
 			}
@@ -52,7 +52,7 @@ class pictures extends rcube_plugin {
 		$rcmail = rcmail::get_instance();
 		$this->load_config();
 		$this->add_texts('localization/', true);
-		$this->include_stylesheet($this->local_skin_path().'/plugin.css');
+		$this->include_stylesheet($this->local_skin_path().'/pictures.css');
 		
 		$this->register_task('pictures');
 		
@@ -90,7 +90,7 @@ class pictures extends rcube_plugin {
 	
 	function content($attrib) {
 		$rcmail = rcmail::get_instance();
-		$this->include_script('js/plugin.js');
+		$this->include_script('js/pictures.js');
 		$attrib['src'] = 'plugins/pictures/photos.php';
 		if (empty($attrib['id']))
 			$attrib['id'] = 'rcmailpicturescontent';
@@ -151,15 +151,15 @@ function showShare($thumbnails, $shareName) {
 			<link rel='icon' type='image/png' sizes='32x32' href='images/favicon-32x32.png'>
 			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'> -->
 			<title>$shareName</title>
-			<link rel='stylesheet' href='plugins/pictures/css/justifiedGallery.min.css' type='text/css' />
-			<link rel='stylesheet' href='plugins/pictures/css/main.min.css' type='text/css' />
+			<link rel='stylesheet' href='plugins/pictures/js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
+			<link rel='stylesheet' href='plugins/pictures/skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='plugins/pictures/js/glightbox/glightbox.min.css' type='text/css' />
 			<link rel='stylesheet' href='plugins/pictures/js/plyr/plyr.css' type='text/css' />
 			<script src='program/js/jquery.min.js'></script>
-			<script src='plugins/pictures/js/jquery.justifiedGallery.min.js'></script>
+			<script src='plugins/pictures/js/justifiedGallery/jquery.justifiedGallery.min.js'></script>
 			<script src='plugins/pictures/js/glightbox/glightbox.min.js'></script>
 			<script src='plugins/pictures/js/plyr/plyr.js'></script>
-			<script src='plugins/pictures/js/plugin.min.js'></script>
+			<script src='plugins/pictures/js/pictures.js'></script>
 			";
 	$page.= "\n\t\t</head>\n\t\t<body>";
 	$page.= "\n\t\t\t<div id='header'><h2>$shareName</h2>";
