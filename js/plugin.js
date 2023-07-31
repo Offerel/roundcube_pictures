@@ -87,6 +87,10 @@ window.onload = function(){
 				closebtn.before(infobtn);
 			}
 		});
+
+		document.getElementById('scpy').addEventListener('click', function() {
+			console.log(this);
+		});
 	
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
@@ -263,7 +267,9 @@ function sharepicture() {
 		},
 		success: function(a) {
 			let link = document.getElementById('link');
-			link.value = a;
+			const url = new URL(location.href);
+			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
+			$("#link").contents().get(0).nodeValue = nurl;
 			link.style.visibility = "visible";
 			document.getElementById('sbtn').style.visibility = "hidden";
 		}

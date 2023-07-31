@@ -295,9 +295,6 @@
 #taskmenu a.pictures::before{
     content:"\f03e"
 }
-#share_edit #link {
-	visibility: hidden;
-}
 #share_edit label {
 	text-align: left;
 	width: 100%;
@@ -340,4 +337,26 @@
 	font-size: .9em;
 	border-top: 0px;
 	line-height: 1.8em;
+}
+#share_edit #link {
+    visibility: hidden;
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: gainsboro;
+    border: 1px solid darkgray;
+    padding: 0 30px 0 5px;
+    border-radius: 5px;
+    user-select: all;
+}
+#link .cpy {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M288 448H64V224h64v-64H64c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64v-64h-64v64zm-64-96h224c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64z'/%3E%3C/svg%3E");
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    display: block;
+    margin-top: -20px;
+    cursor: pointer;
+    right: 25px;
 }

@@ -206,7 +206,8 @@ if(isset($_POST['img_action'])) {
 						$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
 						$dbh->query($query);
 						$sharelink = $dbh->fetch_assoc()['shareLink'];
-
+						//$plink = parse_url($_SERVER['REQUEST_SCHEME']."://".$_SERVER['HTTP_HOST'].$_SERVER["REQUEST_URI"]);
+						//$link = $plink['scheme'].'://'.$plink['host'].$plink['port'].$plink['path'].'?_task=pictures&slink='.$sharelink;
 						die($sharelink);
 						break;
 	}
