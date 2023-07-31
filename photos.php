@@ -485,8 +485,7 @@ function showGallery($requestedDir) {
 					
 					if($requestedDir != "") {
 						$requestedDir = rtrim($requestedDir,"/")."/";
-					}
-					else
+					} else
 						$requestedDir = "";
 					
 					$arr_params = array('p' => $requestedDir.$file);
@@ -497,8 +496,7 @@ function showGallery($requestedDir) {
 															), '', '&amp;');
 						
 						$imgUrl = "createthumb.php?$imgParams";
-					}
-					else {
+					} else {
 						unset($firstimage);					
 						$firstimage = getfirstImage("$current_dir/".$file);
 						
@@ -507,8 +505,7 @@ function showGallery($requestedDir) {
 											'folder' 	=> '1');
 							$imgParams = http_build_query($params);
 							$imgUrl = "createthumb.php?$imgParams";
-						}
-						else {
+						} else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
 					}
@@ -524,7 +521,7 @@ function showGallery($requestedDir) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg") {
 				$filename_caption = "";
 				
-				$linkUrl = "dphoto.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir/$file"));
+				$linkUrl = "simg.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir/$file"));
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {

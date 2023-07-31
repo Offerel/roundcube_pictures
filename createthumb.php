@@ -251,9 +251,7 @@ if ($get_filename_type != "MP4") {
 			fwrite($fd, $cachedImage);
 			fclose($fd);
 		}
-	}
-	else 
-	{
+	} else {
 		error_log("Pictures Plugin(Thumbs): Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 		die("Can't write Thumbnail (".dirname($thumbname)."). Please check your directory permissions.");
 	}
@@ -272,9 +270,7 @@ if ($get_filename_type != "MP4") {
 			imagejpeg($thumbnail);
 			imagedestroy($thumbnail);
 		}
-	}
-	else 
-	{
+	} else {
 		error_log("Pictures Plugin(Thumbs): ffmpeg or avconv not installed, so video formats are supported.");
 	}
 }

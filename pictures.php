@@ -36,10 +36,11 @@ class pictures extends rcube_plugin {
 				$fullpath = $basepath.'/'.$picture[0];
 				if(file_exists($fullpath)) {
 					$type = getIType($fullpath);
-					$exifSpan = getEXIFSpan($picture[1], $picture[2]);
+					$id = $picture[2];
+					$exifSpan = getEXIFSpan($picture[1], $id);
 					$img_name = pathinfo($fullpath)['basename'];
-					$imgUrl = 'plugins/pictures/simg.php?p='.$picture[2].'&t=1';
-					$linkUrl =	'plugins/pictures/simg.php?p='.$picture[2].'&t=2';
+					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
+					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
 					$thumbnails.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
 				}
 			}
