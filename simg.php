@@ -45,14 +45,16 @@ if(isset($file)) {
 	}
 
 	$file = $pictures_basepath.$file;
-	if (file_exists($file)) {
+	if (file_exists("$file")) {
 		$mtype = mime_content_type($file);
 		//$fp = @fopen($file, 'rb');
 		//$size = filesize($file);
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 		header("Content-Type: $mtype");
 		header('Content-disposition: inline;filename="'.basename($file).'"');
-		die(readfile($path));
+		die(readfile($file));
+	} else {
+		die('Nicht gfunden'."$file");
 	}
 	die();
 } else {

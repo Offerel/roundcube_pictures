@@ -492,19 +492,17 @@ function showGallery($requestedDir) {
 					$fparams = http_build_query($arr_params,'','&amp;');
 					
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
-						$imgParams = http_build_query(array('filename' => "$requestedDir$file/folder.jpg"
-															), '', '&amp;');
-						
-						$imgUrl = "createthumb.php?$imgParams";
+						$imgUrl = "simg.php?file=".urlencode($file."/folder.jpg");
 					} else {
 						unset($firstimage);					
 						$firstimage = getfirstImage("$current_dir/".$file);
 						
 						if ($firstimage != "") {
-							$params = array('filename' 	=> "$requestedDir$file/$firstimage",
-											'folder' 	=> '1');
+							$params = array('filename' 	=> "$requestedDir$file/$firstimage", 'folder' 	=> '1');
+							//$params = array('file' 	=> "$requestedDir$file/$firstimage", 'folder' 	=> '1');
 							$imgParams = http_build_query($params);
 							$imgUrl = "createthumb.php?$imgParams";
+							//$imgUrl = "simg.php?$imgParams";
 						} else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
@@ -532,7 +530,9 @@ function showGallery($requestedDir) {
 
 					checkpermissions($current_dir."/".$file);
 					$imgParams = http_build_query(array('filename' => "$requestedDir/$file"));
+					//$imgParams = http_build_query(array('file' => "$requestedDir/$file"));
 					$imgUrl = "createthumb.php?$imgParams";
+					//$imgUrl = "simg.php?$imgParams";
 
 					$taken = $exifReaden[5];
 					$exifInfo = "";
@@ -577,13 +577,15 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>");
+						"html" => "\n<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>");
 				}
 				
 				// video files
 				if (preg_match("/\.ogv$|\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
 					$thmbParams = http_build_query(array('filename' => "$requestedDir/$file"));
+					//$thmbParams = http_build_query(array('file' => "$requestedDir/$file"));
 					$thmbUrl = "createthumb.php?$thmbParams";
+					//$thmbUrl = "simg.php?$thmbParams";
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$files[] = array(
 						"name" => $file,
