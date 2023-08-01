@@ -15,6 +15,7 @@ if (!empty($rcmail->user->ID)) {
 	$username = $rcmail->user->get_username();
 	$pictures_path = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
 	$thumb_path = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
+	$thumbsize = $rcmail->config->get('thumb_size', false);
 	
 	if(substr($pictures_path, -1) != '/') {
 		error_log('Pictures Plugin(Photos): check $config[\'pictures_path\'], the path must end with a backslash.');
@@ -56,7 +57,7 @@ if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
 	$select = "<select name='target' id='target'>";
 	foreach ($subdirs as $dir) {
-		$dir = rtrim(substr($dir,strlen($pictures_path)),'/');
+		$dir = trim(substr($dir,strlen($pictures_path)),'/');
 		if(!strposa($dir, $skip_objects))
 			$select.= "<option>$dir</option>";
 	}
@@ -101,15 +102,16 @@ if(isset($_FILES['galleryfiles'])) {
 				error_log("Pictures Plugin(Photos): $errmsg");
 				$err = 1;
 			}
+
 			if($err == 0) {
 				if(!move_uploaded_file($tmp_name, "$pictures_path$folder/$name")) {
 					$errmsg = 'Upload of "'.$folder."/".$name.'" failed. Please check permissions.';
 					$test[] = array('message' => $errmsg, 'type' => 'error');
 					error_log("Pictures Plugin(Photos): $errmsg");
-				}
-				else {
+				} else {
 					$errmsg = 'Upload successfully.';
 					$test[] = array('message' => $errmsg, 'type' => 'info');
+					createthumb("$pictures_path$folder/$name", $pictures_path, );
 				}
 			}
 		}
@@ -143,14 +145,12 @@ if(isset($_POST['img_action'])) {
 	$action = $_POST['img_action'];	
 	$images = $_POST['images'];
 	$org_path = urldecode($_POST['orgPath']);
-	$album_target = rtrim($_POST['target'],'/');	
+	$album_target = trim($_POST['target'],'/');	
 
 	switch($action) {
 		case 'move':	if($_POST['newPath'] != "") {
 							$newPath = $_POST['newPath'];
-							if (!is_dir($pictures_path.$album_target.$newPath)) {
-								mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
-							}
+							if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 						}
 
 						foreach($images as $image) {
@@ -172,13 +172,9 @@ if(isset($_POST['img_action'])) {
 						$dbh = rcmail_utils::db();
 						
 						if(empty($shareid)) {
-							$query = "INSERT INTO 'pic_shares' ('shareName','shareLink','expireDate','user_id') VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
+							$query = "INSERT INTO `pic_shares` (`shareName`,`shareLink`,`expireDate`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
-							if ($ret === false) {
-								$shareid = "";
-							} else {
-								$shareid = $dbh->insert_id("pic_shares");
-							}
+							$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
 						}
 
 						foreach($images as $image) {
@@ -189,25 +185,20 @@ if(isset($_POST['img_action'])) {
 								$meta = shell_exec($command);
 								foreach(preg_split("/((\r?\n)|(\r\n?))/", $meta) as $line){
 									$pos = strpos($line, 'creation_time');
-									if(strpos($line, 'creation_time')) {
-										$timee = explode(' : ', $line)[1];
-									}
+									if(strpos($line, 'creation_time')) $timee = explode(' : ', $line)[1];
 								}
 							}
 
 							$mp4taken = strtotime($timee);
 							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
 							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
-							$query = "INSERT INTO 'pic_shared_pictures' ('shareID','picturePath','pictureTaken','pictureEXIF') VALUES ('$shareid','$image',$taken, '$exifJSON')";
-							file_put_contents("/tmp/erg.txt", $query."\n", FILE_APPEND);
+							$query = "INSERT INTO `pic_shared_pictures` (`shareID`,`picturePath`,`pictureTaken`,`pictureEXIF`) VALUES ('$shareid','$image',$taken, '$exifJSON')";
 							$ret = $dbh->query($query);
 						}
 
 						$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
 						$dbh->query($query);
 						$sharelink = $dbh->fetch_assoc()['shareLink'];
-						//$plink = parse_url($_SERVER['REQUEST_SCHEME']."://".$_SERVER['HTTP_HOST'].$_SERVER["REQUEST_URI"]);
-						//$link = $plink['scheme'].'://'.$plink['host'].$plink['port'].$plink['path'].'?_task=pictures&slink='.$sharelink;
 						die($sharelink);
 						break;
 	}
@@ -247,7 +238,7 @@ function showPage($thumbnails, $dir) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			";
-	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id=\"galdiv\">";
+	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id='header' style='position: absolute; top: -15px;'><h2>$dir</h2></div><div id=\"galdiv\">";
 	$page.= $thumbnails;
 	$page.="
 	<script>
@@ -469,26 +460,21 @@ function showGallery($requestedDir) {
 	$pnavigation = "";
 	
 	global $pictures_path, $rcmail, $label_max_length;
-	$thumbdir = rtrim($pictures_path.$requestedDir,'/');
+	$thumbdir = $pictures_path.$requestedDir;
 	$current_dir = $thumbdir;
 	$forbidden = $rcmail->config->get('skip_objects', false);
 	
 	if (is_dir($current_dir) && $handle = opendir("${current_dir}")) {
 		while (false !== ($file = readdir($handle))) {
 			
-			if(!in_array($file, $forbidden))
-			{
+			if(!in_array($file, $forbidden)) {
 			// Gallery folders
 			if (is_dir($current_dir."/".$file)) {
 				if ($file != "." && $file != "..") {
 					checkpermissions($current_dir."/".$file);
-					
-					if($requestedDir != "") {
-						$requestedDir = rtrim($requestedDir,"/")."/";
-					} else
-						$requestedDir = "";
-					
-					$arr_params = array('p' => $requestedDir.$file);
+					$requestedDir = trim($requestedDir,"/");
+					$npath = trim($requestedDir.'/'.$file,'/');
+					$arr_params = array('p' => $npath);
 					$fparams = http_build_query($arr_params,'','&amp;');
 					
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
@@ -498,11 +484,9 @@ function showGallery($requestedDir) {
 						$firstimage = getfirstImage("$current_dir/".$file);
 						
 						if ($firstimage != "") {
-							$params = array('filename' 	=> "$requestedDir$file/$firstimage", 'folder' 	=> '1');
-							//$params = array('file' 	=> "$requestedDir$file/$firstimage", 'folder' 	=> '1');
+							$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
 							$imgParams = http_build_query($params);
-							$imgUrl = "createthumb.php?$imgParams";
-							//$imgUrl = "simg.php?$imgParams";
+							$imgUrl = "simg.php?$imgParams";
 						} else {
 							$imgUrl = "images/defaultimage.jpg";
 						}
@@ -510,7 +494,7 @@ function showGallery($requestedDir) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "<a id=\"$requestedDir$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
+								"html" => "<a id=\"$requestedDir/$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir/$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
 								);
 				}
 			}
@@ -518,8 +502,8 @@ function showGallery($requestedDir) {
 			// Gallery images
 			if ($file != "." && $file != ".." && $file != "folder.jpg") {
 				$filename_caption = "";
-				
-				$linkUrl = "simg.php?file=".str_replace('%2F','/',rawurlencode("$requestedDir/$file"));
+				$requestedDir = trim($requestedDir,'/').'/';
+				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {
@@ -529,10 +513,8 @@ function showGallery($requestedDir) {
 					}
 
 					checkpermissions($current_dir."/".$file);
-					$imgParams = http_build_query(array('filename' => "$requestedDir/$file"));
-					//$imgParams = http_build_query(array('file' => "$requestedDir/$file"));
-					$imgUrl = "createthumb.php?$imgParams";
-					//$imgUrl = "simg.php?$imgParams";
+					$imgParams = http_build_query(array('file' => "$requestedDir/$file", 't' => 1));
+					$imgUrl = "simg.php?$imgParams";
 
 					$taken = $exifReaden[5];
 					$exifInfo = "";
@@ -582,10 +564,8 @@ function showGallery($requestedDir) {
 				
 				// video files
 				if (preg_match("/\.ogv$|\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
-					$thmbParams = http_build_query(array('filename' => "$requestedDir/$file"));
-					//$thmbParams = http_build_query(array('file' => "$requestedDir/$file"));
-					$thmbUrl = "createthumb.php?$thmbParams";
-					//$thmbUrl = "simg.php?$thmbParams";
+					$thmbParams = http_build_query(array('file' => "$requestedDir/$file", 't' => 1));
+					$thmbUrl = "simg.php?$thmbParams";
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$files[] = array(
 						"name" => $file,
@@ -648,7 +628,7 @@ function showGallery($requestedDir) {
 		}
 		
 		$pages = ceil(sizeof($files)/$thumbs_pr_page);
-		$gal= $_GET['p'];
+		$gal = ltrim($_GET['p'],'/');
 		$offset_end = $offset_start + $thumbs_pr_page;
 		
 		for ($y = $offset_start; $y < $offset_end; $y++) {
@@ -907,6 +887,56 @@ function guardAgainstDirectoryTraversal($path) {
 		error_log('Pictures Plugin(Photos): Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
         die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
     }
+}
+
+function createthumb($image) {
+	global $thumbsize, $pictures_path, $thumb_path;
+	$idir = str_replace($pictures_path, '', $image);
+	$thumbnailpath = $thumb_path.$idir.".jpg";
+	if(file_exists($thumbnailpath)) return false;
+	
+	$thumbpath = pathinfo($thumbnailpath)['dirname'];
+		
+	if (!is_dir($thumbpath)) {
+		if(!mkdir($thumbpath, 0755, true)) {
+			error_log("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
+		}
+	}
+
+	if (preg_match("/.jpg$|.jpeg$|.png$/i", $image)) {
+		list($width, $height, $type) = getimagesize($image);
+		$newwidth = $width * $thumbsize / $height;
+		if($newwidth <= 0) error_log("Calculating the width failed.");
+		$target = imagecreatetruecolor($newwidth, $thumbsize);
+		
+		switch ($type) {
+			case 1: $source = @imagecreatefromgif($image); break;
+			case 2: $source = @imagecreatefromjpeg($image); break;
+			case 3: $source = @imagecreatefrompng($image); break;
+			default: error_log("Unsupported fileformat ($type)."); die();
+		}
+		
+		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		imagedestroy($source);
+		
+		if(is_writable($thumbpath)) {
+			imagejpeg($target, $thumbnailpath, 85);
+		} else {
+			error_log("Can't write Thumbnail. Please check your directory permissions.");
+		}
+	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
+		$ffmpeg = exec("which ffmpeg");
+		if(file_exists($ffmpeg)) {
+			$pathparts = pathinfo($image);
+			$cmd = $ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1";
+			exec($cmd);
+			$startconv = time();
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+		} else {
+			error_log("ffmpeg is not installed, so video formats are not supported.");
+		}
+	}
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');

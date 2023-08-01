@@ -79,6 +79,10 @@ window.onload = function(){
 					document.getElementById(exinfo).classList.add('eshow');
 					document.getElementById(exinfo).addEventListener('mouseover', function() {document.getElementById(exinfo).classList.add('eshow')})
 				});
+				infobtn.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+				});
 				infobtn.addEventListener('mouseout', function() {
 					document.getElementById(exinfo).classList.remove('eshow');
 					document.getElementById(exinfo).addEventListener('mouseout', function() {document.getElementById(exinfo).classList.remove('eshow')})
@@ -88,7 +92,7 @@ window.onload = function(){
 			}
 		});
 
-		document.getElementById('scpy').addEventListener('click', function() {
+		if(document.getElementById('scpy')) document.getElementById('scpy').addEventListener('click', function() {
 			console.log(this);
 		});
 	

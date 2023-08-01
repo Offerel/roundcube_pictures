@@ -240,30 +240,17 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		}
 	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $org_pic)) {
 		$ffmpeg = exec("which ffmpeg");
-
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($org_pic);
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			//$webm = $pathparts['dirname']."/.".$pathparts['filename'].".webm";
-			
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";			
 			$cmd = $ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1";
 			exec($cmd);
-
 			$startconv = time();
-			//$cogv = "$ffmpeg -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv";
-			//exec($cogv);
 			exec("$ffmpeg -loglevel quiet -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
-			//$endconv = time();
-			//$convdiff = gmdate("H:i:s", time() - $startconv);
-			//logm("OGV file converted within $convdiff");
-			logm("OGV file converted within ".gmdate("H:i:s", time() - $startconv));
-
-			//$cwebm = "$ffmpeg -i $org_pic -c:v libvpx-vp9 -crf 30 -b:v 0 -b:a 128k -c:a libopus $webm";
-			//exec($cwebm);
-			//$convdiff = gmdate("H:i:s", time() - $startconv);
-			//logm("WEBM file converted within $convdiff");
-		}
-		else {
+			$diff = time() - $startconv;
+			$cdiff = gmdate("H:i:s", $diff);
+			logm("OGV file converted within $diff ($cdiff)");
+		} else {
 			logm("ffmpeg is not installed, so video formats are not supported.", 2);
 		}
 	}

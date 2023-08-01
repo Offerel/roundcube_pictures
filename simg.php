@@ -18,37 +18,33 @@ $picture = filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT);
 $mode = filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT);
 $file = filter_var($_GET['file'], FILTER_SANITIZE_STRING);
 
-if(isset($file)) {
+if(isset($file) && !empty($file)) {
 	if (!empty($rcmail->user->ID)) {
 		$username = $rcmail->user->get_username();
-		$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
-		
-		if(substr($pictures_basepath, -1) != '/') {
-			error_log('Pictures Plugin(Picture): check $config[\'pictures_path\'], the path must end with a backslash.');
-			die();
+
+		switch($mode) {
+			case 1:
+				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)),'/').'/';
+				$ext = ".jpg";
+				break;
+			case 2:
+				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
+				$ext = "";
+				break;
+			default:
+				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
+				$ext = "";
+				break;
 		}
-		
-		if (!is_dir($pictures_basepath)) {
-			if(!mkdir($pictures_basepath, 0755, true)) {
-				error_log('Pictures Plugin(Picture): Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
-				die();
-			}
-		}
+		//$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
 	} else {
 		error_log('Pictures Plugin(Picture): Login failed. User is not logged in.');
 		die();
 	}
 
-	if (preg_match("/^\/.*/i", $file)) {
-		error_log("Pictures Plugin(Picture): Unauthorized access! filepath ($file) has forbidden chars inside.");
-		die("Unauthorized access!");
-	}
-
-	$file = $pictures_basepath.$file;
+	$file = $pictures_basepath.$file.$ext;
 	if (file_exists("$file")) {
 		$mtype = mime_content_type($file);
-		//$fp = @fopen($file, 'rb');
-		//$size = filesize($file);
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 		header("Content-Type: $mtype");
 		header('Content-disposition: inline;filename="'.basename($file).'"');
@@ -62,7 +58,8 @@ if(isset($file)) {
 	$res = $dbh->query($query);
 	$rc = $dbh->num_rows($res);
 	$data = $dbh->fetch_assoc($res);
-
+	error_log($query);
+	
 	$username = $data['username'];
 	$image_basepath = rtrim(str_replace("%u", $username, $config['pictures_path']), '/');
 	$thumb_basepath = rtrim(str_replace("%u", $username, $config['thumb_path']), '/');
@@ -93,8 +90,8 @@ if(isset($file)) {
 				$path = $ogvpath;
 			}
 		}
-		
-		header('Content-disposition: inline;filename="'.$pathparts['basename'].'"');
+
+		header('Content-disposition: inline; filename="'.$pathparts['basename'].'"');
 		header("Content-Type: $mimeType");
 		die(readfile($path));
 	}
