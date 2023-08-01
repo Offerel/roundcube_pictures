@@ -12,6 +12,17 @@ class pictures extends rcube_plugin {
 	public function onload() {
 		$rcmail = rcmail::get_instance();
 
+		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['fsync'])) {
+			$dtime = date("d.m.Y H:i:s");
+			$fsdata = json_decode(file_get_contents('php://input'), true);
+			$logfile = $rcmail->config->get('log_dir', false)."/fssync.log";
+			if(isset($fsdata['syncStatus'])) {
+				$line = $dtime." FolderSync ".$fsdata['folderPairName']." ".$fsdata['syncStatus']."\n";
+				file_put_contents($logfile, $line, FILE_APPEND);
+			}			
+			die(http_response_code(204));
+		}
+
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {
 			include_once('config.inc.php');
 			$link = filter_var($_GET['slink'],FILTER_SANITIZE_STRING);
