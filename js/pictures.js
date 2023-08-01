@@ -91,10 +91,6 @@ window.onload = function(){
 				closebtn.before(infobtn);
 			}
 		});
-
-		if(document.getElementById('scpy')) document.getElementById('scpy').addEventListener('click', function() {
-			console.log(this);
-		});
 	
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
@@ -275,9 +271,18 @@ function sharepicture() {
 			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
 			$("#link").contents().get(0).nodeValue = nurl;
 			link.style.visibility = "visible";
+			document.getElementById('scpy').removeEventListener('click', copyLink);
+			document.getElementById('scpy').addEventListener('click', copyLink);
 			document.getElementById('sbtn').style.visibility = "hidden";
 		}
 	});
+}
+
+function copyLink() {
+	navigator.clipboard.writeText(document.getElementById('link').innerText);
+	document.getElementById('share_edit').style.display='none';
+	window.parent.document.getElementById('info').style.display = 'none';
+	return false;
 }
 
 function move_picture() {
