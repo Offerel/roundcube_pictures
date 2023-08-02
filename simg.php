@@ -66,7 +66,6 @@ if(isset($file) && !empty($file)) {
 	$res = $dbh->query($query);
 	$rc = $dbh->num_rows($res);
 	$data = $dbh->fetch_assoc($res);
-	error_log($query);
 	
 	$username = $data['username'];
 	$image_basepath = rtrim(str_replace("%u", $username, $config['pictures_path']), '/');
