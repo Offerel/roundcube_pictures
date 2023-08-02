@@ -235,17 +235,19 @@ function delete_album() {
 	console.log("L\u00f6schen");
 	var a = document.getElementById("album_org").value;
 	console.log(a);
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "delete",
-			src: a
-		},
-		success: function(a) {
-			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs())
-		}
-	})
+	if(confirm(rcmail.gettext("galdconfirm", "pictures"))) {
+		$.ajax({
+			type: "POST",
+			url: "plugins/pictures/photos.php",
+			data: {
+				alb_action: "delete",
+				src: a
+			},
+			success: function(a) {
+				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs())
+			}
+		})
+	}
 }
 
 function sharepicture() {
@@ -362,19 +364,24 @@ function delete_picture() {
 		c = d[1]
 	}
 	c = decodeURI(c);
-	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		a.push($(this).val())
-	});
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			img_action: "delete",
-			images: a,
-			orgPath: c
-		},
-		success: function(a) {
-			1 == a && document.getElementById("picturescontentframe").contentWindow.location.reload(!0)
-		}
-	})
+
+	if(confirm(rcmail.gettext("picdconfirm", "pictures"))) {
+		$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
+			a.push($(this).val())
+		});
+		$.ajax({
+			type: "POST",
+			url: "plugins/pictures/photos.php",
+			data: {
+				img_action: "delete",
+				images: a,
+				orgPath: c
+			},
+			success: function(a) {
+				1 == a && document.getElementById("picturescontentframe").contentWindow.location.reload(!0)
+			}
+		})
+	} else {
+		return false;
+	}
 };

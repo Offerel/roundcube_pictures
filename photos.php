@@ -169,7 +169,6 @@ if(isset($_POST['img_action'])) {
 						$sharelink = bin2hex(random_bytes(25));
 						$edate = intval($_POST['expiredate']);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
-						//$dbh = rcmail_utils::db();
 						if(empty($shareid)) {
 							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);

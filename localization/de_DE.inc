@@ -15,6 +15,8 @@ $labels['move'] = "Verschieben";
 $labels['move_image'] = "Bild verschieben";
 $labels['delete'] = "Löschen";
 $labels['share'] = "Teilen";
+$labels['picdconfirm'] = "Sollen die markierten Bilder gelöscht werden?";
+$labels['galdconfirm'] = "Soll das markierte Album gelöscht werden?";
 
 $labels['exif_undefined'] = "Undefiniert";
 $labels['exif_manual'] = "Manuell";
