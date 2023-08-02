@@ -27,14 +27,14 @@ class pictures extends rcube_plugin {
 			include_once('config.inc.php');
 			$link = filter_var($_GET['slink'],FILTER_SANITIZE_STRING);
 			$dbh = $rcmail->get_dbh();
-			$query = "SELECT a.shareID, a.shareName, a.expireDate, b.username FROM pic_shares a INNER JOIN users b ON a.user_id = b.user_id WHERE shareLink = '$link'";
+			$query = "SELECT a.`share_id`, a.`share_name`, a.`expire_date`, b.`username` FROM `pic_shares` a INNER JOIN `users` b ON a.`user_id` = b.`user_id` WHERE a.`share_link` = '$link'";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
 			$shares = $dbh->fetch_assoc($res);
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
 			$shareID = $shares['shareID'];
 			$shareName = $shares['shareName'];
-			$query = "SELECT picturePath, pictureEXIF, pictureID FROM pic_shared_pictures WHERE shareID = $shareID ORDER BY pictureTaken ASC";
+			$query = "SELECT `pic_path`, `pic_EXIF`, `shared_pic_id` FROM `pic_shared_pictures` WHERE `share_id` = $shareID ORDER BY `pic_taken` ASC";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
 
@@ -65,9 +65,8 @@ class pictures extends rcube_plugin {
 		$this->load_config();
 		$this->add_texts('localization/', true);
 		$this->include_stylesheet($this->local_skin_path().'/pictures.css');
-		
 		$this->register_task('pictures');
-		
+		initDB();
 		$this->add_button(array(
 			'label'	=> 'pictures.pictures',
 			'command'	=> 'pictures',
@@ -179,4 +178,17 @@ function showShare($thumbnails, $shareName) {
 	$page.= $thumbnails;
 	$page.= "\n\t\t</body>\n\t</html>";
 	die($page);
+}
+
+function initDB() {
+	$dbh = rcmail_utils::db();
+	$query = "SELECT count(*) as count FROM `sqlite_master` WHERE type='table' AND `name` IN ('pic_shares','pic_shared_pictures')";
+	$dbh->query($query);
+	$count = $dbh->fetch_array()[0];
+	if($count != 2) {
+		$query = "CREATE TABLE IF NOT EXISTS `pic_shared_pictures` (`shared_pic_id` INTEGER, `share_id` INTEGER NOT NULL, `pic_path` TEXT NOT NULL, `pic_taken` INTEGER, `pic_EXIF` TEXT, UNIQUE(`share_id`,`pic_path`), PRIMARY KEY(`shared_pic_id` AUTOINCREMENT), FOREIGN KEY(`share_id`) REFERENCES `pic_shares`(`share_id`) ON UPDATE CASCADE ON DELETE CASCADE)";
+		$dbh->query($query);
+		$query = "CREATE TABLE IF NOT EXISTS `pic_shares` (`share_id` INTEGER,`share_name` TEXT NOT NULL,`share_link` TEXT NOT NULL, `expire_date` INTEGER, `user_id` INTEGER NOT NULL, PRIMARY KEY(`share_id` AUTOINCREMENT), FOREIGN KEY(`user_id`) REFERENCES `users`(`user_id`) ON UPDATE CASCADE ON DELETE CASCADE)";
+		$dbh->query($query);
+	}
 }

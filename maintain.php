@@ -10,14 +10,7 @@
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
-$modes = array("clean","add","all");
-if(!in_array($argv[1], $modes)) {
-    $message = "No working mode given, please specify one mode. Allowed modes are \"add\", \"clean\" or \"all\".\n";
-    logm($message);
-	die();
-} else {
-	$mode = $argv[1];
-}
+$mode = $argv[1];
 
 $rcmail = rcube::get_instance();
 $users = array();
@@ -33,34 +26,29 @@ for ($x = 0; $x < $rcount; $x++) {
 
 foreach($users as $username) {
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
-	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
+	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');	
 
-    $message = "Maintenance for $username with mode $mode";
-    logm($message);
-
-    switch($mode) {
-        case "add":
-            read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
-            break;
-        case "clean":
-            if(is_dir($thumb_basepath)) {
-                $path = $thumb_basepath;
-                read_thumbs($path, $thumb_basepath, $pictures_basepath);
-            }
-            break;
-        case "all":
-            read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
-            if(is_dir($thumb_basepath)) {
-                $path = $thumb_basepath;
-                read_thumbs($path, $thumb_basepath, $pictures_basepath);
-            }
-            break;
-        default:
-            $message = "Unknown Mode. Exit Script.";
-            logm($message, 2);
-            die();
-            break;
-    }
+	switch($mode) {
+		case "add":
+			logm("Maintenance for $username with mode add");
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+			break;
+		case "clean":
+			logm("Maintenance for $username with mode clean");
+			if(is_dir($thumb_basepath)) {
+				$path = $thumb_basepath;
+				read_thumbs($path, $thumb_basepath, $pictures_basepath);
+			}
+			break;
+		default:
+			logm("Complete Maintenance for $username");
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+			if(is_dir($thumb_basepath)) {
+				$path = $thumb_basepath;
+				read_thumbs($path, $thumb_basepath, $pictures_basepath);
+			}
+			break;
+	}
 }
 
 $endtime = time();
@@ -69,20 +57,20 @@ logm("Maintenance finished after $tdiff.");
 die();
 
 function logm($message, $mode = 4) {
-    global $rcmail;
-    $dtime = date("d.m.Y H:i:s");
-    switch($mode) {
-        case 1: $mode = " [ERRO] ";
-                break;
-        case 2: $mode = " [WARN] ";
-                break;
-        default: $mode = " [INFO] ";
-                break;
-    }
-    echo $message."\n";
-    $line = $dtime.$mode.$message."\n";
-    $logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
-    file_put_contents($logfile, $line, FILE_APPEND);
+	global $rcmail;
+	$dtime = date("d.m.Y H:i:s");
+	switch($mode) {
+		case 1: $mode = " [ERRO] ";
+				break;
+		case 2: $mode = " [WARN] ";
+				break;
+		default: $mode = " [INFO] ";
+				break;
+	}
+	echo $message."\n";
+	$line = $dtime.$mode.$message."\n";
+	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+	file_put_contents($logfile, $line, FILE_APPEND);
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath) {
@@ -95,11 +83,9 @@ function read_photos($path, $thumb_basepath, $pictures_basepath) {
 				}
 				
 				if(is_dir($path."/".$file."/")) {
-                    $message = "Change to directory $path/$file/";
-                    logm($message);
+					logm("Change to directory $path/$file/");
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath);
-				}
-				else {
+				} else {
 					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 					}
@@ -148,8 +134,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		return false;
 	}
 	$target = "";
-	$xoord = 0;
-	$yoord = 0;
 	$degrees = 0;
 	$flip = '';
 	
@@ -157,61 +141,14 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {
-            logm("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.", 2);
+			logm("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.", 2);
 		}
 	}
 
 	if (preg_match("/.jpg$|.jpeg$|.png$/i", $org_pic)) {
-		list($width, $height, $type) = getimagesize($org_pic);
-		if ($width > $height) {
-			$xoord = ceil(($width - $height) / 2);
-		}
-		else {
-			$yoord = ceil(($height - $width) / 2);
-		}
-		
-		if (function_exists('exif_read_data') && function_exists('imagerotate')) {
-			if (preg_match("/.jpg$|.jpeg$/i", $org_pic)) {
-				$exif = @exif_read_data($org_pic, 0, true);
-				if(isset($exif['IFD0']['Orientation'])) {
-					$ort = $exif['IFD0']['Orientation'];
-					switch ($ort) {
-						case 3:	// 180 rotate right
-							$degrees = 180;
-							break;
-						case 6:	// 90 rotate right
-							$degrees = 270;
-							break;
-						case 8:	// 90 rotate left
-							$degrees = 90;
-							break;
-						case 2:	// flip vertical
-							$flip = 'vertical';
-							break;
-						case 7:	// flipped
-							$degrees = 90;
-							$flip = 'vertical';
-							break;
-						case 5:	// flipped
-							$degrees = 270;
-							$flip = 'vertical';
-							break;
-						case 4:	// flipped
-							$degrees = 180;
-							$flip = 'vertical';
-							break;
-					}
-				}
-			}
-		}
-		else {
-			logm("PHP functions exif_read_data() and imagerotate() are not available, check your PHP installation.", 2);
-		}
-		
-		$newwidth = ceil($width / ($height / $thumbsize));
-		if($newwidth <= 0) {
-            logm("Calculating the width ($newwidth) of \"$get_filename\" failed.", 2);
-		}
+		list($width, $height, $type) = getimagesize($org_pic);		
+		$newwidth = ceil($width * $thumbsize / $height);
+		if($newwidth <= 0) logm("Calculating the width failed.", 2);
 
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
@@ -225,16 +162,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
 		
-		if ($degrees != 0) {
-			$target = imagerotate($target, $degrees, 0);
-		}
-		
 		if(is_writable($thumbpath)) {
-			if ($flip == 'vertical') {
-				imagejpeg(imageflip($target, IMG_FLIP_VERTICAL),$thumb_pic,80);
-			} else {
-				imagejpeg($target, $thumb_pic, 80);
-			}
+			imagejpeg($target, $thumb_pic, 80);
 		} else {
 			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 2);
 		}
@@ -243,8 +172,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($org_pic);
 			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";			
-			$cmd = $ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1";
-			exec($cmd);
+			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
 			$startconv = time();
 			exec("$ffmpeg -loglevel quiet -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
 			$diff = time() - $startconv;

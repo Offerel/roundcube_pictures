@@ -67,12 +67,12 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id=\"shares\" >";
+	$select = "<select id='shares' >";
 	foreach ($shares as $share) {
 		$name = $share['shareName'];
 		$id = $share['shareID'];
 		$link = $share['shareLink'];
-		$select.= "<option value=\"$id\" data-link=\"$link\">$name</option>";
+		$select.= "<option value='$id' data-link='$link'>$name</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -169,10 +169,9 @@ if(isset($_POST['img_action'])) {
 						$sharelink = bin2hex(random_bytes(25));
 						$edate = intval($_POST['expiredate']);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
-						$dbh = rcmail_utils::db();
-						
+						//$dbh = rcmail_utils::db();
 						if(empty($shareid)) {
-							$query = "INSERT INTO `pic_shares` (`shareName`,`shareLink`,`expireDate`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
+							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
 							$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
 						}
@@ -192,11 +191,11 @@ if(isset($_POST['img_action'])) {
 							$mp4taken = strtotime($timee);
 							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
 							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
-							$query = "INSERT INTO `pic_shared_pictures` (`shareID`,`picturePath`,`pictureTaken`,`pictureEXIF`) VALUES ('$shareid','$image',$taken, '$exifJSON')";
+							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`pic_path`,`pic_taken`,`pic_EXIF`) VALUES ('$shareid','$image',$taken, '$exifJSON')";
 							$ret = $dbh->query($query);
 						}
 
-						$query = "SELECT `shareLink` FROM `pic_shares` WHERE `shareID` = $shareid";
+						$query = "SELECT `share_link` FROM `pic_shares` WHERE `share_id` = $shareid";
 						$dbh->query($query);
 						$sharelink = $dbh->fetch_assoc()['shareLink'];
 						die($sharelink);
@@ -666,7 +665,7 @@ function getExistingShares() {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$query = "SELECT * FROM pic_shares WHERE user_id = $user_id";
+	$query = "SELECT * FROM `pic_shares` WHERE `user_id` = $user_id";
 	$erg = $dbh->query($query);
 	$rowc = $dbh->num_rows();
 	$shares = [];
@@ -728,7 +727,7 @@ function parse_fraction($v, $round = 0) {
 function readEXIF($file) {
 	global $rcmail;
 	$exif_arr = array();
-	$exif_data = exif_read_data($file);
+	$exif_data = @exif_read_data($file);
 
 	if(count($exif_data) > 0) {
 		//0
@@ -805,8 +804,7 @@ function readEXIF($file) {
 				case 8: $exif_arr[] = $rcmail->gettext('exif_landscape_auto','pictures'); break;
 				case 9: $exif_arr[] = $rcmail->gettext('exif_bulb','pictures'); break;
 			}
-		}
-		else
+		} else
 			$exif_arr[] = "-";
 		
 		//11
@@ -827,8 +825,7 @@ function readEXIF($file) {
 				case 6: $exif_arr[] = $rcmail->gettext('exif_partial','pictures'); break;
 				case 255: $exif_arr[] = $rcmail->gettext('exif_other','pictures'); break;
 			}
-		}
-		else
+		} else
 			$exif_arr[] = "-";
 		
 		//13
@@ -905,7 +902,7 @@ function createthumb($image) {
 
 	if (preg_match("/.jpg$|.jpeg$|.png$/i", $image)) {
 		list($width, $height, $type) = getimagesize($image);
-		$newwidth = $width * $thumbsize / $height;
+		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) error_log("Calculating the width failed.");
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
@@ -928,8 +925,7 @@ function createthumb($image) {
 		$ffmpeg = exec("which ffmpeg");
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);
-			$cmd = $ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1";
-			exec($cmd);
+			exec($ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
 			$startconv = time();
 			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
 			exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");

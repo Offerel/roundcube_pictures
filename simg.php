@@ -36,7 +36,6 @@ if(isset($file) && !empty($file)) {
 				$ext = "";
 				break;
 		}
-		//$pictures_basepath = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
 	} else {
 		error_log('Pictures Plugin(Picture): Login failed. User is not logged in.');
 		die();
@@ -54,7 +53,7 @@ if(isset($file) && !empty($file)) {
 	}
 	die();
 } else {
-	$query = "SELECT a.pictureID, a.picturePath, c.username FROM pic_shared_pictures a INNER JOIN pic_shares b ON a.shareID = b.shareID INNER JOIN users c ON b.user_id = c.user_id WHERE a.pictureID = $picture";
+	$query = "SELECT a.`shared_pic_id`, a.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` WHERE a.`shared_pic_id` = $picture";
 	$res = $dbh->query($query);
 	$rc = $dbh->num_rows($res);
 	$data = $dbh->fetch_assoc($res);
