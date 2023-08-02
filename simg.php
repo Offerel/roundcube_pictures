@@ -16,7 +16,8 @@ $dbh = $rcmail->get_dbh();
 
 $picture = filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT);
 $mode = filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT);
-$file = filter_var($_GET['file'], FILTER_SANITIZE_STRING);
+$file = filter_var($_GET['file'], FILTER_SANITIZE_STRING);k98c1umv
+
 
 if(isset($file) && !empty($file)) {
 	if (!empty($rcmail->user->ID)) {
