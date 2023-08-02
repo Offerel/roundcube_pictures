@@ -44,6 +44,14 @@ if(isset($file) && !empty($file)) {
 	$file = $pictures_basepath.$file.$ext;
 	if (file_exists("$file")) {
 		$mtype = mime_content_type($file);
+		$pathparts = pathinfo($file);
+		if(strpos($mtype, 'video') !== false) {
+			$ogvpath = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			if(file_exists($ogvpath)) {
+				$mimeType = mime_content_type($ogvpath);
+				$file = $ogvpath;
+			}
+		}
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 		header("Content-Type: $mtype");
 		header('Content-disposition: inline;filename="'.basename($file).'"');
@@ -82,7 +90,6 @@ if(isset($file) && !empty($file)) {
 		$mimeType = mime_content_type($path);
 		$pathparts = pathinfo($path);
 		if(strpos($mimeType, 'video') !== false) {
-			
 			$ogvpath = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
 			if(file_exists($ogvpath)) {
 				$mimeType = mime_content_type($ogvpath);
