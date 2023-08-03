@@ -52,6 +52,7 @@ $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
+$ffprobe = exec("which ffprobe");
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
@@ -111,7 +112,8 @@ if(isset($_FILES['galleryfiles'])) {
 				} else {
 					$errmsg = 'Upload successfully.';
 					$test[] = array('message' => $errmsg, 'type' => 'info');
-					createthumb("$pictures_path$folder/$name", $pictures_path, );
+					createthumb("$pictures_path$folder/$name", $pictures_path);
+					todb("$pictures_path$folder/$name", $rcmail->user->ID, $pictures_path);
 				}
 			}
 		}
@@ -206,7 +208,7 @@ if(isset($_POST['img_action'])) {
 function removeDirectory($path) {
 	$files = glob($path . '/*');
 	foreach ($files as $file) {
-		is_dir($file) ? removeDirectory($file) : unlink($file);
+		is_dir($file) ? removeDirectory($file):unlink($file);
 	}
 	rmdir($path);
 	return true;
@@ -931,6 +933,27 @@ function createthumb($image) {
 		} else {
 			error_log("ffmpeg is not installed, so video formats are not supported.");
 		}
+	}
+}
+
+function todb($file, $user, $pictures_basepath) {
+	global $rcmail, $ffprobe;
+	$dbh = rcmail_utils::db();
+	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
+	$result = $dbh->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
+	if($dbh->fetch_array($result)[0] == 0) {
+		$type = explode('/',mime_content_type($file))[0];
+		if($type == 'image') {
+			$exif = readEXIF($file);
+			$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
+			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+		} else {
+			$exif = 'NULL';
+			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
+			$taken = (empty($taken)) ? filemtime($file):$taken;
+		}
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
+		$dbh->query($query);
 	}
 }
 

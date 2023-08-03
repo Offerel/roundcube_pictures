@@ -13,25 +13,28 @@ $starttime = time();
 $mode = $argv[1];
 
 $rcmail = rcube::get_instance();
+$ffprobe = exec("which ffprobe");
+$ffmpeg = exec("which ffmpeg");
 $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
 
 $db = $rcmail->get_dbh();
-$result = $db->query("SELECT username FROM users;");
+$result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
 
 for ($x = 0; $x < $rcount; $x++) {
-	$users[] = $db->fetch_array($result)[0];
+	array_push($users, $db->fetch_assoc($result));
 }
 
-foreach($users as $username) {
+foreach($users as $user) {
+	$username = $user["username"];
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
 	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');	
 
 	switch($mode) {
 		case "add":
 			logm("Maintenance for $username with mode add");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			break;
 		case "clean":
 			logm("Maintenance for $username with mode clean");
@@ -42,7 +45,7 @@ foreach($users as $username) {
 			break;
 		default:
 			logm("Complete Maintenance for $username");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $username);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
@@ -56,20 +59,27 @@ $tdiff = gmdate("H:i:s", $endtime - $starttime);
 logm("Maintenance finished after $tdiff.");
 die();
 
-function logm($message, $mode = 4) {
-	global $rcmail;
+function logm($message, $mmode = 3) {
+	global $rcmail, $mode;
 	$dtime = date("d.m.Y H:i:s");
-	switch($mode) {
-		case 1: $mode = " [ERRO] ";
+	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+	switch($mmode) {
+		case 1: $msmode = " [ERRO] ";
 				break;
-		case 2: $mode = " [WARN] ";
+		case 2: $msmode = " [WARN] ";
 				break;
-		default: $mode = " [INFO] ";
+		case 3: $msmode = " [INFO] ";
+				break;
+		case 4: $msmode = " [DBUG] ";
 				break;
 	}
-	echo $message."\n";
-	$line = $dtime.$mode.$message."\n";
-	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+
+	if($mode != 'debug' && $mmode > 3) {
+		return;
+	} else {
+		$line = $dtime.$msmode.$message."\n";
+	}
+	echo $line;
 	file_put_contents($logfile, $line, FILE_APPEND);
 }
 
@@ -83,12 +93,12 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 				}
 				
 				if(is_dir($path."/".$file."/")) {
-					logm("Change to directory $path/$file/");
+					logm("Parse directory $path/$file/", 4);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
 				} else {
 					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
-						todb($path."/".$file, $user);
+						todb($path."/".$file, $user, $pictures_basepath);
 					}
 				}
 			}
@@ -128,7 +138,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize;
+	global $thumbsize, $ffmpeg;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if(file_exists($thumb_pic)) {
@@ -157,7 +167,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
 			case 2: $source = @imagecreatefromjpeg($org_pic); break;
 			case 3: $source = @imagecreatefrompng($org_pic); break;
-			default: logm("Unsupported fileformat ($org_pic $type).", 2); die();
+			default: logm("Unsupported fileformat ($org_pic $type).", 1); die();
 		}
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
@@ -166,51 +176,47 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumb_pic, 80);
 		} else {
-			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 2);
+			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
 		}
-	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $org_pic)) {
-		$ffmpeg = exec("which ffmpeg");
-		if(file_exists($ffmpeg)) {
-			$pathparts = pathinfo($org_pic);
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";			
+	} elseif(preg_match("/.mp4$|.mpg$|.mov$|.avi$|.3gp$/i", $org_pic)) {
+		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
-			$startconv = time();
-			exec("$ffmpeg -loglevel quiet -i $org_pic -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
-			$diff = time() - $startconv;
-			$cdiff = gmdate("H:i:s", $diff);
-			logm("OGV file converted within $diff ($cdiff)");
+			$pathparts = pathinfo($org_pic);
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			if(!file_exists($ogv)) {
+				$startconv = time();
+				$cmd = "$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"";
+				echo $cmd."\n";
+				exec($cmd);
+				$diff = time() - $startconv;
+				$cdiff = gmdate("H:i:s", $diff);
+				logm("OGV file ($org_pic) converted within $diff ($cdiff)", 4);
+			}
 		} else {
-			logm("ffmpeg is not installed, so video formats are not supported.", 2);
+			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
 }
 
-function todb($file, $user) {
-	global $rcmail;
-	$dbh = $rcmail->get_dbh();
-	$query = "SELECT `user_id` FROM `users` WHERE `username` = '$user'";
-	$res = $dbh->query($query);
-	$userid = $dbh->fetch_assoc($res)['user_id'];
+function todb($file, $user, $pictures_basepath) {
+	global $rcmail, $ffprobe, $db;
+	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 
-	$type = explode('/',mime_content_type($file))[0];
-	if($type == 'image') {
-		$exif = readEXIF($file);
-		$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
-		$exif = "'".json_encode($exif)."'";
-	} else {
-		$exif = NULL;
-		$ffmpeg = exec("which ffmpeg");
-		$meta = shell_exec($ffmpeg." -i ".$file." 2>&1");
-		foreach(preg_split("/((\r?\n)|(\r\n?))/", $meta) as $line){
-			if(strpos($line, 'creation_time')) $taken = strtotime(explode(' : ', $line)[1]); break;
+	$result = $db->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
+	if($db->fetch_array($result)[0] == 0) {
+		$type = explode('/',mime_content_type($file))[0];
+		if($type == 'image') {
+			$exif = readEXIF($file);
+			$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
+			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+		} else {
+			$exif = 'NULL';
+			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
+			$taken = (empty($taken)) ? filemtime($file):$taken;
 		}
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
+		$db->query($query);
 	}
-
-	$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$file\",'$type',$taken,$exif,$userid)";
-	//echo $query."\n";
-	file_put_contents("/tmp/insert.log", $query."\n", FILE_APPEND);
-	//$ret = $dbh->query($query);
-	//$dbh->insert_id("pic_shares");
 }
 
 function readEXIF($file) {

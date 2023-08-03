@@ -232,9 +232,7 @@ function move_album() {
 }
 
 function delete_album() {
-	console.log("L\u00f6schen");
 	var a = document.getElementById("album_org").value;
-	console.log(a);
 	if(confirm(rcmail.gettext("galdconfirm", "pictures"))) {
 		$.ajax({
 			type: "POST",
