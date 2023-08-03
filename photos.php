@@ -68,11 +68,11 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id='shares' >";
+	$select = "<select id='shares'>";
 	foreach ($shares as $share) {
-		$name = $share['shareName'];
-		$id = $share['shareID'];
-		$link = $share['shareLink'];
+		$name = $share['share_name'];
+		$id = $share['share_id'];
+		$link = $share['share_link'];
 		$select.= "<option value='$id' data-link='$link'>$name</option>";
 	}
 	$select.="</select>";
@@ -154,7 +154,6 @@ if(isset($_POST['img_action'])) {
 							$newPath = $_POST['newPath'];
 							if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 						}
-
 						foreach($images as $image) {
 							rename($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 						}
@@ -162,6 +161,9 @@ if(isset($_POST['img_action'])) {
 						break;
 		case 'delete':	foreach($images as $image) {
 							unlink($pictures_path.$org_path.'/'.$image);
+							//rmdb($pictures_path.$org_path.'/'.$image, $user_id);
+							//löschen aus pictures
+							//löschen aus shares
 						}
 						die(true);
 						break;
@@ -192,13 +194,16 @@ if(isset($_POST['img_action'])) {
 							$mp4taken = strtotime($timee);
 							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
 							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
-							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`pic_path`,`pic_taken`,`pic_EXIF`) VALUES ('$shareid','$image',$taken, '$exifJSON')";
+							$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` = '$image' AND `user_id` = $user_id";
+							$ret = $dbh->query($query);
+							$pic_id = $dbh->fetch_assoc()['pic_id'];
+							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`pic_path`,`pic_taken`,`pic_EXIF`,`user_id`,`pic_id`) VALUES ('$shareid','$image',$taken,'$exifJSON',$user_id,$pic_id)";
 							$ret = $dbh->query($query);
 						}
 
 						$query = "SELECT `share_link` FROM `pic_shares` WHERE `share_id` = $shareid";
 						$dbh->query($query);
-						$sharelink = $dbh->fetch_assoc()['shareLink'];
+						$sharelink = $dbh->fetch_assoc()['share_link'];
 						die($sharelink);
 						break;
 	}
@@ -513,7 +518,7 @@ function showGallery($requestedDir) {
 					}
 
 					checkpermissions($current_dir."/".$file);
-					$imgParams = http_build_query(array('file' => "$requestedDir/$file", 't' => 1));
+					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 					$imgUrl = "simg.php?$imgParams";
 
 					$taken = $exifReaden[5];
@@ -955,6 +960,11 @@ function todb($file, $user, $pictures_basepath) {
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
 		$dbh->query($query);
 	}
+}
+
+function rmdb($file, $user) {
+	//DELETE FROM `pic_pictures` WHERE `pic_path` = 'Incoming/Camera/Test_image_to_check_how_exif_fields_are_accepted_by_wiki.jpg' AND `user_id` = $user;
+	return;
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');

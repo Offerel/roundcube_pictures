@@ -252,9 +252,9 @@ function sharepicture() {
 	var pictures = [];
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
 		const urlParams = new URL($(this)[0].previousElementSibling.firstChild.src).searchParams;
-		pictures.push(urlParams.get('filename'));
+		pictures.push(urlParams.get('file'));
 	});
-	
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
