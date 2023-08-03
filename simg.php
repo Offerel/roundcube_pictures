@@ -42,7 +42,8 @@ if(isset($file) && !empty($file)) {
 		die();
 	}
 
-	$file = $pictures_basepath.$file.$ext;
+	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
+
 	if (file_exists("$file")) {
 		$mtype = mime_content_type($file);
 		$pathparts = pathinfo($file);

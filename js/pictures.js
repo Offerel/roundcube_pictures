@@ -343,7 +343,6 @@ function mv_img() {
 	});
 	document.getElementById("rpath").innerHTML = "&nbsp;";
 	if(document.getElementById("target")) document.getElementById("target").selectedIndex = 0;
-	//console.log(document.getElementById("target").selectedIndex);
 	document.getElementById("album_name_img").value = "";
 	document.getElementById("img_edit").style.display = "block";
 }
@@ -363,10 +362,11 @@ function delete_picture() {
 	}
 	c = decodeURI(c);
 
+	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
+		a.push($(this).val())
+	});
+
 	if(confirm(rcmail.gettext("picdconfirm", "pictures"))) {
-		$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-			a.push($(this).val())
-		});
 		$.ajax({
 			type: "POST",
 			url: "plugins/pictures/photos.php",

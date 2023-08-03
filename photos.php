@@ -7,6 +7,13 @@
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
  */
+
+ /* Todos
+  * Album umbennen -> alb_action > rename
+  * Album verschieben > alb_action > move
+  * Album löschen > alb_action > delete
+  * Bild verschieben > img_action > move
+ */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 $rcmail = rcmail::get_instance();
@@ -38,7 +45,7 @@ if (!empty($rcmail->user->ID)) {
 	error_log('Pictures Plugin(Photos): Login failed. User is not logged in.');
 	http_response_code(403);
 	header('location: ../../');
-    die('Login failed. User is not logged in.');
+	die('Login failed. User is not logged in.');
 }
 
 $page_navigation = "";
@@ -161,9 +168,7 @@ if(isset($_POST['img_action'])) {
 						break;
 		case 'delete':	foreach($images as $image) {
 							unlink($pictures_path.$org_path.'/'.$image);
-							//rmdb($pictures_path.$org_path.'/'.$image, $user_id);
-							//löschen aus pictures
-							//löschen aus shares
+							rmdb($org_path.'/'.$image, $user_id);
 						}
 						die(true);
 						break;
@@ -452,7 +457,7 @@ function showPage($thumbnails, $dir) {
 				xhr.send(formdata);
 			}
 		}
-    </script>
+	</script>
 	";	
 
 	$page.= "</div></body></html>";
@@ -483,7 +488,7 @@ function showGallery($requestedDir) {
 					$fparams = http_build_query($arr_params,'','&amp;');
 					
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
-						$imgUrl = "simg.php?file=".urlencode($file."/folder.jpg");
+						$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
 					} else {
 						unset($firstimage);					
 						$firstimage = getfirstImage("$current_dir/".$file);
@@ -686,11 +691,11 @@ if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', f
 }
 
 function strposa($haystack, $needle, $offset=0) {
-    if(!is_array($needle)) $needle = array($needle);
-    foreach($needle as $query) {
-        if(strpos($haystack, $query, $offset) !== false) return true;
-    }
-    return false;
+	if(!is_array($needle)) $needle = array($needle);
+	foreach($needle as $query) {
+		if(strpos($haystack, $query, $offset) !== false) return true;
+	}
+	return false;
 }
 
 function getfirstImage($dirname) {
@@ -857,17 +862,17 @@ function readEXIF($file) {
 	
 function gps($coordinate, $hemisphere) {
   if (is_string($coordinate)) {
-    $coordinate = array_map("trim", explode(",", $coordinate));
+	$coordinate = array_map("trim", explode(",", $coordinate));
   }
   for ($i = 0; $i < 3; $i++) {
-    $part = explode('/', $coordinate[$i]);
-    if (count($part) == 1) {
-      $coordinate[$i] = $part[0];
-    } else if (count($part) == 2) {
-      $coordinate[$i] = floatval($part[0])/floatval($part[1]);
-    } else {
-      $coordinate[$i] = 0;
-    }
+	$part = explode('/', $coordinate[$i]);
+	if (count($part) == 1) {
+	  $coordinate[$i] = $part[0];
+	} else if (count($part) == 2) {
+	  $coordinate[$i] = floatval($part[0])/floatval($part[1]);
+	} else {
+	  $coordinate[$i] = 0;
+	}
   }
   list($degrees, $minutes, $seconds) = $coordinate;
   $sign = ($hemisphere == 'W' || $hemisphere == 'S') ? -1 : 1;
@@ -883,13 +888,13 @@ function checkpermissions($file) {
 }
 
 function guardAgainstDirectoryTraversal($path) {
-    $pattern = "/^(.*\/)?(\.\.)(\/.*)?$/";
-    $directory_traversal = preg_match($pattern, $path);
+	$pattern = "/^(.*\/)?(\.\.)(\/.*)?$/";
+	$directory_traversal = preg_match($pattern, $path);
 
-    if ($directory_traversal === 1) {
+	if ($directory_traversal === 1) {
 		error_log('Pictures Plugin(Photos): Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
-        die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
-    }
+		die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
+	}
 }
 
 function createthumb($image) {
@@ -963,8 +968,9 @@ function todb($file, $user, $pictures_basepath) {
 }
 
 function rmdb($file, $user) {
-	//DELETE FROM `pic_pictures` WHERE `pic_path` = 'Incoming/Camera/Test_image_to_check_how_exif_fields_are_accepted_by_wiki.jpg' AND `user_id` = $user;
-	return;
+	$dbh = rcmail_utils::db();
+	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` = \"$file\" AND `user_id` = $user";
+	$ret = $dbh->query($query);
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
