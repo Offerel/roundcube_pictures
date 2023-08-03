@@ -13,6 +13,7 @@
   * Album verschieben > alb_action > move
   * Album löschen > alb_action > delete
   * Bild verschieben > img_action > move
+  * Anzeige/Sortierung aus DB > EXIF aus DB
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
