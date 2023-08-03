@@ -12,7 +12,6 @@
   * Album umbennen -> alb_action > rename
   * Album verschieben > alb_action > move
   * Album löschen > alb_action > delete
-  * Bild verschieben > img_action > move
   * Anzeige/Sortierung aus DB > EXIF aus DB
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
@@ -164,6 +163,7 @@ if(isset($_POST['img_action'])) {
 						}
 						foreach($images as $image) {
 							rename($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
+							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.$image);
 						}
 						die(true);
 						break;
@@ -971,6 +971,17 @@ function todb($file, $user, $pictures_basepath) {
 function rmdb($file, $user) {
 	$dbh = rcmail_utils::db();
 	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` = \"$file\" AND `user_id` = $user";
+	$ret = $dbh->query($query);
+}
+
+function mvdb($oldpath, $newPath) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$user_id = $rcmail->user->ID;
+	$query = "SELECT pic_id FROM pic_pictures WHERE pic_path = \"$oldpath\" AND user_id = $user_id";
+	$ret = $dbh->query($query);
+	$pic_id = $dbh->fetch_assoc($ret)['pic_id'];
+	$query = "UPDATE pic_pictures SET pic_path = \"$newPath\" WHERE pic_id = $pic_id";
 	$ret = $dbh->query($query);
 }
 
