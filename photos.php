@@ -11,7 +11,6 @@
  /* Todos
   * Album umbennen -> alb_action > rename
   * Album verschieben > alb_action > move
-  * Album löschen > alb_action > delete
   * Anzeige/Sortierung aus DB > EXIF aus DB
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
@@ -141,7 +140,7 @@ if(isset($_POST['alb_action'])) {
 	switch($action) {
 		case 'move':	$target = $pictures_path.$_POST['target'].basename($src); die(rename($src, $target)); break;
 		case 'rename':	$target = dirname($src)."/".trim(trim($_POST['target']),"/"); die(rename($src, $target)); break;
-		case 'delete':	die(removeDirectory($src)); break;
+		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':	die(mkdir(dirname($src)."/".trim(trim($_POST['target']),"/"), 0755, true)); break;
 	}
 	die();
@@ -216,10 +215,11 @@ if(isset($_POST['img_action'])) {
 	die();
 }
 
-function removeDirectory($path) {
+function removeDirectory($path, $user) {
 	$files = glob($path . '/*');
 	foreach ($files as $file) {
-		is_dir($file) ? removeDirectory($file):unlink($file);
+		is_dir($file) ? removeDirectory($file, $user):unlink($file);
+		rmdb($file, $user);
 	}
 	rmdir($path);
 	return true;
@@ -970,7 +970,7 @@ function todb($file, $user, $pictures_basepath) {
 
 function rmdb($file, $user) {
 	$dbh = rcmail_utils::db();
-	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` = \"$file\" AND `user_id` = $user";
+	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` like \"$file%\" AND `user_id` = $user";
 	$ret = $dbh->query($query);
 }
 

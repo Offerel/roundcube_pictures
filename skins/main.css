@@ -547,15 +547,14 @@ footer a {
 	opacity: 1;
 }
 #header {
-	height: 55px;
-	position: fixed;
-	top: 0;
-	transition: top .3s;
-	width: 100%;
-	display: block;
-	z-index: 1;
-	left: 0;
-	padding-left: 10px;
+    height: 55px;
+    position: fixed;
+    top: 0;
+    transition: top .3s;
+    width: 100%;
+    display: block;
+    z-index: 1;
+    left: 0;
 }
 .shared {
 	top: 20px;
