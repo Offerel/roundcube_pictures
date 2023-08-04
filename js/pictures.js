@@ -200,6 +200,8 @@ function getshares() {
 function rename_album() {
 	var a = document.getElementById("album_org").value,
 		b = document.getElementById("album_name").value;
+	//console.log(a,b);
+	//return false;
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -209,7 +211,7 @@ function rename_album() {
 			src: a
 		},
 		success: function(b) {
-			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
+			//1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
 		}
 	})
 }

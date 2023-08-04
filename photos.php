@@ -9,9 +9,8 @@
  */
 
  /* Todos
-  * Album umbennen -> alb_action > rename
-  * Album verschieben > alb_action > move
-  * Anzeige/Sortierung aus DB > EXIF aus DB
+  * Album move > alb_action > move > Completely missing (onchange listener at select element)
+  * Display/Sort from DB > EXIF from DB
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
@@ -136,10 +135,13 @@ if(isset($_FILES['galleryfiles'])) {
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
 	$src = $pictures_path.$_POST['src'];
+	$target = dirname($src).'/'.$_POST['target'];
+	$oldpath = str_replace($pictures_path,'',$src);
+	$newPath = str_replace($pictures_path,'',$target);
 
 	switch($action) {
-		case 'move':	$target = $pictures_path.$_POST['target'].basename($src); die(rename($src, $target)); break;
-		case 'rename':	$target = dirname($src)."/".trim(trim($_POST['target']),"/"); die(rename($src, $target)); break;
+		case 'move':	break; //mvdb($oldpath, $newPath); die(rename($src, $target)); break;
+		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':	die(mkdir(dirname($src)."/".trim(trim($_POST['target']),"/"), 0755, true)); break;
 	}
@@ -249,7 +251,12 @@ function showPage($thumbnails, $dir) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			";
-	$page.= "</head><body onload=\"count_checks(); album_w('$dir');\"><div id='header' style='position: absolute; top: -15px;'><h2>$dir</h2></div><div id=\"galdiv\">";
+	$page.= "</head>
+	\t\t<body onload=\"count_checks(); album_w('$dir');\">
+	\t\t\t<div id='header' style='position: absolute; top: -15px;'>
+	\t\t\t\t<h2>$dir</h2>
+	\t\t\t</div>
+	\t\t\t<div id=\"galdiv\">";
 	$page.= $thumbnails;
 	$page.="
 	<script>
@@ -505,7 +512,7 @@ function showGallery($requestedDir) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "<a id=\"$requestedDir/$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir/$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a id=\"$requestedDir/$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir/$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
 								);
 				}
 			}
@@ -590,7 +597,7 @@ function showGallery($requestedDir) {
 		closedir($handle);
 	} else {
 		error_log('Pictures Plugin(Photos): Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
-		die("ERROR: Could not open \"".htmlspecialchars(stripslashes($current_dir))."\" folder for reading!");
+		die("ERROR: Please check server error log");
 	}
 
 	$thumbnails = "";
@@ -598,7 +605,7 @@ function showGallery($requestedDir) {
 
 	// sort folders
 	if (isset($dirs) && sizeof($dirs) > 0) {
-		$thumbnails.= "<div id=\"folders\">";
+		$thumbnails.= "\n\t\t\t\t\t<div id=\"folders\">";
 		foreach ($dirs as $key => $row) {
 			if ($row["name"] == "") {
 				unset($dirs[$key]);
@@ -613,11 +620,11 @@ function showGallery($requestedDir) {
 			$thumbnails.= $folder["html"];
 			$start++;
 		}
-		$thumbnails.= "</div>";
+		$thumbnails.= "\n\t\t\t\t\t</div>";
 	}
 
 	// sort images
-	$thumbnails.= "<div id=\"images\" class=\"justified-gallery\">";
+	$thumbnails.= "\n\t\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
 	if (sizeof($files) > 0) {
 		foreach ($files as $key => $row) {
 			if ($row["name"] == "") {
@@ -658,7 +665,7 @@ function showGallery($requestedDir) {
 			}
 		}
 	}
-	$thumbnails.= "</div>";
+	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid.$pnavigation;
 	return $thumbnails;
 }
@@ -978,11 +985,22 @@ function mvdb($oldpath, $newPath) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$query = "SELECT pic_id FROM pic_pictures WHERE pic_path = \"$oldpath\" AND user_id = $user_id";
+
+	$query = "SELECT `pic_id`, `pic_path` FROM `pic_pictures` WHERE `pic_path` like \"$oldpath%\" AND `user_id` = $user_id";
 	$ret = $dbh->query($query);
-	$pic_id = $dbh->fetch_assoc($ret)['pic_id'];
-	$query = "UPDATE pic_pictures SET pic_path = \"$newPath\" WHERE pic_id = $pic_id";
-	$ret = $dbh->query($query);
+	$rowc = $dbh->num_rows();
+
+	$images = [];
+	for ($i = 0; $i < $rowc; $i++) {
+		array_push($images, $dbh->fetch_assoc($ret));
+	}
+
+	foreach ($images as $image) {
+		$pic_id = $image['pic_id'];
+		$nnewPath = str_replace($oldpath, $newPath, $image['pic_path']);
+		$query = "UPDATE `pic_pictures` SET `pic_path` = \"$nnewPath\" WHERE `pic_id` = $pic_id";
+		$ret = $dbh->query($query);
+	}
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
