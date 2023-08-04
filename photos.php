@@ -7,11 +7,6 @@
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
  */
-
- /* Todos
-  * SQL for share table?
-  * Display/Sort from DB > EXIF from DB
- */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 $rcmail = rcmail::get_instance();
@@ -32,8 +27,7 @@ if (!empty($rcmail->user->ID)) {
 		die();
 	}
 	
-	if (!is_dir($pictures_path))
-	{
+	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
 			error_log('Pictures Plugin(Photos): Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
 			die();
@@ -189,24 +183,10 @@ if(isset($_POST['img_action'])) {
 						}
 
 						foreach($images as $image) {
-							$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $image)) ? readEXIF($pictures_path.$image):array();
-							if(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
-								$ffmpeg = exec("which ffmpeg");
-								$command = $ffmpeg." -i ".$pictures_path.$image." 2>&1";
-								$meta = shell_exec($command);
-								foreach(preg_split("/((\r?\n)|(\r\n?))/", $meta) as $line){
-									$pos = strpos($line, 'creation_time');
-									if(strpos($line, 'creation_time')) $timee = explode(' : ', $line)[1];
-								}
-							}
-
-							$mp4taken = strtotime($timee);
-							$taken = empty($mp4taken) ? $exifReaden[5]:$mp4taken;
-							$exifJSON = (!empty($exifReaden)) ? json_encode($exifReaden):NULL;
 							$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` = '$image' AND `user_id` = $user_id";
 							$ret = $dbh->query($query);
 							$pic_id = $dbh->fetch_assoc()['pic_id'];
-							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`pic_path`,`pic_taken`,`pic_EXIF`,`user_id`,`pic_id`) VALUES ('$shareid','$image',$taken,'$exifJSON',$user_id,$pic_id)";
+							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`user_id`,`pic_id`) VALUES ('$shareid',$user_id,$pic_id)";
 							$ret = $dbh->query($query);
 						}
 
@@ -480,13 +460,13 @@ function showGallery($requestedDir) {
 	$pnavigation = "";
 	
 	global $pictures_path, $rcmail, $label_max_length;
+	$dbh = rcmail_utils::db();
 	$thumbdir = $pictures_path.$requestedDir;
 	$current_dir = $thumbdir;
 	$forbidden = $rcmail->config->get('skip_objects', false);
 	
 	if (is_dir($current_dir) && $handle = opendir("${current_dir}")) {
 		while (false !== ($file = readdir($handle))) {
-			
 			if(!in_array($file, $forbidden)) {
 			// Gallery folders
 			if (is_dir($current_dir."/".$file)) {
@@ -525,18 +505,20 @@ function showGallery($requestedDir) {
 				$requestedDir = trim($requestedDir,'/').'/';
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 
-				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
-					if ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) {
-						$exifReaden = readEXIF($current_dir."/".$file);
-					} else {
-						$exifReaden = array();
-					}
+				$fullpath = $current_dir."/".$file;
+				$dbpath = str_replace($pictures_path, '', $fullpath);
+				$uid = $rcmail->user->ID;
+				$query = "SELECT `pic_id`, `pic_EXIF`, `pic_taken` FROM `pic_pictures` WHERE `pic_path` = \"$dbpath\" AND user_id = $uid";
+				$result = $dbh->query($query);
+				$pdata = $dbh->fetch_assoc($result);
+				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) ? json_decode($pdata['pic_EXIF']):array();
+				$taken = $pdata['pic_taken'];
 
+				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					checkpermissions($current_dir."/".$file);
 					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 					$imgUrl = "simg.php?$imgParams";
 
-					$taken = $exifReaden[5];
 					$exifInfo = "";
 					if($exifReaden[0] != "-" && $exifReaden[8] != "-")
 						$exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";

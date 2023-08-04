@@ -63,7 +63,7 @@ if(isset($file) && !empty($file)) {
 	}
 	die();
 } else {
-	$query = "SELECT a.`shared_pic_id`, a.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` WHERE a.`shared_pic_id` = $picture";
+	$query = "SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture";
 	$res = $dbh->query($query);
 	$rc = $dbh->num_rows($res);
 	$data = $dbh->fetch_assoc($res);
@@ -72,8 +72,8 @@ if(isset($file) && !empty($file)) {
 	$image_basepath = rtrim(str_replace("%u", $username, $config['pictures_path']), '/');
 	$thumb_basepath = rtrim(str_replace("%u", $username, $config['thumb_path']), '/');
 
-	$imagepath = $image_basepath."/".$data['picturePath'];
-	$thumbpath = $thumb_basepath."/".$data['picturePath'].".jpg";
+	$imagepath = $image_basepath."/".$data['pic_path'];
+	$thumbpath = $thumb_basepath."/".$data['pic_path'].".jpg";
 
 	switch($mode) {
 		case 1:
