@@ -175,8 +175,15 @@ function getsubs() {
 		},
 		success: function(a) {
 			$("#mv_target").html(a);
+			setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
 		}
 	})
+}
+
+function mvbtncl() {
+	document.getElementById('mvb').classList.remove('disabled');
+	document.getElementById('album_name').value = document.getElementById('album_org').value.split("/").pop();
+	document.getElementById('rnb').classList.add('disabled');
 }
 
 function getshares() {
@@ -200,8 +207,7 @@ function getshares() {
 function rename_album() {
 	var a = document.getElementById("album_org").value,
 		b = document.getElementById("album_name").value;
-	//console.log(a,b);
-	//return false;
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -211,7 +217,7 @@ function rename_album() {
 			src: a
 		},
 		success: function(b) {
-			//1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
+			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
 		}
 	})
 }

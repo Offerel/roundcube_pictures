@@ -9,7 +9,7 @@
  */
 
  /* Todos
-  * Album move > alb_action > move > Completely missing (onchange listener at select element)
+  * SQL for share table?
   * Display/Sort from DB > EXIF from DB
  */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
@@ -61,7 +61,7 @@ $ffprobe = exec("which ffprobe");
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
-	$select = "<select name='target' id='target'>";
+	$select = "<select name='target' id='target'><option selected='true' disabled='disabled'>Choose Target</option>";
 	foreach ($subdirs as $dir) {
 		$dir = trim(substr($dir,strlen($pictures_path)),'/');
 		if(!strposa($dir, $skip_objects))
@@ -73,7 +73,7 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id='shares'>";
+	$select = "<select id='shares'><option selected='true' disabled='disabled'>Choose Share</option>";
 	foreach ($shares as $share) {
 		$name = $share['share_name'];
 		$id = $share['share_id'];
@@ -136,11 +136,13 @@ if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
 	$src = $pictures_path.$_POST['src'];
 	$target = dirname($src).'/'.$_POST['target'];
+	$mtarget = $pictures_path.$_POST['target'];
 	$oldpath = str_replace($pictures_path,'',$src);
 	$newPath = str_replace($pictures_path,'',$target);
+	$nnewPath = str_replace($pictures_path,'',$mtarget);
 
 	switch($action) {
-		case 'move':	break; //mvdb($oldpath, $newPath); die(rename($src, $target)); break;
+		case 'move':	mvdb("$oldpath | $nnewPath"); die(rename($src, $mtarget)); break;
 		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':	die(mkdir(dirname($src)."/".trim(trim($_POST['target']),"/"), 0755, true)); break;
