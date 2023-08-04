@@ -122,6 +122,9 @@ html{
 #folders {
 	margin: 0 0 10px 0;
 }
+#folders a {
+	border-radius: 8px;
+}
 #folders span {
 	position: relative;
 	width: 100%;
@@ -136,6 +139,9 @@ html{
 }
 #folders span:hover {
 	background: #00000080;
+}
+#header h2 {
+	font-family: "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Droid Sans", "Helvetica Neue", sans-serif;
 }
 .breadcrumb {
 	list-style: none;
@@ -563,4 +569,8 @@ footer a {
 .shadow {
 	box-shadow: 0 10px 15px -3px rgba(0,0,0,.52);
 	background-image: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.36));
+}
+.picbdy {
+	margin-left: 20px;
+	margin-right: 20px;
 }

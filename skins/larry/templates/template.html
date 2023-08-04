@@ -15,7 +15,6 @@
 		<span class="divider"></span>
 		<roundcube:button id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
 		<roundcube:button id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
-		<roundcube:button id="create_share" command="create_share" type="link" class="button share disabled" label="pictures.share" title="pictures.share" />
 		<div id="bcn"></div>
 	</div>
 	<div id="pluginbody" class="offset">
@@ -85,7 +84,7 @@
 				<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 				<input type="hidden" id="sid">
 				<label for="edate">Expire Date</label>
-				<input type="date" id="expiredate">
+				<input type="date" id="expiredate" style="width: calc(100% - 20px) !important"><input type="checkbox" title="Never" id="never" style="width: 20px;">
 				<div id="link">&nbsp;<span id="scpy" title="Copy URL" class="cpy"></span></div>
 				<div id="shareedit">
 					<roundcube:button command="sharepic" id="sbtn" type="link" class="button" label="pictures.share">

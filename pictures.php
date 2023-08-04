@@ -158,9 +158,9 @@ function showShare($thumbnails, $shareName) {
 			<meta charset='UTF-8'>
 			<meta http-equiv='X-UA-Compatible' content='IE=Edge'>
 			<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
-			<!-- <link rel='apple-touch-icon' sizes='180x180' href='images/apple-touch-icon.png'>
-			<link rel='icon' type='image/png' sizes='32x32' href='images/favicon-32x32.png'>
-			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'> -->
+			<link rel='apple-touch-icon' sizes='180x180' href='plugins/pictures/images/apple-touch-icon.png'>
+			<link rel='icon' type='image/png' sizes='32x32' href='plugins/pictures/images/favicon-32x32.png'>
+			<link rel='icon' type='image/png' sizes='16x16' href='plugins/pictures/images/favicon-16x16.png'>
 			<title>$shareName</title>
 			<link rel='stylesheet' href='plugins/pictures/js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
 			<link rel='stylesheet' href='plugins/pictures/skins/main.min.css' type='text/css' />
@@ -172,8 +172,8 @@ function showShare($thumbnails, $shareName) {
 			<script src='plugins/pictures/js/plyr/plyr.js'></script>
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
-	$page.= "\n\t\t</head>\n\t\t<body>";
-	$page.= "\n\t\t\t<div id='header'><h2>$shareName</h2>";
+	$page.= "\n\t\t</head>\n\t\t<body class='picbdy'>";
+	$page.= "\n\t\t\t<div id='header'><h2 style='padding-left: 20px;'>$shareName</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;
 	$page.= "\n\t\t</body>\n\t</html>";

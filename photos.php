@@ -234,7 +234,7 @@ function showPage($thumbnails, $dir) {
 			<script src='js/glightbox/glightbox.min.js'></script>
 			";
 	$page.= "</head>
-	\t\t<body onload=\"count_checks(); album_w('$dir');\">
+	\t\t<body class=\"picbdy\" onload=\"count_checks(); album_w('$dir');\">
 	\t\t\t<div id='header' style='position: absolute; top: -15px;'>
 	\t\t\t\t<h2>$dir</h2>
 	\t\t\t</div>

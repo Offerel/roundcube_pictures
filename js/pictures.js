@@ -106,6 +106,16 @@ window.onload = function(){
 			prevScrollpos = currentScrollPos;
 		}
 	}
+	document.getElementById('never').addEventListener('change', function(){
+		if(this.checked != true){
+			document.getElementById('expiredate').disabled = false;
+			let someDate = new Date();
+			document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
+		} else {
+			document.getElementById('expiredate').disabled = true;
+			document.getElementById('expiredate').value = '';
+		}
+	});
 };
 
 function selectShare() {
@@ -117,6 +127,8 @@ function selectShare() {
 	document.getElementById('sbtn').style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
+	let someDate = new Date();
+	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
 }
 
 function add_album() {
