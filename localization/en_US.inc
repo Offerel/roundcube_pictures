@@ -17,6 +17,8 @@ $labels['delete'] = "Delete";
 $labels['share'] = "Share";
 $labels['picdconfirm'] = "Do you want to delete the marked images?";
 $labels['galdconfirm'] = "Do you want to delete the marked album?";
+$labels['selalb'] = "Choose Album";
+$labels['selshr'] = "Choose Share";
 
 $labels['exif_undefined'] = "Undefined";
 $labels['exif_manual'] = "Manual";

@@ -17,6 +17,8 @@ $labels['delete'] = "Löschen";
 $labels['share'] = "Teilen";
 $labels['picdconfirm'] = "Sollen die markierten Bilder gelöscht werden?";
 $labels['galdconfirm'] = "Soll das markierte Album gelöscht werden?";
+$labels['selalb'] = "Album auswählen";
+$labels['selshr'] = "Share auswählen";
 
 $labels['exif_undefined'] = "Undefiniert";
 $labels['exif_manual'] = "Manuell";

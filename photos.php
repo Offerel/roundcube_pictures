@@ -55,7 +55,7 @@ $ffprobe = exec("which ffprobe");
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
-	$select = "<select name='target' id='target'><option selected='true' disabled='disabled'>Choose Target</option>";
+	$select = "<select name='target' id='target'><option selected='true' disabled='disabled'>".$rcmail->gettext('selalb','pictures')."</option>";
 	foreach ($subdirs as $dir) {
 		$dir = trim(substr($dir,strlen($pictures_path)),'/');
 		if(!strposa($dir, $skip_objects))
@@ -67,7 +67,7 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id='shares'><option selected='true' disabled='disabled'>Choose Share</option>";
+	$select = "<select id='shares'><option selected='true' disabled='disabled'>".$rcmail->gettext('selshr','pictures')."</option>";
 	foreach ($shares as $share) {
 		$name = $share['share_name'];
 		$id = $share['share_id'];
