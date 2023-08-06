@@ -211,6 +211,16 @@ function getshares() {
 				document.getElementById('sname').value = name.target.selectedOptions[0].text;
 				document.getElementById('sid').value = name.target.selectedOptions[0].value;
 				document.getElementById('link').value = '';
+				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
+					document.getElementById('never').checked = false;
+					document.getElementById('expiredate').disabled = false;
+					let someDate = new Date();
+					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + 30)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
+				} else {
+					document.getElementById('never').checked = true;
+					document.getElementById('expiredate').value = '';
+					document.getElementById('expiredate').disabled = true;
+				}
 			});
 		}
 	})

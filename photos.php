@@ -67,12 +67,12 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id='shares'><option selected='true' disabled='disabled'>".$rcmail->gettext('selshr','pictures')."</option>";
+	$select = "<select id='shares' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
 	foreach ($shares as $share) {
 		$name = $share['share_name'];
 		$id = $share['share_id'];
-		$link = $share['share_link'];
-		$select.= "<option value='$id' data-link='$link'>$name</option>";
+		$expd = $share['expire_date'];
+		$select.= "<option value='$id' data-ep='$expd'>$name</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -668,7 +668,8 @@ function getExistingShares() {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$query = "SELECT * FROM `pic_shares` WHERE `user_id` = $user_id";
+	//$query = "SELECT * FROM `pic_shares` WHERE `user_id` = $user_id";
+	$query = "SELECT `share_id`, `share_name`, `expire_date` FROM `pic_shares` WHERE `user_id` = 1 ORDER BY `share_name` ASC";
 	$erg = $dbh->query($query);
 	$rowc = $dbh->num_rows();
 	$shares = [];
