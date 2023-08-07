@@ -170,16 +170,20 @@ if(isset($_POST['img_action'])) {
 						}
 						die(true);
 						break;
-		case 'share':	$shareid = $_POST['shareid'];
+		case 'share':	$shareid = filter_var($_POST['shareid'], FILTER_SANITIZE_NUMBER_INT);
 						$cdate = date("Y-m-d");
-						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate":$_POST['sharename'];
+						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_SANITIZE_STRING);
 						$sharelink = bin2hex(random_bytes(25));
-						$edate = intval($_POST['expiredate']);
+						$edate = filter_var($_POST['expiredate'], FILTER_SANITIZE_NUMBER_INT);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
+
 						if(empty($shareid)) {
 							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
 							$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
+						} else {
+							$query = "UPDATE `pic_shares` SET `share_name`= '$sharename', `expire_date` = $expiredate WHERE `share_id`= $shareid AND `user_id` = $user_id";
+							$ret = $dbh->query($query);
 						}
 
 						foreach($images as $image) {
@@ -194,6 +198,11 @@ if(isset($_POST['img_action'])) {
 						$dbh->query($query);
 						$sharelink = $dbh->fetch_assoc()['share_link'];
 						die($sharelink);
+						break;
+		case 'dshare':	$share = filter_var($_POST['share'], FILTER_SANITIZE_NUMBER_INT);
+						$query = "DELETE FROM `pic_shares` WHERE `share_id` = $share AND `user_id` = $user_id";
+						$ret = $dbh->query($query);
+						die("0");
 						break;
 	}
 	die();

@@ -25,7 +25,7 @@ class pictures extends rcube_plugin {
 
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {
 			include_once('config.inc.php');
-			$link = filter_var($_GET['slink'],FILTER_SANITIZE_STRING);
+			$link = filter_var($_GET['slink'], FILTER_SANITIZE_STRING);
 			$dbh = $rcmail->get_dbh();
 			$query = "SELECT a.`share_id`, a.`share_name`, a.`expire_date`, b.`username` FROM `pic_shares` a INNER JOIN `users` b ON a.`user_id` = b.`user_id` WHERE a.`share_link` = '$link'";
 			$res = $dbh->query($query);
@@ -66,7 +66,7 @@ class pictures extends rcube_plugin {
 		$this->add_texts('localization/', true);
 		$this->include_stylesheet($this->local_skin_path().'/pictures.css');
 		$this->register_task('pictures');
-		initDB();
+		checkDB();
 		$this->add_button(array(
 			'label'	=> 'pictures.pictures',
 			'command'	=> 'pictures',
@@ -180,7 +180,7 @@ function showShare($thumbnails, $shareName) {
 	die($page);
 }
 
-function initDB() {
+function checkDB() {
 	$dbh = rcmail_utils::db();
 	$query = "SELECT count(*) as count FROM `sqlite_master` WHERE type='table' AND `name` IN ('pic_pictures','pic_shares','pic_shared_pictures')";
 	$dbh->query($query);
@@ -193,4 +193,6 @@ function initDB() {
 		$query = "CREATE TABLE IF NOT EXISTS `pic_shared_pictures` (`shared_pic_id`	INTEGER, `share_id`	INTEGER NOT NULL, `user_id`	INTEGER, `pic_id` INTEGER, UNIQUE(`share_id`,`pic_id`), PRIMARY KEY(`shared_pic_id` AUTOINCREMENT), FOREIGN KEY(`pic_id`) REFERENCES `pic_pictures`(`pic_id`) ON DELETE CASCADE, FOREIGN KEY(`share_id`) REFERENCES `pic_shares`(`share_id`) ON DELETE CASCADE)";
 		$dbh->query($query);
 	}
+	$atime = time();
+	$result = $dbh->query("DELETE FROM `pic_shares` WHERE `expire_date` \< $atime");
 }

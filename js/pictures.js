@@ -18,7 +18,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("movepicture", mv_img, !0);
 	rcmail.register_command("move_image", move_picture, !0);
 	rcmail.register_command("delpicture", delete_picture, !0);
-
+	/*
 	document.getElementById('sname').addEventListener('input', function(e) {
 		const snames = [];
 		let shares = document.getElementById("shares");
@@ -32,6 +32,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 			document.getElementById('link').value = '';
 		}
 	});
+	*/
 });
 
 window.onload = function(){
@@ -106,6 +107,7 @@ window.onload = function(){
 			prevScrollpos = currentScrollPos;
 		}
 	}
+
 	document.getElementById('never').addEventListener('change', function(){
 		if(this.checked != true){
 			document.getElementById('expiredate').disabled = false;
@@ -116,6 +118,32 @@ window.onload = function(){
 			document.getElementById('expiredate').value = '';
 		}
 	});
+
+	document.getElementById('rsh').addEventListener('click', function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		$.ajax({
+			type: "POST",
+			url: "plugins/pictures/photos.php",
+			data: {
+				img_action: "dshare",
+				share: document.getElementById('shares').selectedOptions[0].value
+			},
+			success: function(response) {
+				getshares();
+				document.getElementById('sid').value = '';
+				document.getElementById('sname').value = '';
+				document.getElementById('expiredate').value = '';
+				document.getElementById('expiredate').disabled = false;
+				document.getElementById('rsh').disabled = true;
+				document.getElementById('never').checked = false;
+				document.getElementById('link').value = '';
+				let someDate = new Date();
+				document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
+				return false;
+			}
+		})
+	});
 };
 
 function selectShare() {
@@ -123,6 +151,9 @@ function selectShare() {
 	document.getElementById('sid').value = '';
 	document.getElementById('sname').value = '';
 	document.getElementById('expiredate').value = '';
+	document.getElementById('expiredate').disabled = false;
+	document.getElementById('rsh').disabled = true;
+	document.getElementById('never').checked = false;
 	document.getElementById('link').value = '';
 	document.getElementById('sbtn').style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
@@ -209,8 +240,10 @@ function getshares() {
 			$("#share_target").html(a);
 			document.getElementById('shares').addEventListener('change', function(name){
 				document.getElementById('sname').value = name.target.selectedOptions[0].text;
-				document.getElementById('sid').value = name.target.selectedOptions[0].value;
+				document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
 				document.getElementById('link').value = '';
+				document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
+
 				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
 					document.getElementById('never').checked = false;
 					document.getElementById('expiredate').disabled = false;

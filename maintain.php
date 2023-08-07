@@ -50,6 +50,7 @@ foreach($users as $user) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
+			rmexpires();
 			break;
 	}
 }
@@ -218,6 +219,11 @@ function todb($file, $user, $pictures_basepath) {
 		$db->query($query);
 	}
 }
+
+function rmexpires() {
+	$atime = time();
+	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
+} 
 
 function readEXIF($file) {
 	global $rcmail;
