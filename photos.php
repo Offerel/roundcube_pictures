@@ -236,7 +236,7 @@ function showPage($thumbnails, $dir) {
 		<head>
 			<title>$dir</title>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
-			<link rel=\"stylesheet\" href=\"skins/main.min.css\" type=\"text/css\" />
+			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
