@@ -18,21 +18,6 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("movepicture", mv_img, !0);
 	rcmail.register_command("move_image", move_picture, !0);
 	rcmail.register_command("delpicture", delete_picture, !0);
-	/*
-	document.getElementById('sname').addEventListener('input', function(e) {
-		const snames = [];
-		let shares = document.getElementById("shares");
-		for (i = 0; i < shares.length; i++) {
-			snames.push(shares.options[i].text);
-		}
-
-		if(!snames.includes(document.getElementById('sname').value)) {
-			document.getElementById('sid').value = '';
-			document.getElementById('expiredate').value = '';
-			document.getElementById('link').value = '';
-		}
-	});
-	*/
 });
 
 window.onload = function(){
@@ -107,6 +92,16 @@ window.onload = function(){
 			prevScrollpos = currentScrollPos;
 		}
 	}
+
+	if (top.location!= self.location) {
+		top.location = self.location.href;
+	}
+
+	window.addEventListener("contextmenu", function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		return false;
+	});
 
 	document.getElementById('never').addEventListener('change', function(){
 		if(this.checked != true){

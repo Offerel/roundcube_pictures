@@ -11,8 +11,10 @@ define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 include_once('config.inc.php');
 
-if(!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
-	http_response_code(405);
+if($_SERVER['HTTP_REFERER']) {
+	if(!strpos($_SERVER['HTTP_REFERER'],$_SERVER['HTTP_HOST'])) {
+		die(http_response_code(405));
+	}
 }
 
 @ini_set('gd.jpeg_ignore_warning', 1);
