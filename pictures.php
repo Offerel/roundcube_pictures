@@ -25,7 +25,7 @@ class pictures extends rcube_plugin {
 
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {
 			include_once('config.inc.php');
-			$link = filter_var($_GET['slink'], FILTER_SANITIZE_STRING);
+			$link = filter_var($_GET['slink'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 			$dbh = $rcmail->get_dbh();
 			$query = "SELECT a.`share_id`, a.`share_name`, a.`expire_date`, b.`username` FROM `pic_shares` a INNER JOIN `users` b ON a.`user_id` = b.`user_id` WHERE a.`share_link` = '$link'";
 			$res = $dbh->query($query);
@@ -39,7 +39,7 @@ class pictures extends rcube_plugin {
 			$rc = $dbh->num_rows($res);
 
 			for ($x = 0; $x < $rc; $x++) {
-				$pictures[] = $dbh->fetch_array($result);
+				$pictures[] = $dbh->fetch_array($res);
 			}
 
 			$thumbnails = "\n\t\t\t<div id='images' class='justified-gallery shared'>";
@@ -194,5 +194,5 @@ function checkDB() {
 		$dbh->query($query);
 	}
 	$atime = time();
-	$result = $dbh->query("DELETE FROM `pic_shares` WHERE `expire_date` \< $atime");
+	$result = $dbh->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
 }

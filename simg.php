@@ -10,13 +10,18 @@
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 include_once('config.inc.php');
+
+if(!strpos($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
+	http_response_code(405);
+}
+
 @ini_set('gd.jpeg_ignore_warning', 1);
 $rcmail = rcmail::get_instance();
 $dbh = $rcmail->get_dbh();
 
-$picture = filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT);
-$mode = filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT);
-$file = filter_var($_GET['file'], FILTER_SANITIZE_STRING);
+$picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT):NULL;
+$mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
+$file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 
 
 if(isset($file) && !empty($file)) {
