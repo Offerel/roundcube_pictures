@@ -464,6 +464,7 @@ function showPage($thumbnails, $dir) {
 }
 
 function showGallery($requestedDir) {
+	$aallowed = ['image','video'];
 	$files = array();
 	$hidden_vid = "";
 	$pnavigation = "";
@@ -509,7 +510,8 @@ function showGallery($requestedDir) {
 			}
 			
 			// Gallery images
-			if ($file != "." && $file != ".." && $file != "folder.jpg") {
+			$allowed = (in_array(explode('/', mime_content_type($current_dir."/".$file))[0], $aallowed)) ? true:false;
+			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
@@ -679,7 +681,6 @@ function getExistingShares() {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	//$query = "SELECT * FROM `pic_shares` WHERE `user_id` = $user_id";
 	$query = "SELECT `share_id`, `share_name`, `expire_date` FROM `pic_shares` WHERE `user_id` = 1 ORDER BY `share_name` ASC";
 	$erg = $dbh->query($query);
 	$rowc = $dbh->num_rows();
@@ -930,6 +931,29 @@ function createthumb($image) {
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
+		$exif = @exif_read_data($org_pic, 0, true);
+		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
+		switch ($ort) {
+			case 3:
+				$degrees = 180;
+				break;
+			case 4:
+				$degrees = 180;
+				break;
+			case 5:
+				$degrees = 270;
+				break;
+			case 6:
+				$degrees = 270;
+				break;
+			case 7:
+				$degrees = 90;
+				break;
+			case 8:
+				$degrees = 90;
+				break;
+		}
+		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumbnailpath, 85);

@@ -86,18 +86,18 @@ function logm($message, $mmode = 3) {
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
+	$tallowed = ['image','video'];
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
 			while (false !== ($file = readdir($handle))) {
-				if($file === '.' || $file === '..') {
-					continue;
-				}
+				if($file === '.' || $file === '..') continue;
 				
 				if(is_dir($path."/".$file."/")) {
 					logm("Parse directory $path/$file/", 4);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
 				} else {
-					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
+					$media = (in_array(explode('/', mime_content_type($path."/".$file))[0], $tallowed)) ? true:false;
+					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && $media) {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
 					}
@@ -111,9 +111,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 function read_thumbs($path, $thumb_basepath, $picture_basepath) {
 	if($handle = opendir($path)) {
 		while (false !== ($file = readdir($handle))) {
-			if($file === '.' || $file === '..') {
-				continue;
-			}
+			if($file === '.' || $file === '..') continue;
 			
 			if(is_dir($path."/".$file."/")) {
 				read_thumbs($path."/".$file, $thumb_basepath, $picture_basepath);
@@ -131,7 +129,6 @@ function read_thumbs($path, $thumb_basepath, $picture_basepath) {
 
 function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 	$thumbnail = str_replace('//','/',$thumbnail);
-	
 	$org_pinfo = pathinfo(str_replace($thumb_basepath, $picture_basepath, $thumbnail));
 	if(!file_exists($org_pinfo['dirname']."/".$org_pinfo['filename'])) {
 		unlink($thumbnail);
@@ -142,12 +139,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	global $thumbsize, $ffmpeg;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
-	if(file_exists($thumb_pic)) {
-		return false;
-	}
+	if(file_exists($thumb_pic)) return false;
 	$target = "";
 	$degrees = 0;
-	$flip = '';
 	
 	$thumbpath = pathinfo($thumb_pic)['dirname'];
 		
@@ -158,7 +152,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 
 	if (preg_match("/.jpg$|.jpeg$|.png$/i", $org_pic)) {
-		list($width, $height, $type) = getimagesize($org_pic);		
+		list($width, $height, $type) = getimagesize($org_pic);
+
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculating the width failed.", 2);
 
@@ -173,6 +168,29 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
+		$exif = @exif_read_data($org_pic, 0, true);
+		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
+		switch ($ort) {
+			case 3:
+				$degrees = 180;
+				break;
+			case 4:
+				$degrees = 180;
+				break;
+			case 5:
+				$degrees = 270;
+				break;
+			case 6:
+				$degrees = 270;
+				break;
+			case 7:
+				$degrees = 90;
+				break;
+			case 8:
+				$degrees = 90;
+				break;
+		}
+		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumb_pic, 80);
@@ -221,6 +239,7 @@ function todb($file, $user, $pictures_basepath) {
 }
 
 function rmexpires() {
+	global $db;
 	$atime = time();
 	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
 } 
