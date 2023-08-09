@@ -159,13 +159,13 @@ if(isset($_POST['img_action'])) {
 							if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 						}
 						foreach($images as $image) {
-							rename($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
+							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.$image);
 						}
 						die(true);
 						break;
 		case 'delete':	foreach($images as $image) {
-							unlink($pictures_path.$org_path.'/'.$image);
+							delimg($pictures_path.$org_path.'/'.$image);
 							rmdb($org_path.'/'.$image, $user_id);
 						}
 						die(true);
@@ -1020,6 +1020,32 @@ function mvdb($oldpath, $newPath) {
 		$nnewPath = str_replace($oldpath, $newPath, $image['pic_path']);
 		$query = "UPDATE `pic_pictures` SET `pic_path` = \"$nnewPath\" WHERE `pic_id` = $pic_id";
 		$ret = $dbh->query($query);
+	}
+}
+
+function mvimg($oldpath, $newPath) {
+	global $rcmail;
+	$dfiles = $rcmail->config->get('dummy_files', false);
+	$dfolder = $rcmail->config->get('dummy_folder', false);
+	$ftime = filemtime($oldpath);
+
+	if($dfiles && substr_count($oldpath, $dfolder) > 0) {
+		if(rename($oldpath, $newPath)) touch($oldpath, $ftime);
+	} else {
+		rename($oldpath, $newPath);
+	}
+}
+
+function delimg($file) {
+	global $rcmail;
+	$dfiles = $rcmail->config->get('dummy_files', false);
+	$dfolder = $rcmail->config->get('dummy_folder', false);
+	$ftime = filemtime($file);
+
+	if($dfiles && substr_count($file, $dfolder) > 0) {
+		if(unlink($file)) touch($file, $ftime);
+	} else {
+		unlink($file);
 	}
 }
 

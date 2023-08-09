@@ -17,6 +17,7 @@ $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
+$mtime = $rcmail->config->get('dummy_time', false);
 
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
@@ -138,6 +139,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	global $thumbsize, $ffmpeg;
 	$org_pic = str_replace('//','/',$image);
+	deldummy($org_pic);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if(file_exists($thumb_pic)) return false;
 	$target = "";
@@ -242,7 +244,13 @@ function rmexpires() {
 	global $db;
 	$atime = time();
 	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
-} 
+}
+
+function deldummy($file) {
+	global $mtime;
+	$dtime = time() - filemtime($file);
+	if ($dtime > $mtime) unlink($file);
+}
 
 function readEXIF($file) {
 	global $rcmail;
