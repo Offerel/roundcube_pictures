@@ -242,10 +242,19 @@ function showPage($thumbnails, $dir) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			";
+
+	$aarr = explode('/',$dir);
+	$path = "";
+	$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
+	foreach ($aarr as $folder) {
+		$path = $path.'/'.$folder;
+		if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
+	}
+
 	$page.= "</head>
-	\t\t<body class=\"picbdy\" onload=\"count_checks(); album_w('$dir');\">
-	\t\t\t<div id='header' style='position: absolute; top: -15px;'>
-	\t\t\t\t<h2>$dir</h2>
+	\t\t<body class='picbdy' onload='count_checks();'>
+	\t\t\t<div id='header' style='position: absolute; top: -8px;'>
+	\t\t\t\t$albumnav
 	\t\t\t</div>
 	\t\t\t<div id=\"galdiv\">";
 	$page.= $thumbnails;
@@ -320,27 +329,6 @@ function showPage($thumbnails, $dir) {
 			}
 			lastChecked = this;
 		});
-		
-		function album_w(album) {
-			if(album != '') {
-				var album_arr = album.split('/');
-				var len = album_arr.length;
-				var li_str = '<ul class=\"breadcrumb\"><li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php\'\" href=\"#\">Start</a></li>';
-				var path = '';
-				for (var i = 0; i < len; i++) {	
-					path += encodeURIComponent(album_arr[i]);
-					li_str += '<li><a onClick=\"document.getElementById(\'picturescontentframe\').contentWindow.location.href=\'plugins/pictures/photos.php?p=' + path + '\'\" href=\"#\">' + album_arr[i] + '</a></li>';
-					path += '/';
-				}
-				li_str += '</ul>';
-				$('#bcn', window.parent.document).html(li_str);
-				window.parent.document.getElementById('editalbum').classList.remove('disabled');
-			}
-			else {
-				$('#bcn', window.parent.document).html('');
-				window.parent.document.getElementById('editalbum').classList.add('disabled');
-			}
-		}
 		
 		function count_checks() {
 			if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {

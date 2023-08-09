@@ -141,85 +141,6 @@ html{
 #folders span:hover {
 	background: #00000080;
 }
-#header h2 {
-	font-family: "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Droid Sans", "Helvetica Neue", sans-serif;
-}
-.breadcrumb {
-	list-style: none;
-	overflow: hidden;
-	font-size: 0.7em;
-	z-index: 100;
-	margin: 0;
-	padding: 0;
-}
-.breadcrumb li { 
-  float: left; 
-}
-.breadcrumb li a {
-	color: white;
-	text-decoration: none;
-	padding: 6px 0px 6px 40px;
-	background: linear-gradient(to right, rgba(75,176,210,0) 0%,rgba(75,176,210,1) 80%,rgba(75,176,210,1) 100%);
-	position: relative;
-	display: block;
-	float: left;
-}
-.breadcrumb li a::after { 
-  content: " "; 
-  display: block; 
-  width: 0; 
-  height: 0;
-  border-top: 50px solid transparent; /* Go big on the size, and let overflow hide */
-  border-bottom: 50px solid transparent;
-  border-left: 30px solid hsla(195, 60%, 56%, 1);
-  position: absolute;
-  top: 50%;
-  margin-top: -50px; 
-  left: 100%;
-  z-index: 2; 
-}
-.breadcrumb li a::before {
-	content: " ";
-	display: block;
-	width: 0;
-	height: 0;
-	border-top: 50px solid transparent;
-	border-bottom: 50px solid transparent;
-	border-left: 30px solid #cad2d9;
-	position: absolute;
-	top: 50%;
-	margin-top: -50px;
-	margin-left: 1px;
-	left: 100%;
-	z-index: 1;
-}
-.breadcrumb li:first-child a {
-  padding-left: 10px;
-}
-.breadcrumb li:nth-child(2) a       { background:        hsla(195, 60%, 66%, 1); }
-.breadcrumb li:nth-child(2) a:after { border-left-color: hsla(195, 60%, 66%, 1); }
-.breadcrumb li:nth-child(3) a       { background:        hsla(195, 60%, 70%, 1); }
-.breadcrumb li:nth-child(3) a:after { border-left-color: hsla(195, 60%, 70%, 1); }
-.breadcrumb li:nth-child(4) a       { background:        hsla(195, 60%, 75%, 1); }
-.breadcrumb li:nth-child(4) a:after { border-left-color: hsla(195, 60%, 75%, 1); }
-.breadcrumb li:nth-child(5) a       { background:        hsla(195, 60%, 80%, 1); }
-.breadcrumb li:nth-child(5) a:after { border-left-color: hsla(195, 60%, 80%, 1); }
-.breadcrumb li:last-child a {
-  background: transparent !important;
-  color: black;
-  pointer-events: none;
-  cursor: default;
-}
-.breadcrumb li:last-child a::after { 
-  border: 0;
-}
-.breadcrumb li a:hover { 
-  background: hsla(199, 99%, 36%, 1); 
-}
-.breadcrumb li a:hover:after { 
-  border-left-color: hsla(199, 99%, 36%, 1) !important; 
-}
-
 .edit_from {
 	margin-top: 50px;
 	margin-left: 10px;
@@ -374,7 +295,7 @@ body {
 	color: #333;
 	margin: 7px;
 	overflow-y: scroll;
-	padding-top: 40px;
+	padding-top: 48px;
 }
 a {
 	color: #333333;
@@ -557,16 +478,6 @@ footer a {
 #infbtn:hover {
 	opacity: 1;
 }
-#header {
-    height: 55px;
-    position: fixed;
-    top: 0;
-    transition: top .3s;
-    width: 100%;
-    display: block;
-    z-index: 1;
-    left: 0;
-}
 .shared {
 	top: 20px;
 	padding-bottom: 7px;
@@ -578,4 +489,49 @@ footer a {
 .picbdy {
 	margin-left: 20px;
 	margin-right: 20px;
+}
+#header {
+    height: 55px;
+    position: fixed;
+    top: 0;
+    transition: top .3s;
+    display: block;
+    z-index: 1;
+    left: 0;
+    display: inline-flex;
+    overflow: hidden;
+}
+.breadcrumbs__item {
+    color: #333;
+    outline: none;
+    padding: 1em 0.75em 0 1.25em;
+    position: relative;
+    text-decoration: none;
+    transition: background 0.2s linear;
+    font-family: "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-weight: normal;
+}
+.breadcrumbs__item:hover:after, .breadcrumbs__item:hover {
+    background: #edf1f5;
+}
+.breadcrumbs__item:after, .breadcrumbs__item:before {
+    background: white;
+    bottom: 0;
+    clip-path: polygon(50% 50%, -50% -50%, 0 100%);
+    content: "";
+    left: 100%;
+    position: absolute;
+    top: 0;
+    transition: background 0.2s linear;
+    width: 1em;
+    z-index: 1;
+}
+.breadcrumbs__item:before {
+    background: #cbd2d9;
+    margin-left: 1px;
+}
+.breadcrumbs__item:last-child {
+    border-right: none;
+    pointer-events: none;
+    font-weight: bold;
 }

@@ -252,52 +252,6 @@
 		transform:rotate(360deg)
 	}
 }
-.breadcrumb{
-	list-style:none;
-	overflow:hidden;
-	font-size:11px;
-	margin:0;
-	padding:0 10px;
-	font-family:"Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
-	border:1px solid #ababab;
-	border-radius:4px;
-	background:#efefef
-}
-.breadcrumb li{
-	float:left;
-	display:table-cell;
-	vertical-align:middle;
-	height:26px;
-	line-height:24px
-}
-.breadcrumb li a{
-	color:#333;
-	text-decoration:none;
-	position:relative;
-	vertical-align:middle;
-	height:26px;
-	font-weight:700
-}
-.breadcrumb li a:hover{
-	color:#aaa
-}
-#bcn{
-	float:right;
-	top:20px;
-	position:relative;
-	right:89px
-}
-.breadcrumb li:not(:first-child)::before{
-	content:"›";
-	display:inline-block;
-	vertical-align:top;
-	margin:0 10px 0 8px;
-}
-.breadcrumb li:last-child a{
-	color:#017db6;
-	pointer-events:none;
-	cursor:default
-}
 #taskmenu a.pictures::before{
 	content:"\f03e"
 }
