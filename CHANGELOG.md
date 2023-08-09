@@ -1,5 +1,14 @@
+### v1.4.5
+- Added creation of dummy files, to prevent re-sync
+- PHP8 Fixes
+- Fix Thumbnail rotation
+
 ### v1.4.4
-- Fixes for PHP8
+- Added saving photo information to database
+- Added Share feature. You can now share a collection of images with others via links. You don't need an account for the link.
+- Added rudimentary hotlink protection
+- More PHP8 fixes
+- Removed Classic and Larry Skins
   
 ### v1.4.3
 - Fixes for PHP8
