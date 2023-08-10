@@ -253,7 +253,10 @@ function rmexpires() {
 function deldummy($file) {
 	global $mtime;
 	$dtime = time() - filemtime($file);
-	if ($dtime > $mtime) unlink($file);
+	if ($dtime > $mtime && filesize($file) < 1) {
+		unlink($file);
+		//echo $file.".\n";
+	}
 }
 
 function readEXIF($file) {
