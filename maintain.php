@@ -140,12 +140,12 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	global $thumbsize, $ffmpeg, $dfiles;
 	$org_pic = str_replace('//','/',$image);
-	$type = explode('/',mime_content_type($org_pic))[0];
 	if($dfiles) deldummy($org_pic);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if(file_exists($thumb_pic)) return false;
 	$target = "";
 	$degrees = 0;
+	$type = explode('/',mime_content_type($org_pic))[0];
 	
 	$thumbpath = pathinfo($thumb_pic)['dirname'];
 		
