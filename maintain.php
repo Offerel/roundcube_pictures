@@ -140,8 +140,8 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	global $thumbsize, $ffmpeg, $dfiles;
 	$org_pic = str_replace('//','/',$image);
-	if($dfiles) deldummy($org_pic);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
+	if($dfiles) deldummy($org_pic);
 	if(file_exists($thumb_pic)) return false;
 	$target = "";
 	$degrees = 0;
