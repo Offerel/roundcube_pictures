@@ -1,3 +1,6 @@
+### v1.4.8
+- Several maintenance fixes
+
 ### v1.4.7
 - Hotfix for deleteing real images on maintenance
 - Fix Filetype checking

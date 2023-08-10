@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.7
+ * @version 1.4.8
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -32,11 +32,11 @@ foreach($users as $user) {
 	$username = $user["username"];
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
 	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');	
-
+	$broken = array();
 	switch($mode) {
 		case "add":
 			logm("Maintenance for $username with mode add");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			$broken = read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			break;
 		case "clean":
 			logm("Maintenance for $username with mode clean");
@@ -47,13 +47,24 @@ foreach($users as $user) {
 			break;
 		default:
 			logm("Complete Maintenance for $username");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			$broken = read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
 			rmexpires();
 			break;
+	}
+	$headers = array(
+		'From' => 'noreply@example.com'
+	);
+	if(count($broken) > 0) {
+		$message = "There are errors during the maintenance on time. The following pictures had errors and the thumbnail could not created:\n";
+		foreach($broken as $picture) {
+			$message.= $picture."\n";
+		}
+		//mail($username, 'Pictures Error', $message, $headers);
+		mail($username, 'Pictures Error', $message);
 	}
 }
 
@@ -88,6 +99,7 @@ function logm($message, $mmode = 3) {
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
+	$broken = array();
 	$tallowed = ['image','video'];
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
@@ -100,7 +112,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 				} else {
 					$media = (in_array(explode('/', mime_content_type($path."/".$file))[0], $tallowed)) ? true:false;
 					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && $media) {
-						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
+						$broken[] = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
 					}
 				}
@@ -108,6 +120,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 			closedir($handle);
 		}
 	}
+	return $broken;
 }
 
 function read_thumbs($path, $thumb_basepath, $picture_basepath) {
@@ -134,6 +147,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 	$org_pinfo = pathinfo(str_replace($thumb_basepath, $picture_basepath, $thumbnail));
 	if(!file_exists($org_pinfo['dirname']."/".$org_pinfo['filename'])) {
 		unlink($thumbnail);
+		logm("Delete thumbnail $thumbnail", 4);
 	}
 }
 
@@ -145,6 +159,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	if(file_exists($thumb_pic)) return false;
 	$target = "";
 	$degrees = 0;
+	$ppath = "";
 	$type = explode('/',mime_content_type($org_pic))[0];
 	
 	$thumbpath = pathinfo($thumb_pic)['dirname'];
@@ -171,37 +186,41 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		}
 
 		logm("Check image: $org_pic", 4);
-
-		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
-		imagedestroy($source);
-		$exif = @exif_read_data($org_pic, 0, true);
-		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
-		switch ($ort) {
-			case 3:
-				$degrees = 180;
-				break;
-			case 4:
-				$degrees = 180;
-				break;
-			case 5:
-				$degrees = 270;
-				break;
-			case 6:
-				$degrees = 270;
-				break;
-			case 7:
-				$degrees = 90;
-				break;
-			case 8:
-				$degrees = 90;
-				break;
-		}
-		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
-		
-		if(is_writable($thumbpath)) {
-			imagejpeg($target, $thumb_pic, 80);
+		if ($source) {
+			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+			imagedestroy($source);
+			$exif = @exif_read_data($org_pic, 0, true);
+			$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
+			switch ($ort) {
+				case 3:
+					$degrees = 180;
+					break;
+				case 4:
+					$degrees = 180;
+					break;
+				case 5:
+					$degrees = 270;
+					break;
+				case 6:
+					$degrees = 270;
+					break;
+				case 7:
+					$degrees = 90;
+					break;
+				case 8:
+					$degrees = 90;
+					break;
+			}
+			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
+			
+			if(is_writable($thumbpath)) {
+				imagejpeg($target, $thumb_pic, 80);
+			} else {
+				logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
+			}
 		} else {
-			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
+			$ppath = str_replace($pictures_basepath, '', $org_pic);
+			logm("Can't create thumbnail for $ppath. Picture is broken",1);
 		}
 	} elseif ($type == "video") {
 		if(!empty($ffmpeg)) {
@@ -211,7 +230,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			if(!file_exists($ogv)) {
 				$startconv = time();
 				$cmd = "$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"";
-				logm("Execute: $cmd", 4);
+				logm("Convert to $ogv", 4);
 				exec($cmd);
 				$diff = time() - $startconv;
 				$cdiff = gmdate("H:i:s", $diff);
@@ -221,6 +240,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
+
+	return $ppath;
 }
 
 function todb($file, $user, $pictures_basepath) {
@@ -253,9 +274,10 @@ function rmexpires() {
 function deldummy($file) {
 	global $mtime;
 	$dtime = time() - filemtime($file);
-	if ($dtime > $mtime && filesize($file) < 1) {
+	$fsize = filesize($file);
+	if ($dtime > $mtime && $fsize < 1) {
 		unlink($file);
-		//echo $file.".\n";
+		logm("Delete dummy file $file ($fsize bytes)", 4);
 	}
 }
 
