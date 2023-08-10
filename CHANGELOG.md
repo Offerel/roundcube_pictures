@@ -1,3 +1,8 @@
+### v1.4.7
+- Hotfix for deleteing real images on maintenance
+- Fix Filetype checking
+- Addes more debug Logging
+
 ### v1.4.5
 - Added creation of dummy files, to prevent re-sync
 - PHP8 Fixes

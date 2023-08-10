@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.6
+ * @version 1.4.7
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -17,6 +17,7 @@ $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
+$dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
 
 $db = $rcmail->get_dbh();
@@ -137,9 +138,10 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg;
+	global $thumbsize, $ffmpeg, $dfiles;
 	$org_pic = str_replace('//','/',$image);
-	deldummy($org_pic);
+	$type = explode('/',mime_content_type($org_pic))[0];
+	if($dfiles) deldummy($org_pic);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if(file_exists($thumb_pic)) return false;
 	$target = "";
@@ -153,7 +155,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		}
 	}
 
-	if (preg_match("/.jpg$|.jpeg$|.png$/i", $org_pic)) {
+	if ($type == "image") {
 		list($width, $height, $type) = getimagesize($org_pic);
 
 		$newwidth = ceil($width * $thumbsize / $height);
@@ -167,7 +169,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			case 3: $source = @imagecreatefrompng($org_pic); break;
 			default: logm("Unsupported fileformat ($org_pic $type).", 1); die();
 		}
-		
+
+		logm("Check image: $org_pic", 4);
+
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
 		$exif = @exif_read_data($org_pic, 0, true);
@@ -199,7 +203,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		} else {
 			logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
 		}
-	} elseif(preg_match("/.mp4$|.mpg$|.mov$|.avi$|.3gp$/i", $org_pic)) {
+	} elseif ($type == "video") {
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
 			$pathparts = pathinfo($org_pic);
@@ -207,7 +211,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			if(!file_exists($ogv)) {
 				$startconv = time();
 				$cmd = "$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"";
-				echo $cmd."\n";
+				logm("Execute: $cmd", 4);
 				exec($cmd);
 				$diff = time() - $startconv;
 				$cdiff = gmdate("H:i:s", $diff);
