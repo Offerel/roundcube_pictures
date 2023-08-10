@@ -185,7 +185,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			default: logm("Unsupported fileformat ($org_pic $type).", 1); die();
 		}
 
-		logm("Check image: $org_pic", 4);
+		logm("Create thumbnail for: $org_pic", 4);
 		if ($source) {
 			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 			imagedestroy($source);
