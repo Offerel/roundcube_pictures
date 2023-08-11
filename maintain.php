@@ -295,7 +295,7 @@ function readEXIF($file) {
 		$exif_arr[5] = (isset($exif_data['DateTimeDigitized'])) ? strtotime($exif_data['DateTimeDigitized']):filemtime($file);
 		$exif_arr[6] = (isset($exif_data['ImageDescription'])) ? $exif_data['ImageDescription']:"-";
 		$exif_arr[7] = (isset($exif_data['CALC-GPSLATITUDE-SIG'])) ? $exif_data['CALC-GPSLATITUDE-SIG']:"-";
-		$exif_arr[8] = (isset($exif_data['Make'])) ? $exif_data['Make']:"-"
+		$exif_arr[8] = (isset($exif_data['Make'])) ? $exif_data['Make']:"-";
 		$exif_arr[9] = (isset($exif_data['Software'])) ? $exif_data['Software']:"-";
 		
 		if(isset($exif_data['ExposureProgram'])) {
