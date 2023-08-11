@@ -51,6 +51,8 @@ $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
+$cvideo = $rcmail->config->get('convert_video', false);
+$hevc = $rcmail->config->get('convert_hevc', false);
 $ffprobe = exec("which ffprobe");
 
 if(isset($_POST['getsubs'])) {
@@ -822,7 +824,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path;
+	global $thumbsize, $pictures_path, $thumb_path, $cvideo, $hevc;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
 	if(file_exists($thumbnailpath)) return false;
@@ -853,24 +855,12 @@ function createthumb($image) {
 		$exif = @exif_read_data($org_pic, 0, true);
 		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
 		switch ($ort) {
-			case 3:
-				$degrees = 180;
-				break;
-			case 4:
-				$degrees = 180;
-				break;
-			case 5:
-				$degrees = 270;
-				break;
-			case 6:
-				$degrees = 270;
-				break;
-			case 7:
-				$degrees = 90;
-				break;
-			case 8:
-				$degrees = 90;
-				break;
+			case 3: $degrees = 180; break;
+			case 4: $degrees = 180; break;
+			case 5: $degrees = 270; break;
+			case 6: $degrees = 270; break;
+			case 7: $degrees = 90; break;
+			case 8: $degrees = 90; break;
 		}
 		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
@@ -884,9 +874,13 @@ function createthumb($image) {
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);
 			exec($ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
-			$startconv = time();
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			if($cvideo) {
+				$startconv = time();
+				$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+				if ($hevc && "$vcodec" != "hevc") return false;
+				$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+				exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			}
 		} else {
 			error_log("ffmpeg is not installed, so video formats are not supported.");
 		}

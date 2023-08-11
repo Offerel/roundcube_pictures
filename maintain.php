@@ -19,6 +19,8 @@ $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
 $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
+$cvideo = $rcmail->config->get('convert_video', false);
+$hevc = $rcmail->config->get('convert_hevc', false);
 
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
@@ -110,8 +112,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 					logm("Parse directory $path/$file/", 4);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
 				} else {
-					$media = (in_array(explode('/', mime_content_type($path."/".$file))[0], $tallowed)) ? true:false;
-					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && $media) {
+					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
 						$broken[] = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
 					}
@@ -152,7 +153,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles;
+	global $thumbsize, $ffmpeg, $dfiles, $cvideo, $hevc;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -161,6 +162,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$degrees = 0;
 	$ppath = "";
 	$type = explode('/',mime_content_type($org_pic))[0];
+	if(!in_array($type, ['image','video'])) return false;
 	
 	$thumbpath = pathinfo($thumb_pic)['dirname'];
 		
@@ -192,24 +194,12 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			$exif = @exif_read_data($org_pic, 0, true);
 			$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
 			switch ($ort) {
-				case 3:
-					$degrees = 180;
-					break;
-				case 4:
-					$degrees = 180;
-					break;
-				case 5:
-					$degrees = 270;
-					break;
-				case 6:
-					$degrees = 270;
-					break;
-				case 7:
-					$degrees = 90;
-					break;
-				case 8:
-					$degrees = 90;
-					break;
+				case 3: $degrees = 180; break;
+				case 4: $degrees = 180; break;
+				case 5: $degrees = 270; break;
+				case 6: $degrees = 270; break;
+				case 7: $degrees = 90; break;
+				case 8: $degrees = 90; break;
 			}
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			
@@ -225,16 +215,20 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	} elseif ($type == "video") {
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
-			$pathparts = pathinfo($org_pic);
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			if(!file_exists($ogv)) {
-				$startconv = time();
-				$cmd = "$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"";
-				logm("Convert to $ogv", 4);
-				exec($cmd);
-				$diff = time() - $startconv;
-				$cdiff = gmdate("H:i:s", $diff);
-				logm("OGV file ($org_pic) converted within $diff ($cdiff)", 4);
+			if($cvideo) {
+				$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+				if($hevc && "$vcodec" != "hevc") return false;
+
+				$pathparts = pathinfo($org_pic);
+				$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+				if(!file_exists($ogv)) {
+					$startconv = time();
+					logm("Convert to $ogv", 4);
+					exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
+					$diff = time() - $startconv;
+					$cdiff = gmdate("H:i:s", $diff);
+					logm("OGV file ($org_pic) converted within $cdiff ($diff sec)", 4);
+				}
 			}
 		} else {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
@@ -260,8 +254,11 @@ function todb($file, $user, $pictures_basepath) {
 			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
 			$taken = (empty($taken)) ? filemtime($file):$taken;
 		}
+		if($db->db_provider) $db->startTransaction();
+		
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
 		$db->query($query);
+		if ($db->db_provider == 'sqlite') $db->endTransaction();
 	}
 }
 
