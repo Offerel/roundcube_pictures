@@ -286,122 +286,53 @@ function readEXIF($file) {
 	$exif_arr = array();
 	$exif_data = @exif_read_data($file);
 
-	if(count($exif_data) > 0) {
-		//0
-		if(isset($exif_data['Model']))
-			$exif_arr[] = $exif_data['Model'];
-		else
-			$exif_arr[] = "-";
+	if($exif_data && count($exif_data) > 0) {
+		$exif_arr[0] = (isset($exif_data['Model'])) ? $exif_data['Model']:"-";
+		$exif_arr[1] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength']) . "mm":"-";
+		$exif_arr[2] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength'], 2) . "s":"-";
+		$exif_arr[3] = (isset($exif_data['FNumber'])) ? "f" . parse_fraction($exif_data['FNumber']):"-";
+		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
+		$exif_arr[5] = (isset($exif_data['DateTimeDigitized'])) ? strtotime($exif_data['DateTimeDigitized']):filemtime($file);
+		$exif_arr[6] = (isset($exif_data['ImageDescription'])) ? $exif_data['ImageDescription']:"-";
+		$exif_arr[7] = (isset($exif_data['CALC-GPSLATITUDE-SIG'])) ? $exif_data['CALC-GPSLATITUDE-SIG']:"-";
+		$exif_arr[8] = (isset($exif_data['Make'])) ? $exif_data['Make']:"-"
+		$exif_arr[9] = (isset($exif_data['Software'])) ? $exif_data['Software']:"-";
 		
-		//1
-		if(isset($exif_data['FocalLength']))
-			$exif_arr[] = parse_fraction($exif_data['FocalLength']) . "mm";
-		else
-			$exif_arr[] = "-";
-		
-		//2
-		if(isset($exif_data['FocalLength']))
-			$exif_arr[] = parse_fraction($exif_data['FocalLength'], 2) . "s";
-		else
-			$exif_arr[] = "-";
-		
-		//3
-		if(isset($exif_data['FNumber']))
-			$exif_arr[] = "f" . parse_fraction($exif_data['FNumber']);
-		else
-			$exif_arr[] = "-";
-		
-		//4
-		if(isset($exif_data['ISOSpeedRatings']))
-			$exif_arr[] = $exif_data['ISOSpeedRatings'];
-		else
-			$exif_arr[] = "-";
-		
-		//5	
-		if(isset($exif_data['DateTimeDigitized']))
-			$exif_arr[] = strtotime($exif_data['DateTimeDigitized']);
-		else
-			$exif_arr[] = filemtime($file);
-		
-		//6	
-		if(isset($exif_data['ImageDescription']))
-			$exif_arr[] = $exif_data['ImageDescription'];
-		else
-			$exif_arr[] = "-";
-		
-		//7	
-		if(isset($exif_data['CALC-GPSLATITUDE-SIG']))
-			$exif_arr[] = $exif_data['CALC-GPSLATITUDE-SIG'];
-		else
-			$exif_arr[] = "-";
-		
-		//8	
-		if(isset($exif_data['Make']))
-			$exif_arr[] = $exif_data['Make'];
-		else
-			$exif_arr[] = "-";
-		
-		//9	
-		if(isset($exif_data['Software']))
-			$exif_arr[] = $exif_data['Software'];
-		else
-			$exif_arr[] = "-";
-		
-		//10
 		if(isset($exif_data['ExposureProgram'])) {
 			switch ($exif_data['ExposureProgram']) {
-				case 0: $exif_arr[] = $rcmail->gettext('exif_undefined','pictures'); break;
-				case 1: $exif_arr[] = $rcmail->gettext('exif_manual','pictures'); break;
-				case 2: $exif_arr[] = $rcmail->gettext('exif_exposure_auto','pictures'); break;
-				case 3: $exif_arr[] = $rcmail->gettext('exif_time_auto','pictures'); break;
-				case 4: $exif_arr[] = $rcmail->gettext('exif_shutter_auto','pictures'); break;
-				case 5: $exif_arr[] = $rcmail->gettext('exif_creative_auto','pictures'); break;
-				case 6: $exif_arr[] = $rcmail->gettext('exif_action_auto','pictures'); break;
-				case 7: $exif_arr[] = $rcmail->gettext('exif_portrait_auto','pictures'); break;
-				case 8: $exif_arr[] = $rcmail->gettext('exif_landscape_auto','pictures'); break;
-				case 9: $exif_arr[] = $rcmail->gettext('exif_bulb','pictures'); break;
+				case 0: $exif_arr[10] = $rcmail->gettext('exif_undefined','pictures'); break;
+				case 1: $exif_arr[10] = $rcmail->gettext('exif_manual','pictures'); break;
+				case 2: $exif_arr[10] = $rcmail->gettext('exif_exposure_auto','pictures'); break;
+				case 3: $exif_arr[10] = $rcmail->gettext('exif_time_auto','pictures'); break;
+				case 4: $exif_arr[10] = $rcmail->gettext('exif_shutter_auto','pictures'); break;
+				case 5: $exif_arr[10] = $rcmail->gettext('exif_creative_auto','pictures'); break;
+				case 6: $exif_arr[10] = $rcmail->gettext('exif_action_auto','pictures'); break;
+				case 7: $exif_arr[10] = $rcmail->gettext('exif_portrait_auto','pictures'); break;
+				case 8: $exif_arr[10] = $rcmail->gettext('exif_landscape_auto','pictures'); break;
+				case 9: $exif_arr[10] = $rcmail->gettext('exif_bulb','pictures'); break;
 			}
 		} else
-			$exif_arr[] = "-";
+			$exif_arr[10] = "-";
+
+		$exif_arr[11] = (isset($exif_data['Flash'])) ? $exif_data['Flash']:"-";
 		
-		//11
-		if(isset($exif_data['Flash']))
-			$exif_arr[] = $exif_data['Flash'];
-		else
-			$exif_arr[] = "-";
-		
-		//12
 		if(isset($exif_data['MeteringMode'])) {
 			switch ($exif_data['MeteringMode']) {
-				case 0: $exif_arr[] = $rcmail->gettext('exif_unkown','pictures'); break;
-				case 1: $exif_arr[] = $rcmail->gettext('exif_average','pictures'); break;
-				case 2: $exif_arr[] = $rcmail->gettext('exif_middle','pictures'); break;
-				case 3: $exif_arr[] = $rcmail->gettext('exif_spot','pictures'); break;
-				case 4: $exif_arr[] = $rcmail->gettext('exif_multi-spot','pictures'); break;
-				case 5: $exif_arr[] = $rcmail->gettext('exif_multi','pictures'); break;
-				case 6: $exif_arr[] = $rcmail->gettext('exif_partial','pictures'); break;
-				case 255: $exif_arr[] = $rcmail->gettext('exif_other','pictures'); break;
+				case 0: $exif_arr[12] = $rcmail->gettext('exif_unkown','pictures'); break;
+				case 1: $exif_arr[12] = $rcmail->gettext('exif_average','pictures'); break;
+				case 2: $exif_arr[12] = $rcmail->gettext('exif_middle','pictures'); break;
+				case 3: $exif_arr[12] = $rcmail->gettext('exif_spot','pictures'); break;
+				case 4: $exif_arr[12] = $rcmail->gettext('exif_multi-spot','pictures'); break;
+				case 5: $exif_arr[12] = $rcmail->gettext('exif_multi','pictures'); break;
+				case 6: $exif_arr[12] = $rcmail->gettext('exif_partial','pictures'); break;
+				case 255: $exif_arr[12] = $rcmail->gettext('exif_other','pictures'); break;
 			}
 		} else
-			$exif_arr[] = "-";
+			$exif_arr[12] = "-";
 		
-		//13
-		if(isset($exif_data['WhiteBalance']))
-			$exif_arr[] = $exif_data['WhiteBalance'];
-		else
-			$exif_arr[] = "-";
-		
-		//14
-		if(isset($exif_data["GPSLatitude"]))
-			$exif_arr[] = gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']);
-		else
-			$exif_arr[] = "-";
-		
-		//15
-		if(isset($exif_data["GPSLongitude"]))
-			$exif_arr[] = gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']);
-		else
-			$exif_arr[] = "-";
+		$exif_arr[13] = (isset($exif_data['WhiteBalance'])) ? $exif_data['WhiteBalance']:"-";
+		$exif_arr[14] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"-";
+		$exif_arr[15] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"-";
 	}
 	return $exif_arr;
 }
