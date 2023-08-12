@@ -494,7 +494,7 @@ function showGallery($requestedDir) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id=\"$requestedDir/$file\" href=\"photos.php?$fparams\" onclick=\"album_w('$requestedDir/$file')\" title=\"$file\"><img src=\"$imgUrl\" alt=\"$file\" /><span class=\"dropzone\">$file</span><div class=\"progress\"><div class=\"progressbar\"></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a id='$requestedDir/$file' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
 								);
 				}
 			}
