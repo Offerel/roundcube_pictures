@@ -49,7 +49,7 @@ foreach($users as $user) {
 			break;
 		default:
 			logm("Complete Maintenance for $username");
-			$broken = read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
@@ -57,16 +57,15 @@ foreach($users as $user) {
 			rmexpires();
 			break;
 	}
-	$headers = array(
-		'From' => 'noreply@example.com'
-	);
+	
 	if(count($broken) > 0) {
-		$message = "There are errors during the maintenance on time. The following pictures had errors and the thumbnail could not created:\n";
+		$headers = "From: Pictures<noreply@pictures.org>";
+		$message = "There was an error processing your pictures.  The following pictures appear to be corrupted.  Please delete or fix the image:\n\n";
 		foreach($broken as $picture) {
 			$message.= $picture."\n";
 		}
-		//mail($username, 'Pictures Error', $message, $headers);
-		mail($username, 'Pictures Error', $message);
+		
+		mail($username, 'Pictures Error', $message, $headers);
 	}
 }
 
@@ -101,7 +100,6 @@ function logm($message, $mmode = 3) {
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
-	$broken = array();
 	$tallowed = ['image','video'];
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
@@ -113,7 +111,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
 				} else {
 					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
-						$broken[] = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
+						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
 					}
 				}
@@ -153,7 +151,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles, $cvideo, $hevc;
+	global $thumbsize, $ffmpeg, $dfiles, $cvideo, $hevc, $broken;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -210,6 +208,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			}
 		} else {
 			$ppath = str_replace($pictures_basepath, '', $org_pic);
+			$broken[] = $ppath;
 			logm("Can't create thumbnail for $ppath. Picture is broken",1);
 		}
 	} elseif ($type == "video") {
