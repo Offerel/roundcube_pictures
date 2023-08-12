@@ -38,7 +38,7 @@ foreach($users as $user) {
 	switch($mode) {
 		case "add":
 			logm("Maintenance for $username with mode add");
-			$broken = read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			break;
 		case "clean":
 			logm("Maintenance for $username with mode clean");
@@ -59,12 +59,13 @@ foreach($users as $user) {
 	}
 	
 	if(count($broken) > 0) {
-		$headers = "From: Pictures<noreply@pictures.org>";
-		$message = "There was an error processing your pictures.  The following pictures appear to be corrupted.  Please delete or fix the image:\n\n";
+		$headers['From'] = "Pictures<noreply@pictures.org>";
+		$headers['Content-Type'] = "text/plain; charset=\"UTF-8\"";
+		$message = "There was an error processing your pictures. The following pictures appear to be corrupted. Please delete or fix the image:\n\n";
+		$message = wordwrap($message, 70);
 		foreach($broken as $picture) {
 			$message.= $picture."\n";
 		}
-		
 		mail($username, 'Pictures Error', $message, $headers);
 	}
 }
@@ -79,14 +80,10 @@ function logm($message, $mmode = 3) {
 	$dtime = date("d.m.Y H:i:s");
 	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
 	switch($mmode) {
-		case 1: $msmode = " [ERRO] ";
-				break;
-		case 2: $msmode = " [WARN] ";
-				break;
-		case 3: $msmode = " [INFO] ";
-				break;
-		case 4: $msmode = " [DBUG] ";
-				break;
+		case 1: $msmode = " [ERRO] "; break;
+		case 2: $msmode = " [WARN] "; break;
+		case 3: $msmode = " [INFO] "; break;
+		case 4: $msmode = " [DBUG] "; break;
 	}
 
 	if($mode != 'debug' && $mmode > 3) {
@@ -99,27 +96,26 @@ function logm($message, $mmode = 3) {
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
-	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
-	$tallowed = ['image','video'];
+	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp","ogv");
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
 			while (false !== ($file = readdir($handle))) {
 				if($file === '.' || $file === '..') continue;
-				
 				if(is_dir($path."/".$file."/")) {
 					logm("Parse directory $path/$file/", 4);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
 				} else {
-					if(in_array(strtolower(pathinfo($file)['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg') {
+					$pathparts = pathinfo($path."/".$file);
+					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
+						checkogv($path."/".$file);
 					}
 				}
 			}
 			closedir($handle);
 		}
 	}
-	return $broken;
 }
 
 function read_thumbs($path, $thumb_basepath, $picture_basepath) {
@@ -132,8 +128,7 @@ function read_thumbs($path, $thumb_basepath, $picture_basepath) {
 				if(count(glob($path."/".$file."/*")) === 0) {
 					rmdir($path."/".$file);
 				}
-			}
-			else {
+			} else {
 				deletethumb($path."/".$file, $thumb_basepath, $picture_basepath);
 			}
 		}
@@ -175,9 +170,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculating the width failed.", 2);
-
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
-		
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
 			case 2: $source = @imagecreatefromjpeg($org_pic); break;
@@ -200,7 +193,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				case 8: $degrees = 90; break;
 			}
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
-			
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 80);
 			} else {
@@ -215,9 +207,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
 			if($cvideo) {
-				$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+				$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 				if($hevc && "$vcodec" != "hevc") return false;
-
 				$pathparts = pathinfo($org_pic);
 				$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
 				if(!file_exists($ogv)) {
@@ -233,7 +224,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
-
 	return $ppath;
 }
 
@@ -250,15 +240,22 @@ function todb($file, $user, $pictures_basepath) {
 			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 		} else {
 			$exif = 'NULL';
-			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
-			$taken = (empty($taken)) ? filemtime($file):$taken;
+			$taken = shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
+			$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
 		}
-		if($db->db_provider) $db->startTransaction();
-		
+
+		if ($db->db_provider == 'sqlite') $db->startTransaction();
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
 		$db->query($query);
 		if ($db->db_provider == 'sqlite') $db->endTransaction();
 	}
+}
+
+function checkogv($file) {
+	$pathparts = pathinfo($file);
+	if($pathparts['extension'] == 'ogv')
+		$org = $pathparts['dirname'].'/'.ltrim($path_parts['filename'],'.').'*';
+		if(file_exists($org)) logm($file);
 }
 
 function rmexpires() {
