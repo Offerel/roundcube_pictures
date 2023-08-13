@@ -1,5 +1,9 @@
 ### v1.4.8
-- Several maintenance fixes
+- Added report of broken images to user
+- Added delete of orphaned ogv files
+- Reworked sorting
+- Fixed readEXIF
+- Fixed several maintenance issues
 
 ### v1.4.7
 - Hotfix for deleteing real images on maintenance
