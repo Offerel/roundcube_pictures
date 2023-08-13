@@ -960,6 +960,10 @@ function delimg($file) {
 	} else {
 		unlink($file);
 	}
+	
+	$pathparts = pathinfo($file);
+	$ogvf = $pathparts['dirname'].'/.'.$pathparts['filename'].'ogv';
+	if(file_exists($ogvf)) unlink($ogvf);
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');

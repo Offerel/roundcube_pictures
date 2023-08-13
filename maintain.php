@@ -252,10 +252,15 @@ function todb($file, $user, $pictures_basepath) {
 }
 
 function checkogv($file) {
-	$pathparts = pathinfo($file);
-	if($pathparts['extension'] == 'ogv')
-		$org = $pathparts['dirname'].'/'.ltrim($path_parts['filename'],'.').'*';
-		if(file_exists($org)) logm($file);
+	$pathparts = pathinfo("$file");
+	if($pathparts['extension'] == 'ogv') {
+		$ofile = $pathparts['dirname'].'/'.ltrim($pathparts['filename'],'.').'.*';
+		$flist = glob($ofile);
+		if (count($flist) == 0) {
+			logm("Delete orphaned file $file");
+			unlink($file);
+		}
+	}
 }
 
 function rmexpires() {
