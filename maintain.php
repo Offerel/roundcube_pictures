@@ -10,8 +10,7 @@
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
-$mode = $argv[1];
-
+$mode = isset($argv[1]) ? $argv[1]:"";
 $rcmail = rcube::get_instance();
 $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
@@ -19,9 +18,7 @@ $users = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
 $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
-$cvideo = $rcmail->config->get('convert_video', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
-
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
@@ -146,7 +143,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles, $cvideo, $hevc, $broken;
+	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -206,19 +203,17 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	} elseif ($type == "video") {
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
-			if($cvideo) {
-				$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
-				if($hevc && "$vcodec" != "hevc") return false;
-				$pathparts = pathinfo($org_pic);
-				$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-				if(!file_exists($ogv)) {
-					$startconv = time();
-					logm("Convert to $ogv", 4);
-					exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
-					$diff = time() - $startconv;
-					$cdiff = gmdate("H:i:s", $diff);
-					logm("OGV file ($org_pic) converted within $cdiff ($diff sec)", 4);
-				}
+			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+			if($hevc && "$vcodec" != "hevc") return false;
+			$pathparts = pathinfo($org_pic);
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			if(!file_exists($ogv)) {
+				$startconv = time();
+				logm("Convert to $ogv", 4);
+				exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
+				$diff = time() - $startconv;
+				$cdiff = gmdate("H:i:s", $diff);
+				logm("OGV file ($org_pic) converted within $cdiff ($diff sec)", 4);
 			}
 		} else {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);

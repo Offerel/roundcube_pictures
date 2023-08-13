@@ -51,7 +51,6 @@ $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
-$cvideo = $rcmail->config->get('convert_video', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $ffprobe = exec("which ffprobe");
 
@@ -564,7 +563,8 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "\n<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>");
+						"html" => "\n<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
+					);
 				}
 				
 				// video files
@@ -576,7 +576,8 @@ function showGallery($requestedDir) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"video glightbox\" href='$linkUrl' data-type='video' data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>");
+						"html" => "<div><a class=\"video glightbox\" href='$linkUrl' data-type='video' data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
+					);
 				}
 			}
 			}
@@ -593,16 +594,11 @@ function showGallery($requestedDir) {
 	// sort folders
 	if (isset($dirs) && sizeof($dirs) > 0) {
 		$thumbnails.= "\n\t\t\t\t\t<div id=\"folders\">";
-		foreach ($dirs as $key => $row) {
-			if ($row["name"] == "") {
-				unset($dirs[$key]);
-				continue;
-			}
-			$name[$key] = strtolower($row['name']);
-			$date[$key] = strtolower($row['date']);
-		}
-		$sorting_folders = $rcmail->config->get('sorting_folders', false);
-		array_multisort($dirs, $rcmail->config->get('sortdir_folders', false), $$sorting_folders);
+		array_walk($dirs, function (&$row) {
+			$row['name'] = $row['name'] ?? null;
+		});
+		$keys = array_column($dirs, 'name');
+		array_multisort($keys, SORT_ASC, $dirs);
 		foreach ($dirs as $folder) {
 			$thumbnails.= $folder["html"];
 			$start++;
@@ -613,17 +609,11 @@ function showGallery($requestedDir) {
 	// sort images
 	$thumbnails.= "\n\t\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
 	if (sizeof($files) > 0) {
-		foreach ($files as $key => $row) {
-			if ($row["name"] == "") {
-				unset($files[$key]);
-				continue;
-			}
-			$name[$key] = strtolower($row['name']);
-			$date[$key] = isset($row['date']) ? strtolower($row['date']):null;
-			$size[$key] = strtolower($row['size']);
-		}
-		$sorting_files = $rcmail->config->get('sorting_files', false);
-		@array_multisort($$sorting_files, $rcmail->config->get('sortdir_files', false), $files);
+		array_walk($files, function (&$row) {
+			$row['date'] = $row['date'] ?? null;
+		});
+		$keys = array_column($files, 'date');
+		array_multisort($keys, SORT_ASC, $files);
 		
 		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
 		if(isset($_GET['page'])) {
@@ -824,7 +814,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $cvideo, $hevc;
+	global $thumbsize, $pictures_path, $thumb_path, $hevc;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
 	if(file_exists($thumbnailpath)) return false;
@@ -874,13 +864,10 @@ function createthumb($image) {
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);
 			exec($ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
-			if($cvideo) {
-				$startconv = time();
-				$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
-				if ($hevc && "$vcodec" != "hevc") return false;
-				$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-				exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
-			}
+			$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+			if ($hevc && "$vcodec" != "hevc") return false;
+			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
+			exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
 		} else {
 			error_log("ffmpeg is not installed, so video formats are not supported.");
 		}
