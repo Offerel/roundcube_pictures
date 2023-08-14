@@ -42,21 +42,37 @@ class pictures extends rcube_plugin {
 				$pictures[] = $dbh->fetch_array($res);
 			}
 
+			file_put_contents("/mnt/stick/erg.txt", print_r($pictures, true));
+
 			$thumbnails = "\n\t\t\t<div id='images' class='justified-gallery shared'>";
-			foreach($pictures as $picture) {
-				$fullpath = $basepath.'/'.$picture[0];
+
+			$x = isset($_POST['s']) ? filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT):0;
+			$mthumbs = isset($_POST['s']) ? $x + $config['thumbs_pr_page']:$config['thumbs_pr_page'];
+			$mthumbs = ($rc < $mthumbs) ? $rc:$mthumbs;
+			$thumbnails2 = "";
+			$shp = ($x === 0) ? true:false;
+
+			for ($x; $x < $mthumbs; $x++) {
+				$fullpath = $basepath.'/'.$pictures[$x][0];
 				if(file_exists($fullpath)) {
 					$type = getIType($fullpath);
-					$id = $picture[2];
-					$exifSpan = getEXIFSpan($picture[1], $id);
+					$id = $pictures[$x][2];
+					$exifSpan = getEXIFSpan($pictures[$x][1], $id);
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
-					$thumbnails.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
+					$thumbnails.= "\n\t\t\t\t<a id='$x' class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
+					$thumbnails2.= "\n\t\t\t\t<a id='$x' class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
 				}
 			}
+			
 			$thumbnails.= "\n\t\t\t</div>";
-			showShare($thumbnails, $shareName);
+
+			if(!$shp) {
+				die($thumbnails2);
+			} else {
+				showShare($thumbnails, $shareName);
+			}
 		}
 	}
 
@@ -173,7 +189,7 @@ function showShare($thumbnails, $shareName) {
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
 	$page.= "\n\t\t</head>\n\t\t<body class='picbdy'>";
-	$page.= "\n\t\t\t<div id='header'><h2 style='padding-left: 20px;'>$shareName</h2>";
+	$page.= "\n\t\t\t<div id='header' style='width: 100%'><h2 style='padding-left: 20px;'>$shareName</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;
 	$page.= "\n\t\t</body>\n\t</html>";

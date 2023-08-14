@@ -275,7 +275,7 @@ function showPage($thumbnails, $dir) {
 			margins: 7,
 			border: 0,
 			rel: 'folders',
-			lastRow: 'justify',
+			lastRow: 'nojustify',
 			captions: false,
 			randomize: false
 		});
@@ -286,14 +286,13 @@ function showPage($thumbnails, $dir) {
 			margins: 7,
 			border: 0,
 			rel: 'gallery',
-			lastRow: 'justify',
+			lastRow: 'nojustify',
 			captions: true,
 			randomize: false
 		});
 
 		$(window).scroll(function() {
 			if($(window).scrollTop() + $(window).height() == $(document).height()) {
-				console.log('scrolled');
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
@@ -303,13 +302,15 @@ function showPage($thumbnails, $dir) {
 					},success: function(response) {
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
+						lightbox.reload();
+						checkboxes();
 						return false;
 					}
 				});
 			}
-		  });
+		});
 
-		const lightbox = GLightbox({
+		var lightbox = GLightbox({
 			plyr: {
 				config: {
 					
@@ -338,32 +339,34 @@ function showPage($thumbnails, $dir) {
 				closebtn.before(infobtn);
 			}
 		});
-		
-		var chkboxes = $('.icheckbox');
-		var lastChecked = null;
 
-		chkboxes.click(function(e) {
-			if(!lastChecked) {
+		checkboxes();
+
+		function checkboxes() {
+			var chkboxes = $('.icheckbox');
+			var lastChecked = null;
+			chkboxes.click(function(e) {
+				if(!lastChecked) {
+					lastChecked = this;
+					return;
+				}
+	
+				if(e.shiftKey) {
+					var start = chkboxes.index(this);
+					var end = chkboxes.index(lastChecked);
+					chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+	
+				}
 				lastChecked = this;
-				return;
-			}
-
-			if(e.shiftKey) {
-				var start = chkboxes.index(this);
-				var end = chkboxes.index(lastChecked);
-				chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
-
-			}
-			lastChecked = this;
-		});
+			});
+		}
 		
 		function count_checks() {
 			if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
 				window.parent.document.getElementById('movepicture').classList.remove('disabled');
 				window.parent.document.getElementById('delpicture').classList.remove('disabled');
 				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
-			}
-			else {
+			} else {
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 				window.parent.document.getElementById('sharepicture').classList.add('disabled');
@@ -634,6 +637,7 @@ function showGallery($requestedDir, $offset = 0) {
 
 	// sort images
 	$thumbnails.= "\n\t\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
+	$thumbnails2 = "";
 	if (sizeof($files) > 0) {
 		array_walk($files, function (&$row) {
 			$row['date'] = $row['date'] ?? null;
@@ -641,12 +645,11 @@ function showGallery($requestedDir, $offset = 0) {
 		$keys = array_column($files, 'date');
 		array_multisort($keys, SORT_ASC, $files);
 		
-		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
-		$offset_end = $offset + $thumbs_pr_page;
+		$offset_end = $offset + $rcmail->config->get("thumbs_pr_page", false);
+		$offset_end = (count($files) < $offset_end) ? count($files):$offset_end;
 		
 		for ($y = $offset; $y < $offset_end; $y++) {
-			if(isset($files[$y]["html"])) $thumbnails2.= "\n".$files[$y]["html"];
-			if($offset > 0 ) $thumbnails2.= "\n".$files[$y]["html"];
+			$thumbnails2.= "\n".$files[$y]["html"];
 		}
 
 		if(isset($videos) && sizeof($videos) > 0){
@@ -658,8 +661,13 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid;
-	$thumbnails = ($offset > 0) ? $thumbnails2:$thumbnails;
-	return $thumbnails;
+	//$thumbnails = ($offset > 0) ? $thumbnails2:$thumbnails;
+	if($offset > 0) {
+		return $thumbnails2;
+	} else {
+		return $thumbnails;
+	}
+	//return $thumbnails;
 }
 
 function getAllSubDirectories($directory, $directory_seperator = "/") {

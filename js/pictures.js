@@ -6,6 +6,7 @@
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
  */
+var lightbox;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("editalbum", edit_album, !0);
 	rcmail.register_command("rename_alb", rename_album, !0);
@@ -27,13 +28,13 @@ window.onload = function(){
 			maxRowHeight: 220,
 			margins: 7,
 			border: 0,
-			lastRow: 'justify',
+			lastRow: 'nojustify',
 			captions: true,
 			randomize: false,
 			selector: '.glightbox'
 		});
 
-		const lightbox = GLightbox({
+		var lightbox = GLightbox({
 			plyr: {
 				config: {
 					
@@ -42,6 +43,7 @@ window.onload = function(){
 			},
 			autoplayVideos: false,
 			loop: false,
+			touchNavigation: true,
 		});
 	
 		lightbox.on('close', () => {
@@ -80,6 +82,7 @@ window.onload = function(){
 	
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
+
 		window.onscroll = function() {
 			var currentScrollPos = window.scrollY;
 			if (prevScrollpos > currentScrollPos) {
@@ -103,7 +106,7 @@ window.onload = function(){
 		return false;
 	});
 
-	document.getElementById('never').addEventListener('change', function(){
+	if(document.getElementById('never')) document.getElementById('never').addEventListener('change', function(){
 		if(this.checked != true){
 			document.getElementById('expiredate').disabled = false;
 			let someDate = new Date();
@@ -114,7 +117,7 @@ window.onload = function(){
 		}
 	});
 
-	document.getElementById('rsh').addEventListener('click', function(e){
+	if(document.getElementById('rsh')) document.getElementById('rsh').addEventListener('click', function(e){
 		e.preventDefault();
 		e.stopPropagation();
 		$.ajax({
@@ -138,6 +141,23 @@ window.onload = function(){
 				return false;
 			}
 		})
+	});
+
+	$(window).scroll(function() {
+		if($(window).scrollTop() + $(window).height() == $(document).height()) {
+			$.ajax({
+				type: 'POST',
+				url: window.location.href,
+				data: {
+					s: $('.glightbox').length
+				},success: function(response) {
+					$('#images').append(response);
+					$('#images').justifiedGallery('norewind');
+					lightbox.reload();
+					return false;
+				}
+			});
+		}
 	});
 };
 
