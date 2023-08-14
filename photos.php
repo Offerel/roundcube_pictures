@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.8
+ * @version 1.4.9
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -209,6 +209,13 @@ if(isset($_POST['img_action'])) {
 	die();
 }
 
+if( isset($_GET['g']) ) {
+	$dir = $_POST['g'];
+	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
+	$thumbnails = showGallery($dir, $offset);
+	die($thumbnails);
+}
+
 function removeDirectory($path, $user) {
 	$files = glob($path . '/*');
 	foreach ($files as $file) {
@@ -259,6 +266,7 @@ function showPage($thumbnails, $dir) {
 	\t\t\t</div>
 	\t\t\t<div id=\"galdiv\">";
 	$page.= $thumbnails;
+	$gal = ltrim($dir, '/');
 	$page.="
 	<script>
 		$('#folders').justifiedGallery({
@@ -282,6 +290,24 @@ function showPage($thumbnails, $dir) {
 			captions: true,
 			randomize: false
 		});
+
+		$(window).scroll(function() {
+			if($(window).scrollTop() + $(window).height() == $(document).height()) {
+				console.log('scrolled');
+				$.ajax({
+					type: 'POST',
+					url: 'photos.php?g=1',
+					data: {
+						g: '$gal',
+						s: $('.glightbox').length
+					},success: function(response) {
+						$('#images').append(response);
+						$('#images').justifiedGallery('norewind');
+						return false;
+					}
+				});
+			}
+		  });
 
 		const lightbox = GLightbox({
 			plyr: {
@@ -452,7 +478,7 @@ function showPage($thumbnails, $dir) {
 	return $page;
 }
 
-function showGallery($requestedDir) {
+function showGallery($requestedDir, $offset = 0) {
 	$aallowed = ['image','video'];
 	$files = array();
 	$hidden_vid = "";
@@ -616,25 +642,12 @@ function showGallery($requestedDir) {
 		array_multisort($keys, SORT_ASC, $files);
 		
 		$thumbs_pr_page = $rcmail->config->get("thumbs_pr_page", false);
-		if(isset($_GET['page'])) {
-			$offset_start = ($_GET["page"] * $thumbs_pr_page) - $thumbs_pr_page;
-		} else {
-			$offset_start = 0;
-		}
+		$offset_end = $offset + $thumbs_pr_page;
 		
-		$pages = ceil(sizeof($files)/$thumbs_pr_page);
-		$gal = ltrim($_GET['p'],'/');
-		$offset_end = $offset_start + $thumbs_pr_page;
-		
-		for ($y = $offset_start; $y < $offset_end; $y++) {
-			if(isset($files[$y]["html"])) $thumbnails.= "\n".$files[$y]["html"];
+		for ($y = $offset; $y < $offset_end; $y++) {
+			if(isset($files[$y]["html"])) $thumbnails2.= "\n".$files[$y]["html"];
+			if($offset > 0 ) $thumbnails2.= "\n".$files[$y]["html"];
 		}
-		
-		$pnavigation = "<div id=\"blindspot\"><div id=\"pnavigation\">";
-		for ($page = 1; $page <= $pages; $page++) {
-			$pnavigation.= "<a href=\"?p=$gal&page=$page\">$page</a>";
-		}
-		$pnavigation.= "</div></div>";
 
 		if(isset($videos) && sizeof($videos) > 0){
 			foreach($videos as $video) {
@@ -642,8 +655,10 @@ function showGallery($requestedDir) {
 			}
 		}
 	}
+	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
-	$thumbnails.= $hidden_vid.$pnavigation;
+	$thumbnails.= $hidden_vid;
+	$thumbnails = ($offset > 0) ? $thumbnails2:$thumbnails;
 	return $thumbnails;
 }
 
