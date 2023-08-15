@@ -287,32 +287,33 @@ function showPage($thumbnails, $dir) {
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
-			captions: true,
+			captions: false,
 			randomize: false
 		});
 
-		$(window).scroll(function() {
-			if($(window).scrollTop() + $(window).height() == $(document).height()) {
-				let images = $('.glightbox').length;
+		window.onscroll = function() {
+			if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
+				let images = document.querySelectorAll('.glightbox').length;
 				let last = (document.getElementById('last')) ? false:true;
 				if(images > 0 && last) {
-					$.ajax({
-						type: 'POST',
-						url: 'photos.php?g=1',
-						data: {
-							g: '$gal',
-							s: $('.glightbox').length
-						},success: function(response) {
-							$('#images').append(response);
+					const xhr = new XMLHttpRequest();
+					xhr.open('POST', 'photos.php?g=1', true);
+					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+					var params = 'g=$gal&s=' + images;
+					xhr.onreadystatechange = function() {
+						if(xhr.readyState == 4 && xhr.status == 200) {
+							var photos = document.getElementById('images');
+							photos.insertAdjacentHTML('beforeend',xhr.response);
 							$('#images').justifiedGallery('norewind');
 							lightbox.reload();
 							checkboxes();
 							return false;
 						}
-					});
+					}
+					xhr.send(params);
 				}
 			}
-		});
+		}
 
 		var lightbox = GLightbox({
 			plyr: {
@@ -601,7 +602,7 @@ function showGallery($requestedDir, $offset = 0) {
 				}
 				
 				// video files
-				if (preg_match("/\.ogv$|\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
+				if (preg_match("/\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
 					$thmbParams = http_build_query(array('file' => "$requestedDir/$file", 't' => 1));
 					$thmbUrl = "simg.php?$thmbParams";
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");

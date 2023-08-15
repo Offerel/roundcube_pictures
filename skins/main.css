@@ -217,6 +217,7 @@ button.btn_active {
 	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='white' filter='drop-shadow(9px 9px 9px rgb(0 0 0 / 0.7)' d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E") no-repeat center;
 	background-size: cover;
 	top: 5px;
+	z-index: 2;
 }
 button.edit {
 	transition: all .2s ease-in;
@@ -467,7 +468,7 @@ footer a {
 #infbtn {
 	right: 60px;
 	opacity: .7;
-	background-color: rgba(0,0,0,.32);
+	background-color: rgba(0, 0, 0, 0.04);
 	position: absolute;
 	top: 15px;
 	width: 40px;
@@ -536,4 +537,14 @@ footer a {
 	border-right: none;
 	pointer-events: none;
 	font-weight: bold;
+}
+.glightbox:hover::before {
+	content: ' ';
+	background: linear-gradient(0deg, rgba(149,149,149,0) 0%, rgba(0, 0, 0, 0.58) 100%);
+	position: absolute;
+	display: block;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	top: 0;
 }
