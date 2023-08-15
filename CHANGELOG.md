@@ -1,3 +1,6 @@
+### v1.4.9
+- Added lazyload instead of pagination
+
 ### v1.4.8
 - Added report of broken images to user
 - Added delete of orphaned ogv files

@@ -163,29 +163,6 @@ window.onload = function(){
 			}
 		})
 	});
-
-	/*
-	$(window).scroll(function() {
-		if($(window).scrollTop() + $(window).height() == $(document).height()) {
-			let images = $('.glightbox').length;
-			let last = (document.getElementById('last')) ? false:true;
-			if(images > 0 && last) {
-				$.ajax({
-					type: 'POST',
-					url: window.location.href,
-					data: {
-						s: images
-					},success: function(response) {
-						$('#images').append(response);
-						$('#images').justifiedGallery('norewind');
-						lightbox.reload();
-						return false;
-					}
-				});
-			}
-		}
-	});
-	*/
 };
 
 function selectShare() {
