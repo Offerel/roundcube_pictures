@@ -293,20 +293,24 @@ function showPage($thumbnails, $dir) {
 
 		$(window).scroll(function() {
 			if($(window).scrollTop() + $(window).height() == $(document).height()) {
-				$.ajax({
-					type: 'POST',
-					url: 'photos.php?g=1',
-					data: {
-						g: '$gal',
-						s: $('.glightbox').length
-					},success: function(response) {
-						$('#images').append(response);
-						$('#images').justifiedGallery('norewind');
-						lightbox.reload();
-						checkboxes();
-						return false;
-					}
-				});
+				let images = $('.glightbox').length;
+				let last = (document.getElementById('last')) ? false:true;
+				if(images > 0 && last) {
+					$.ajax({
+						type: 'POST',
+						url: 'photos.php?g=1',
+						data: {
+							g: '$gal',
+							s: $('.glightbox').length
+						},success: function(response) {
+							$('#images').append(response);
+							$('#images').justifiedGallery('norewind');
+							lightbox.reload();
+							checkboxes();
+							return false;
+						}
+					});
+				}
 			}
 		});
 
@@ -661,13 +665,12 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid;
-	//$thumbnails = ($offset > 0) ? $thumbnails2:$thumbnails;
+	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 	if($offset > 0) {
-		return $thumbnails2;
+		die($thumbnails2);
 	} else {
 		return $thumbnails;
 	}
-	//return $thumbnails;
 }
 
 function getAllSubDirectories($directory, $directory_seperator = "/") {
