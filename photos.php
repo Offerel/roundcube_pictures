@@ -34,7 +34,6 @@ if (!empty($rcmail->user->ID)) {
 		}
 	}
 } else {
-	error_log('Pictures Plugin(Photos): Login failed. User is not logged in.');
 	http_response_code(403);
 	header('location: ../../');
 	die('Login failed. User is not logged in.');

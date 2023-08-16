@@ -231,7 +231,7 @@ function todb($file, $user, $pictures_basepath) {
 		$type = explode('/',mime_content_type($file))[0];
 		if($type == 'image') {
 			$exif = readEXIF($file);
-			$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
+			$taken = (isset($exif[5]) && is_int($exif[5])) ? $exif[5]:filemtime($file);
 			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 		} else {
 			$exif = 'NULL';
