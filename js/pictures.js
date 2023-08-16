@@ -29,7 +29,7 @@ window.onload = function(){
 			margins: 7,
 			border: 0,
 			lastRow: 'nojustify',
-			captions: true,
+			captions: false,
 			randomize: false,
 			selector: '.glightbox'
 		});

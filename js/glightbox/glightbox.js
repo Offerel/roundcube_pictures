@@ -2565,7 +2565,7 @@
 
         var body = document.body;
         var scrollBar = window.innerWidth - document.documentElement.clientWidth;
-
+        /*
         if (scrollBar > 0) {
           var styleSheet = document.createElement('style');
           styleSheet.type = 'text/css';
@@ -2575,7 +2575,7 @@
 
           addClass(body, 'gscrollbar-fixer');
         }
-
+        */
         addClass(body, 'glightbox-open');
 
         addClass(html, 'glightbox-open');

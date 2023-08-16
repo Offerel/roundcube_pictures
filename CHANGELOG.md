@@ -1,3 +1,7 @@
+### v1.4.10
+- Fix lazyload multiple times the same
+- JustifiedGallery 3.8.1
+
 ### v1.4.9
 - Added lazyload instead of pagination
 

@@ -277,44 +277,24 @@ function showPage($thumbnails, $dir) {
 			rel: 'folders',
 			lastRow: 'nojustify',
 			captions: false,
-			randomize: false
+			randomize: false,
 		});
 	
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 7,
+			margins: 3,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
 			captions: false,
-			randomize: false
+			randomize: false,
 		});
-
-		window.onscroll = function() {
-			if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
-				let images = document.querySelectorAll('.glightbox').length;
-				let last = (document.getElementById('last')) ? false:true;
-				if(images > 0 && last) {
-					const xhr = new XMLHttpRequest();
-					xhr.open('POST', 'photos.php?g=1', true);
-					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-					var params = 'g=$gal&s=' + images;
-					xhr.onreadystatechange = function() {
-						if(xhr.readyState == 4 && xhr.status == 200) {
-							var photos = document.getElementById('images');
-							photos.insertAdjacentHTML('beforeend',xhr.response);
-							$('#images').justifiedGallery('norewind');
-							lightbox.reload();
-							checkboxes();
-							return false;
-						}
-					}
-					xhr.send(params);
-				}
-			}
-		}
-
+		
+		$(window).scroll(function() {
+			setTimeout(lazyload, 100);
+		});
+		
 		var lightbox = GLightbox({
 			plyr: {
 				config: {
@@ -346,6 +326,24 @@ function showPage($thumbnails, $dir) {
 		});
 
 		checkboxes();
+
+		function lazyload() {
+			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height()) {
+				$.ajax({
+					type: 'POST',
+					url: 'photos.php?g=1',
+					async: false,
+					data: {
+						g: '$gal',
+						s: $('.glightbox').length
+					},success: function(response) {
+						$('#images').append(response);
+						$('#images').justifiedGallery('norewind');
+						return false;
+					}
+				});
+			}
+		}
 
 		function checkboxes() {
 			var chkboxes = $('.icheckbox');
@@ -527,7 +525,7 @@ function showGallery($requestedDir, $offset = 0) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id='$requestedDir/$file' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
 								);
 				}
 			}
@@ -597,7 +595,7 @@ function showGallery($requestedDir, $offset = 0) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "\n<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
+						"html" => "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
 					);
 				}
 				
@@ -610,7 +608,7 @@ function showGallery($requestedDir, $offset = 0) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "<div><a class=\"video glightbox\" href='$linkUrl' data-type='video' data-html=\"#".pathinfo($file)['filename']."\"><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
+						"html" => "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
 					);
 				}
 			}
@@ -643,6 +641,8 @@ function showGallery($requestedDir, $offset = 0) {
 	// sort images
 	$thumbnails.= "\n\t\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
 	$thumbnails2 = "";
+	$offset_end = 0;
+
 	if (sizeof($files) > 0) {
 		array_walk($files, function (&$row) {
 			$row['date'] = $row['date'] ?? null;

@@ -61,12 +61,11 @@ class pictures extends rcube_plugin {
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
-					$thumbnails.= "\n\t\t\t\t<a id='$x' class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
-					$thumbnails2.= "\n\t\t\t\t<a id='$x' class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
+					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
 				}
 			}
 			
-			$thumbnails.= "\n\t\t\t</div>";
+			$thumbnails.= $thumbnails2."\n\t\t\t</div>";
 
 			if(!$shp) {
 				die($thumbnails2);
