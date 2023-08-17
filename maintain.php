@@ -239,10 +239,15 @@ function todb($file, $user, $pictures_basepath) {
 			$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
 		}
 
-		if ($db->db_provider == 'sqlite') $db->startTransaction();
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
-		$db->query($query);
-		if ($db->db_provider == 'sqlite') $db->endTransaction();
+		$db->startTransaction();
+		$db->query("INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)");
+		if($db->is_error()) {
+			sleep(1);
+			$db->query("INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)");
+			$db->endTransaction();
+		} else {
+			$db->endTransaction();
+		}
 	}
 }
 
