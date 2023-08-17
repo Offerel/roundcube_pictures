@@ -52,18 +52,20 @@ if(isset($file) && !empty($file)) {
 	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
 
 	if (file_exists("$file")) {
-		$mtype = mime_content_type($file);
+		$mimeType = mime_content_type($file);
 		$pathparts = pathinfo($file);
-		if(strpos($mtype, 'video') !== false) {
+		if(strpos($mimeType, 'video') !== false) {
 			$ogvpath = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
 			if(file_exists($ogvpath)) {
 				$mimeType = mime_content_type($ogvpath);
 				$file = $ogvpath;
 			}
 		}
+		$filesize = filesize($file);
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-		header("Content-Type: $mtype");
-		header('Content-disposition: inline;filename="'.basename($file).'"');
+		header("Content-Type: $mimeType");
+		header("Content-Length: ".$filesize);
+		header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 		die(readfile($file));
 	} else {
 		die('Nicht gfunden'."$file");
@@ -104,9 +106,11 @@ if(isset($file) && !empty($file)) {
 				$path = $ogvpath;
 			}
 		}
-
-		header('Content-disposition: inline; filename="'.$pathparts['basename'].'"');
+		$filesize = filesize($path);
+		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($path)).' GMT');
 		header("Content-Type: $mimeType");
+		header("Content-Length: ".$filesize);
+		header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 		die(readfile($path));
 	}
 	die();
