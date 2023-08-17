@@ -42,8 +42,6 @@ class pictures extends rcube_plugin {
 				$pictures[] = $dbh->fetch_array($res);
 			}
 
-			file_put_contents("/mnt/stick/erg.txt", print_r($pictures, true));
-
 			$thumbnails = "\n\t\t\t<div id='images' class='justified-gallery shared'>";
 
 			$x = isset($_POST['s']) ? filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT):0;
@@ -64,7 +62,8 @@ class pictures extends rcube_plugin {
 					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
 				}
 			}
-			
+
+			$thumbnails2.= ($mthumbs == $rc) ? "<span id='last'></span>":"";
 			$thumbnails.= $thumbnails2."\n\t\t\t</div>";
 
 			if(!$shp) {

@@ -148,16 +148,15 @@ if(isset($_POST['img_action'])) {
 	global $rcmail, $pictures_path;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$action = $_POST['img_action'];	
+	$action = $_POST['img_action'];
 	$images = $_POST['images'];
 	$org_path = urldecode($_POST['orgPath']);
-	$album_target = trim($_POST['target'],'/');	
+	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'],'/'), FILTER_SANITIZE_STRING):"";
 
 	switch($action) {
-		case 'move':	if($_POST['newPath'] != "") {
-							$newPath = $_POST['newPath'];
-							if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
-						}
+		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_STRING):"";
+						if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
+
 						foreach($images as $image) {
 							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.$image);
@@ -274,7 +273,7 @@ function showPage($thumbnails, $dir) {
 			margins: 7,
 			border: 0,
 			rel: 'folders',
-			lastRow: 'nojustify',
+			lastRow: 'justify',
 			captions: false,
 			randomize: false,
 		});
@@ -327,7 +326,8 @@ function showPage($thumbnails, $dir) {
 		checkboxes();
 
 		function lazyload() {
-			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height()) {
+			let last = document.getElementById('last') ? false:true;
+			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
@@ -338,6 +338,8 @@ function showPage($thumbnails, $dir) {
 					},success: function(response) {
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
+						lightbox.reload();
+						checkboxes();
 						return false;
 					}
 				});
@@ -484,7 +486,7 @@ function showPage($thumbnails, $dir) {
 }
 
 function showGallery($requestedDir, $offset = 0) {
-	$aallowed = ['image','video'];
+	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
 	$hidden_vid = "";
 	$pnavigation = "";
@@ -530,7 +532,7 @@ function showGallery($requestedDir, $offset = 0) {
 			}
 			
 			// Gallery images
-			$allowed = (in_array(explode('/', mime_content_type($current_dir."/".$file))[0], $aallowed)) ? true:false;
+			$allowed = (in_array(substr($file, strrpos($file,".")+1), $ballowed)) ? true:false;
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
@@ -624,7 +626,7 @@ function showGallery($requestedDir, $offset = 0) {
 
 	// sort folders
 	if (isset($dirs) && sizeof($dirs) > 0) {
-		$thumbnails.= "\n\t\t\t\t\t<div id=\"folders\">";
+		$thumbnails.= "\n\t\t\t\t\t<div id='folders'>";
 		array_walk($dirs, function (&$row) {
 			$row['name'] = $row['name'] ?? null;
 		});
@@ -638,7 +640,7 @@ function showGallery($requestedDir, $offset = 0) {
 	}
 
 	// sort images
-	$thumbnails.= "\n\t\t\t\t\t<div id=\"images\" class=\"justified-gallery\">";
+	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='justified-gallery'>";
 	$thumbnails2 = "";
 	$offset_end = 0;
 
@@ -822,8 +824,6 @@ function gps($coordinate, $hemisphere) {
 }
 
 function checkpermissions($file) {
-	global $messages;
-
 	if (!is_readable($file)) {
 		error_log('Pictures Plugin(Photos): Can\'t read image $file, check your permissions.');
 	}

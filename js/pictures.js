@@ -26,12 +26,16 @@ window.onload = function(){
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 7,
+			margins: 3,
 			border: 0,
 			lastRow: 'nojustify',
 			captions: false,
 			randomize: false,
 			selector: '.glightbox'
+		});
+
+		$(window).scroll(function() {
+			setTimeout(lazyload, 100);
 		});
 
 		var lightbox = GLightbox({
@@ -93,27 +97,6 @@ window.onload = function(){
 				header.classList.remove('shadow')
 			}
 			prevScrollpos = currentScrollPos;
-			
-			if ((window.innerHeight + Math.round(window.scrollY)) >= document.body.offsetHeight) {
-				let images = document.querySelectorAll('.glightbox').length;
-				let last = (document.getElementById('last')) ? false:true;
-				if(images > 0 && last) {
-					const xhr = new XMLHttpRequest();
-					xhr.open("POST", window.location.href, true);
-					xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-					var params = 's=' + images;
-					xhr.onreadystatechange = function() {
-						if(xhr.readyState == 4 && xhr.status == 200) {
-							var photos = document.getElementById('images');
-							photos.insertAdjacentHTML('beforeend',xhr.response);
-							$('#images').justifiedGallery('norewind');
-							lightbox.reload();
-							return false;
-						}
-					}
-					xhr.send(params);
-				}
-			}
 		}
 	}
 
@@ -164,6 +147,26 @@ window.onload = function(){
 		})
 	});
 };
+
+function lazyload() {
+	var lightbox = GLightbox({});
+	let last = document.getElementById('last') ? false:true;
+	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last) {
+		$.ajax({
+			type: 'POST',
+			url: window.location.href,
+			async: false,
+			data: {
+				s: $('.glightbox').length
+			},success: function(response) {
+				$('#images').append(response);
+				$('#images').justifiedGallery('norewind');
+				lightbox.reload();
+				return false;
+			}
+		});
+	}
+}
 
 function selectShare() {
 	getshares();
@@ -448,7 +451,8 @@ function delete_picture() {
 		a.push($(this).val())
 	});
 
-	if(confirm(rcmail.gettext("picdconfirm", "pictures"))) {
+	let ctext = rcmail.gettext("picdconfirm", "pictures").replace("%c", a.length);
+	if(confirm(ctext)) {
 		$.ajax({
 			type: "POST",
 			url: "plugins/pictures/photos.php",
