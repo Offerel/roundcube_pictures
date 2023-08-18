@@ -327,7 +327,7 @@ function showPage($thumbnails, $dir) {
 
 		function lazyload() {
 			let last = document.getElementById('last') ? false:true;
-			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last) {
+			if(Math.ceil($(window).scrollTop() + $(window).height()) >= $(document).height() - 10 && last) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
