@@ -35,10 +35,13 @@ window.onload = function(){
 		});
 
 		$(window).scroll(function() {
-			setTimeout(lazyload, 100);
+			//let last = document.getElementById('last') ? false:true;
+			//if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last) {
+				setTimeout(lazyload, 100);
+			//}
 		});
 
-		var lightbox = GLightbox({
+		lightbox = GLightbox({
 			plyr: {
 				config: {
 					
@@ -81,6 +84,19 @@ window.onload = function(){
 				});
 	
 				closebtn.before(infobtn);
+			}
+		});
+
+		lightbox.on('slide_before_change', (data) => {
+			let cindex = data.current.index + 1;
+			let cimages = document.getElementsByClassName('glightbox').length;
+			let last = document.getElementById('last') ? false:true;
+
+			if(cindex == cimages && last) {
+				lightbox.close();
+				setTimeout(lazyload, 100, true);
+				//lightbox.close();
+				
 			}
 		});
 	
@@ -148,10 +164,9 @@ window.onload = function(){
 	});
 };
 
-function lazyload() {
-	var lightbox = GLightbox({});
+function lazyload(slide = false) {
 	let last = document.getElementById('last') ? false:true;
-	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last) {
+	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last || slide) {
 		$.ajax({
 			type: 'POST',
 			url: window.location.href,

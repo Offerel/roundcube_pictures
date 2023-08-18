@@ -293,7 +293,7 @@ function showPage($thumbnails, $dir) {
 			setTimeout(lazyload, 100);
 		});
 		
-		var lightbox = GLightbox({
+		lightbox = GLightbox({
 			plyr: {
 				config: {
 					
