@@ -161,7 +161,7 @@ window.onload = function(){
 
 function lazyload(slide = false) {
 	let last = document.getElementById('last') ? false:true;
-	if(Math.ceil($(window).scrollTop() + $(window).height()) >= $(document).height() - 10 && last || slide) {
+	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() - 5 && last || slide) {
 		$.ajax({
 			type: 'POST',
 			url: window.location.href,

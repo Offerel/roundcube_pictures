@@ -256,7 +256,6 @@ function showPage($thumbnails, $dir) {
 		$path = $path.'/'.$folder;
 		if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
 	}
-
 	$page.= "</head>
 	\t\t<body class='picbdy' onload='count_checks();'>
 	\t\t\t<div id='header' style='position: absolute; top: -8px;'>
@@ -323,11 +322,18 @@ function showPage($thumbnails, $dir) {
 			}
 		});
 
+		let p = new URL(self.location).searchParams.get('p');
+		if(p && p.length > 0) {
+			window.parent.document.getElementById('editalbum').classList.remove('disabled');
+		} else {
+			window.parent.document.getElementById('editalbum').classList.add('disabled');
+		}
+		
 		checkboxes();
 
 		function lazyload() {
 			let last = document.getElementById('last') ? false:true;
-			if(Math.ceil($(window).scrollTop() + $(window).height()) >= $(document).height() - 10 && last) {
+			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() - 5 && last) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
