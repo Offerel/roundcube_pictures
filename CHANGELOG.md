@@ -1,3 +1,6 @@
+### v1.4.11
+- Config option ffmpeg
+
 ### v1.4.10
 - Fix lazyload multiple times the same
 - Fix nullvalue

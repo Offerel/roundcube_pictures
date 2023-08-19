@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.10
+ * @version 1.4.11
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -51,6 +51,7 @@ $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
+$ccmd = $rcmail->config->get('convert_cmd', false);
 $ffprobe = exec("which ffprobe");
 
 if(isset($_POST['getsubs'])) {
@@ -846,7 +847,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $hevc;
+	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
 	if(file_exists($thumbnailpath)) return false;
@@ -899,7 +900,9 @@ function createthumb($image) {
 			$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
 			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $ogv, $ccmd)));
+			//exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			exec($ccmd);
 		} else {
 			error_log("ffmpeg is not installed, so video formats are not supported.");
 		}

@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.10
+ * @version 1.4.11
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -19,6 +19,7 @@ $thumbsize = $rcmail->config->get('thumb_size', false);
 $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
+$ccmd = $rcmail->config->get('convert_cmd', false);
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
@@ -143,7 +144,7 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken;
+	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -210,7 +211,12 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			if(!file_exists($ogv)) {
 				$startconv = time();
 				logm("Convert to $ogv", 4);
-				exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
+
+				$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $org_pic, str_replace("%o", $ogv, $ccmd)));
+				//$ccmd = str_replace("%i", $org_pic, $ccmd);
+				//$ccmd = str_replace("%o", $ogv, $ccmd);
+				//exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
+				exec($ccmd);
 				$diff = time() - $startconv;
 				$cdiff = gmdate("H:i:s", $diff);
 				logm("OGV file ($org_pic) converted within $cdiff ($diff sec)", 4);
