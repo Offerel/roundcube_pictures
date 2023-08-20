@@ -1,3 +1,6 @@
+### v1.4.12
+- Fix show dummy files
+  
 ### v1.4.11
 - Added config option ffmpeg
 - Added re-load from within lightbox

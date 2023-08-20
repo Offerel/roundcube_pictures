@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.11
+ * @version 1.4.12
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -558,12 +558,13 @@ function showGallery($requestedDir, $offset = 0) {
 			
 			// Gallery images
 			$allowed = (in_array(substr($file, strrpos($file,".")+1), $ballowed)) ? true:false;
-			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed) {
+			$fullpath = $current_dir."/".$file;
+			$fs = filesize($fullpath);
+			
+			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
-
-				$fullpath = $current_dir."/".$file;
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$uid = $rcmail->user->ID;
 				$query = "SELECT `pic_id`, `pic_EXIF`, `pic_taken` FROM `pic_pictures` WHERE `pic_path` = \"$dbpath\" AND user_id = $uid";
@@ -986,6 +987,9 @@ function mvimg($oldpath, $newPath) {
 	} else {
 		rename($oldpath, $newPath);
 	}
+
+	$thumbnailpath = $thumb_path.str_replace($pictures_path, '', $oldpath).".jpg";
+	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
 }
 
 function delimg($file) {
@@ -1003,6 +1007,9 @@ function delimg($file) {
 	$pathparts = pathinfo($file);
 	$hiddenvid = $pathparts['dirname'].'/.'.$pathparts['filename'].'mp4';
 	if(file_exists($hiddenvid)) unlink($hiddenvid);
+
+	$thumbnailpath = $thumb_path.str_replace($pictures_path, '', $file).".jpg";
+	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
