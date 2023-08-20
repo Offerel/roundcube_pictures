@@ -1,5 +1,9 @@
 ### v1.4.11
-- Config option ffmpeg
+- Added config option ffmpeg
+- Added re-load from within lightbox
+- Fix for lightbox
+- Fix edit album
+- Fix filesize calculation
 
 ### v1.4.10
 - Fix lazyload multiple times the same
