@@ -110,7 +110,7 @@ if(isset($file) && !empty($file)) {
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($path)).' GMT');
 		header("Content-Type: $mimeType");
 		header("Content-Length: ".$filesize);
-		header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+		header('Content-disposition: inline;filename="'.ltrim(basename($path),'.').'"');
 		die(readfile($path));
 	}
 	die();

@@ -323,6 +323,15 @@ function showPage($thumbnails, $dir) {
 			}
 		});
 
+		lightbox.on('slide_before_change', (data) => {
+			let cindex = data.current.index + 1;
+			let cimages = document.getElementsByClassName('glightbox').length;
+			let last = document.getElementById('last') ? false:true;
+			if(cindex == cimages && last) {
+				setTimeout(lazyload, 100, true);
+			}
+		});
+
 		let p = new URL(self.location).searchParams.get('p');
 		if(p && p.length > 0) {
 			window.parent.document.getElementById('editalbum').classList.remove('disabled');
@@ -332,9 +341,9 @@ function showPage($thumbnails, $dir) {
 		
 		checkboxes();
 
-		function lazyload() {
+		function lazyload(slide = false) {
 			let last = document.getElementById('last') ? false:true;
-			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() - 5 && last) {
+			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last || slide) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
@@ -345,6 +354,15 @@ function showPage($thumbnails, $dir) {
 					},success: function(response) {
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
+						const html = new DOMParser().parseFromString(response, 'text/html');
+						html.body.childNodes.forEach(element => {
+							if (element.children && element.children[0].classList.contains('glightbox')) {
+								lightbox.insertSlide({
+									'href': element.children[0].href,
+									'type': element.children[0].dataset.type
+								});
+							}
+						});
 						lightbox.reload();
 						checkboxes();
 						return false;

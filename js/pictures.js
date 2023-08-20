@@ -88,9 +88,7 @@ window.onload = function(){
 			let cindex = data.current.index + 1;
 			let cimages = document.getElementsByClassName('glightbox').length;
 			let last = document.getElementById('last') ? false:true;
-
 			if(cindex == cimages && last) {
-				lightbox.close();
 				setTimeout(lazyload, 100, true);
 			}
 		});
@@ -161,7 +159,7 @@ window.onload = function(){
 
 function lazyload(slide = false) {
 	let last = document.getElementById('last') ? false:true;
-	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() - 5 && last || slide) {
+	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height()  && last || slide) {
 		$.ajax({
 			type: 'POST',
 			url: window.location.href,
@@ -171,8 +169,17 @@ function lazyload(slide = false) {
 			},success: function(response) {
 				$('#images').append(response);
 				$('#images').justifiedGallery('norewind');
+				const html = new DOMParser().parseFromString(response, 'text/html');
+				html.body.childNodes.forEach(element => {
+					if (element.classList && element.classList.contains('glightbox')) {
+						lightbox.insertSlide({
+							'href': element.href,
+							'type': element.dataset.type
+						});
+					}
+				});
 				lightbox.reload();
-				return false;
+				return response;
 			}
 		});
 	}
