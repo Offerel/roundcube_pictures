@@ -94,7 +94,7 @@ function logm($message, $mmode = 3) {
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
-	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp","ogv");
+	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
 			while (false !== ($file = readdir($handle))) {
@@ -107,7 +107,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
-						checkogv($path."/".$file);
+						checkorphaned($path."/".$file);
 					}
 				}
 			}
@@ -207,19 +207,15 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if($hevc && "$vcodec" != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			if(!file_exists($ogv)) {
+			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+			if(!file_exists($hidden_vid)) {
 				$startconv = time();
-				logm("Convert to $ogv", 4);
-
-				$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $org_pic, str_replace("%o", $ogv, $ccmd)));
-				//$ccmd = str_replace("%i", $org_pic, $ccmd);
-				//$ccmd = str_replace("%o", $ogv, $ccmd);
-				//exec("$ffmpeg -loglevel quiet -i \"$org_pic\" -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 \"$ogv\"");
+				logm("Convert to $hidden_vid", 4);
+				$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $org_pic, str_replace("%o", $hidden_vid, $ccmd)));
 				exec($ccmd);
 				$diff = time() - $startconv;
 				$cdiff = gmdate("H:i:s", $diff);
-				logm("OGV file ($org_pic) converted within $cdiff ($diff sec)", 4);
+				logm("Video file ($org_pic) converted within $cdiff ($diff sec)", 4);
 			}
 		} else {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
@@ -257,9 +253,10 @@ function todb($file, $user, $pictures_basepath) {
 	}
 }
 
-function checkogv($file) {
+function checkorphaned($file) {
 	$pathparts = pathinfo("$file");
-	if($pathparts['extension'] == 'ogv') {
+	$filename = $pathparts['basename'];
+	if (strpos($filename, '.') === 0) {
 		$ofile = $pathparts['dirname'].'/'.ltrim($pathparts['filename'],'.').'.*';
 		$flist = glob($ofile);
 		if (count($flist) == 0) {

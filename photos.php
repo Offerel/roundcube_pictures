@@ -899,9 +899,8 @@ function createthumb($image) {
 			exec($ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
 			$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
-			$ogv = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $ogv, $ccmd)));
-			//exec("$ffmpeg -loglevel quiet -i $image -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 $ogv");
+			$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $out, $ccmd)));
 			exec($ccmd);
 		} else {
 			error_log("ffmpeg is not installed, so video formats are not supported.");
@@ -984,8 +983,8 @@ function delimg($file) {
 	}
 	
 	$pathparts = pathinfo($file);
-	$ogvf = $pathparts['dirname'].'/.'.$pathparts['filename'].'ogv';
-	if(file_exists($ogvf)) unlink($ogvf);
+	$hiddenvid = $pathparts['dirname'].'/.'.$pathparts['filename'].'mp4';
+	if(file_exists($hiddenvid)) unlink($hiddenvid);
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
