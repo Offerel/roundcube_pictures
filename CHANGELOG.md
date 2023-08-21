@@ -1,3 +1,6 @@
+### v1.4.13
+- Show hint after login instead of email
+
 ### v1.4.12
 - Fix show dummy files
   

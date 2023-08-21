@@ -19,6 +19,7 @@ $labels['picdconfirm'] = "Do you want to delete the marked images (%c)?";
 $labels['galdconfirm'] = "Do you want to delete the marked album?";
 $labels['selalb'] = "Choose Album";
 $labels['selshr'] = "New Share";
+$labels['corpics'] = "There was an error processing your new pictures. The following pictures appear to be corrupted. Please fix or delete these images:";
 
 $labels['exif_undefined'] = "Undefined";
 $labels['exif_manual'] = "Manual";

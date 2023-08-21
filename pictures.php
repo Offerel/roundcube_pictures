@@ -96,6 +96,8 @@ class pictures extends rcube_plugin {
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
 		}
+
+		$this->add_hook('render_page', [$this, 'checkbroken']);
 	}
 	
 	function change_requestdir() {
@@ -121,6 +123,45 @@ class pictures extends rcube_plugin {
 			$attrib['id'] = 'rcmailpicturescontent';
 		$attrib['name'] = $attrib['id'];
 		return $rcmail->output->frame($attrib);
+	}
+
+	function checkbroken() {
+		$rcmail = rcmail::get_instance();
+		$uid = $rcmail->user->ID;
+		$dbh = $rcmail->get_dbh();
+		$res = $dbh->query("SELECT `pic_path` FROM `pic_broken` WHERE `user_id` = $uid");
+		$rc = $dbh->num_rows($res);
+		$broken = array();
+		$bpictures = "";
+
+		for ($x = 0; $x < $rc; $x++) {
+			array_push($broken, $dbh->fetch_assoc($res)['pic_path']);
+		}
+
+		foreach($broken as $bpicture) {
+			$bpictures.= "$bpicture\n";
+		}
+
+		if (count($broken) > 0) {
+			$this->add_texts('localization');
+			$rcmail->output->add_footer(html::tag('div', [
+				'id'     => 'picturesinfo',
+				'class'  => 'formcontent',
+			], rcube::Q($this->gettext('pictures.corpics')."\n\n".$bpictures)
+			));
+			
+			$title  = rcube::JQ($this->gettext('pictures.pictures'));
+			$script = "
+var picturesinfo = rcmail.show_popup_dialog($('#picturesinfo'), '$title', [], {
+	resizable: false,
+	closeOnEscape: true,
+	width: 500,
+	open: function() { $('#picturesinfo').show(); }
+});
+rcube_webmail.prototype.pictures_dialog_close = function() { picturesinfo.dialog('destroy'); };
+";
+			$rcmail->output->add_script($script, 'docready');
+		}
 	}
 }
 

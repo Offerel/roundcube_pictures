@@ -30,8 +30,10 @@ for ($x = 0; $x < $rcount; $x++) {
 
 foreach($users as $user) {
 	$username = $user["username"];
+	$uid = $user["user_id"];
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
-	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');	
+	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
+	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
 	$broken = array();
 	switch($mode) {
 		case "add":
@@ -57,14 +59,9 @@ foreach($users as $user) {
 	}
 	
 	if(count($broken) > 0) {
-		$headers['From'] = "Pictures<noreply@pictures.org>";
-		$headers['Content-Type'] = "text/plain; charset=\"UTF-8\"";
-		$message = "There was an error processing your pictures. The following pictures appear to be corrupted. Please delete or fix the image:\n\n";
-		$message = wordwrap($message, 70);
 		foreach($broken as $picture) {
-			$message.= $picture."\n";
+			$db->query("INSERT INTO `pic_broken` (`pic_path`, `user_id`) VALUES (\"$picture\",$uid)");
 		}
-		mail($username, 'Pictures Error', $message, $headers);
 	}
 }
 
