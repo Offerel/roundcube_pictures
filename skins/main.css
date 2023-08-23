@@ -121,15 +121,10 @@ html{
 	display: flex;
 }
 #folders span {
-	/* position: absolute;
-	width: calc(100% - 15px);
-	height: 100%; */
 	color: #fff;
 	font-size: 1.4em;
 	text-shadow: 1px 1px 3px rgba(15,15,15,1);
 	padding: 0px 0px 5px 15px;
-	/* line-height: 400px;
-	background: linear-gradient(0deg,#000000bd 0,transparent 50%); */
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
