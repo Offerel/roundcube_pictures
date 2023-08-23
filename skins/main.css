@@ -118,24 +118,36 @@ html{
 }
 #folders a {
 	border-radius: 8px;
+	display: flex;
 }
 #folders span {
-	position: absolute;
+	/* position: absolute;
 	width: calc(100% - 15px);
-	height: 100%;
+	height: 100%; */
 	color: #fff;
 	font-size: 1.4em;
 	text-shadow: 1px 1px 3px rgba(15,15,15,1);
-	padding: 0px 0px 0px 15px;
-	line-height: 400px;
-	background: linear-gradient(0deg,#000000bd 0,transparent 50%);
+	padding: 0px 0px 5px 15px;
+	/* line-height: 400px;
+	background: linear-gradient(0deg,#000000bd 0,transparent 50%); */
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	display: block;
+	display: inline-block;
+	position: absolute;
+	z-index: 2;
+	align-self: flex-end;
 }
-#folders span:hover {
-	background: #00000080;
+.folder:hover:after {
+    background: #00000080;
+}
+.folder:after {
+    content: ' ';
+    background: linear-gradient(0deg,#000000bd 0,transparent 50%);
+    position: absolute;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
 }
 .edit_from {
 	margin-top: 50px;
