@@ -228,9 +228,10 @@ function showShare($thumbnails, $shareName) {
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
 	$page.= "\n\t\t</head>\n\t\t<body class='picbdy'>";
-	$page.= "\n\t\t\t<div id='header' style='width: 100%'><h2 style='padding-left: 20px;'>$shareName</h2>";
+	$page.= "\n\t\t\t<div id='header' style='width: 100%'><h2 style='padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$shareName</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;
+	$page.= "\n\t\t\t<div id='btm'></div>";
 	$page.= "\n\t\t</body>\n\t</html>";
 	die($page);
 }

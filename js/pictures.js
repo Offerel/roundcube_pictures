@@ -34,9 +34,11 @@ window.onload = function(){
 			selector: '.glightbox'
 		});
 
-		$(window).scroll(function() {
-			setTimeout(lazyload, 100);
-		});
+		let observer = new IntersectionObserver(function(e) {
+			let last = document.getElementById('last') ? false:true;
+			if(e[0].isIntersecting && e[0].time > 700 && last) lazyload(true);
+		}, {threshold: [0]});
+		observer.observe(document.querySelector("#btm"));
 
 		lightbox = GLightbox({
 			plyr: {
@@ -158,31 +160,28 @@ window.onload = function(){
 };
 
 function lazyload(slide = false) {
-	let last = document.getElementById('last') ? false:true;
-	if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height()  && last || slide) {
-		$.ajax({
-			type: 'POST',
-			url: window.location.href,
-			async: false,
-			data: {
-				s: $('.glightbox').length
-			},success: function(response) {
-				$('#images').append(response);
-				$('#images').justifiedGallery('norewind');
-				const html = new DOMParser().parseFromString(response, 'text/html');
-				html.body.childNodes.forEach(element => {
-					if (element.classList && element.classList.contains('glightbox')) {
-						lightbox.insertSlide({
-							'href': element.href,
-							'type': element.dataset.type
-						});
-					}
-				});
-				lightbox.reload();
-				return response;
-			}
-		});
-	}
+	$.ajax({
+		type: 'POST',
+		url: window.location.href,
+		async: false,
+		data: {
+			s: $('.glightbox').length
+		},success: function(response) {
+			$('#images').append(response);
+			$('#images').justifiedGallery('norewind');
+			const html = new DOMParser().parseFromString(response, 'text/html');
+			html.body.childNodes.forEach(element => {
+				if (element.classList && element.classList.contains('glightbox')) {
+					lightbox.insertSlide({
+						'href': element.href,
+						'type': element.dataset.type
+					});
+				}
+			});
+			lightbox.reload();
+			return response;
+		}
+	});
 }
 
 function selectShare() {

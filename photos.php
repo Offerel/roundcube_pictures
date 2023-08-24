@@ -290,7 +290,8 @@ function showPage($thumbnails, $dir) {
 		});
 		
 		$(window).scroll(function() {
-			setTimeout(lazyload, 100);
+			//setTimeout(lazyload, 10);
+			lazyload();
 		});
 		
 		lightbox = GLightbox({
@@ -343,7 +344,8 @@ function showPage($thumbnails, $dir) {
 
 		function lazyload(slide = false) {
 			let last = document.getElementById('last') ? false:true;
-			if(Math.ceil($(window).scrollTop() + $(window).height()) == $(document).height() && last || slide) {
+			let imgs = document.getElementsByClassName('glightbox').length;
+			if(Math.ceil($(window).scrollTop() + $(window).height()) > $(document).height() - 10 && last && imgs > 0 || slide) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
@@ -693,6 +695,7 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid;
+	//$thumbnails.= (count($files) > 0) "<div id='btm'></div>":"";
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 	if($offset > 0) {
 		die($thumbnails2);
