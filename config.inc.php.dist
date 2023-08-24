@@ -8,7 +8,7 @@ $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and fold
 $config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
 $config['display_exif'] = 1; // Take care, even if not displayed EXIF are still readable for visitors. May be a good idea to erase EXIF data...
-$config['convert_hevc'] = true; // If set to true, only hevc codec videos will be converted to ogv
+$config['convert_hevc'] = true; // If set to true, only hevc codec videos will be converted to mp4
 $config['convert_cmd'] = "%f -loglevel quiet -i \"%i\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"%o\""; // %f = replaced by ffmpeg path, %i = path input file, %o = path output file
 $config['dummy_files'] = false; // If set to true, deleted and moved images are re-created as 0 byte files to prevent re-syncing images
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true

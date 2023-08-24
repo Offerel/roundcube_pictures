@@ -43,13 +43,12 @@ window.onload = function(){
 		lightbox = GLightbox({
 			plyr: {
 				config: {
-					
 					muted: true,
 				}
 			},
 			autoplayVideos: false,
 			loop: false,
-			touchNavigation: true,
+			videosWidth: '100%'
 		});
 	
 		lightbox.on('close', () => {

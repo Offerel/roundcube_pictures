@@ -29,7 +29,6 @@ $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SP
 if(isset($file) && !empty($file)) {
 	if (!empty($rcmail->user->ID)) {
 		$username = $rcmail->user->get_username();
-
 		switch($mode) {
 			case 1:
 				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)),'/').'/';
@@ -51,14 +50,14 @@ if(isset($file) && !empty($file)) {
 
 	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
 
-	if (file_exists("$file")) {
+	if (file_exists($file)) {
 		$mimeType = mime_content_type($file);
 		$pathparts = pathinfo($file);
 		if(strpos($mimeType, 'video') !== false) {
-			$ogvpath = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			if(file_exists($ogvpath)) {
-				$mimeType = mime_content_type($ogvpath);
-				$file = $ogvpath;
+			$hvpath = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+			if(file_exists($hvpath)) {
+				$mimeType = mime_content_type($hvpath);
+				$file = $hvpath;
 			}
 		}
 		$filesize = filesize($file);
@@ -68,7 +67,7 @@ if(isset($file) && !empty($file)) {
 		header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 		die(readfile($file));
 	} else {
-		die('Nicht gfunden'."$file");
+		die('Not found'."$file");
 	}
 	die();
 } else {
@@ -100,10 +99,10 @@ if(isset($file) && !empty($file)) {
 		$mimeType = mime_content_type($path);
 		$pathparts = pathinfo($path);
 		if(strpos($mimeType, 'video') !== false) {
-			$ogvpath = $pathparts['dirname']."/.".$pathparts['filename'].".ogv";
-			if(file_exists($ogvpath)) {
-				$mimeType = mime_content_type($ogvpath);
-				$path = $ogvpath;
+			$hvpath = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+			if(file_exists($hvpath)) {
+				$mimeType = mime_content_type($hvpath);
+				$path = $hvpath;
 			}
 		}
 		$filesize = filesize($path);

@@ -33,7 +33,6 @@ class pictures extends rcube_plugin {
 			$shares = $dbh->fetch_assoc($res);
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
 			$shareID = $shares['share_id'];
-		//	$shareName = $shares['share_name'];	
 			$query = "SELECT b.`pic_path`, b.`pic_EXIF`, a.`shared_pic_id` FROM `pic_shared_pictures` a INNER JOIN `pic_pictures` b ON a.`pic_id`= b.`pic_id` WHERE a.`share_id` = $shareID ORDER BY b.`pic_taken` ASC";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
