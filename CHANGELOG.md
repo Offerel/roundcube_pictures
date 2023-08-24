@@ -1,3 +1,6 @@
+### v1.4.14
+- 
+
 ### v1.4.13
 - Show hint after login instead of email
 - Show expire date in share
