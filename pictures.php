@@ -33,7 +33,7 @@ class pictures extends rcube_plugin {
 			$shares = $dbh->fetch_assoc($res);
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
 			$shareID = $shares['share_id'];
-			$shareName = $shares['share_name'];
+		//	$shareName = $shares['share_name'];	
 			$query = "SELECT b.`pic_path`, b.`pic_EXIF`, a.`shared_pic_id` FROM `pic_shared_pictures` a INNER JOIN `pic_pictures` b ON a.`pic_id`= b.`pic_id` WHERE a.`share_id` = $shareID ORDER BY b.`pic_taken` ASC";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
@@ -69,7 +69,10 @@ class pictures extends rcube_plugin {
 			if(!$shp) {
 				die($thumbnails2);
 			} else {
-				showShare($thumbnails, $shareName);
+				showShare($thumbnails, array(
+					"name" => $shares['share_name'],
+					"expires" => $shares['expire_date'],
+				));
 			}
 		}
 	}
@@ -206,7 +209,9 @@ function getEXIFSpan($json, $imgid) {
 	return $exifSpan;
 }
 
-function showShare($thumbnails, $shareName) {
+function showShare($thumbnails, $share) {
+	$shareName = $share['name'];
+	$head = array_key_exists("expires", $share) ? "$shareName<span>(Expires ".date('r',$share['expires']).")</span>":"";
 	$page = "<!DOCTYPE html>
 	<html>
 		<head>
@@ -228,7 +233,7 @@ function showShare($thumbnails, $shareName) {
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
 	$page.= "\n\t\t</head>\n\t\t<body class='picbdy'>";
-	$page.= "\n\t\t\t<div id='header' style='width: 100%'><h2 style='padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$shareName</h2>";
+	$page.= "\n\t\t\t<div id='header' style='width: 100%'><h2 style='padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$head</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;
 	$page.= "\n\t\t\t<div id='btm'></div>";

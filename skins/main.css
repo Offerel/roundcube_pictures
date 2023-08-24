@@ -132,6 +132,7 @@ html{
 	position: absolute;
 	z-index: 2;
 	align-self: flex-end;
+	width: calc(100% - 20px);
 }
 .folder:hover:after {
     background: #00000080;
@@ -555,6 +556,10 @@ footer a {
     height: 50px;
     z-index: 100;
     position: absolute;
-    width: 100%;
+    width: 10px;
     bottom: 0;
+}
+#header h2 span {
+    font-size: small;
+    padding-left: 1em;
 }
