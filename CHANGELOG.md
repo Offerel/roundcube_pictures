@@ -1,5 +1,8 @@
 ### v1.4.13
 - Show hint after login instead of email
+- Show expire date in share
+- Added scroll observer
+- Minor fixes
 
 ### v1.4.12
 - Fix show dummy files
