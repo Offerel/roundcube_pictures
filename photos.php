@@ -152,7 +152,7 @@ if(isset($_POST['img_action'])) {
 	$action = $_POST['img_action'];
 	$images = $_POST['images'];
 	$org_path = urldecode($_POST['orgPath']);
-	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'],'/'), FILTER_SANITIZE_STRING):"";
+	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'], FILTER_SANITIZE_STRING),'/'):"";
 
 	switch($action) {
 		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_STRING):"";
@@ -981,7 +981,7 @@ function mvdb($oldpath, $newPath) {
 }
 
 function mvimg($oldpath, $newPath) {
-	global $rcmail;
+	global $rcmail, $pictures_path;
 	$dfiles = $rcmail->config->get('dummy_files', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($oldpath);
@@ -997,7 +997,7 @@ function mvimg($oldpath, $newPath) {
 }
 
 function delimg($file) {
-	global $rcmail;
+	global $rcmail, $pictures_path;
 	$dfiles = $rcmail->config->get('dummy_files', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($file);
