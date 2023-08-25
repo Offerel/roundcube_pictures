@@ -44,32 +44,11 @@ if(isset($file) && !empty($file)) {
 				break;
 		}
 	} else {
-		error_log('Pictures Plugin(Picture): Login failed. User is not logged in.');
+		error_log('Pictures Plugin: Login failed. User is not logged in.');
 		die();
 	}
 
 	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
-
-	if (file_exists($file)) {
-		$mimeType = mime_content_type($file);
-		$pathparts = pathinfo($file);
-		if(strpos($mimeType, 'video') !== false) {
-			$hvpath = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			if(file_exists($hvpath)) {
-				$mimeType = mime_content_type($hvpath);
-				$file = $hvpath;
-			}
-		}
-		$filesize = filesize($file);
-		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-		header("Content-Type: $mimeType");
-		header("Content-Length: ".$filesize);
-		header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
-		die(readfile($file));
-	} else {
-		die('Not found'."$file");
-	}
-	die();
 } else {
 	$query = "SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture";
 	$res = $dbh->query($query);
@@ -85,33 +64,37 @@ if(isset($file) && !empty($file)) {
 
 	switch($mode) {
 		case 1:
-			$path = $thumbpath;
+			$file = $thumbpath;
 			break;
 		case 2:
-			$path = $imagepath;
+			$file = $imagepath;
 			break;
 		default:
-			$path = $imagepath;
+			$file = $imagepath;
 			break;
 	}
+}
 
-	if(file_exists($path)) {
-		$mimeType = mime_content_type($path);
-		$pathparts = pathinfo($path);
-		if(strpos($mimeType, 'video') !== false) {
-			$hvpath = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			if(file_exists($hvpath)) {
-				$mimeType = mime_content_type($hvpath);
-				$path = $hvpath;
-			}
+if(file_exists($file)) {
+	$mimeType = mime_content_type($file);
+	$pathparts = pathinfo($file);
+	if(strpos($mimeType, 'video') !== false) {
+		$hvpath = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+		if(file_exists($hvpath)) {
+			$mimeType = mime_content_type($hvpath);
+			$file = $hvpath;
 		}
-		$filesize = filesize($path);
-		header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($path)).' GMT');
-		header("Content-Type: $mimeType");
-		header("Content-Length: ".$filesize);
-		header('Content-disposition: inline;filename="'.ltrim(basename($path),'.').'"');
-		die(readfile($path));
 	}
-	die();
+	
+	$filesize = filesize($file);
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+	header("Content-Type: $mimeType");
+	header('Accept-Ranges: bytes');
+	header("Content-Length: ".$filesize);
+	header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+	die(readfile($file));
+} else {
+	error_log('Pictures Plugin: Not found'."$file");
+	die('Not found'."$file");
 }
 ?>

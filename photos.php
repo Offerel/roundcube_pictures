@@ -572,7 +572,7 @@ function showGallery($requestedDir, $offset = 0) {
 				$query = "SELECT `pic_id`, `pic_EXIF`, `pic_taken` FROM `pic_pictures` WHERE `pic_path` = \"$dbpath\" AND user_id = $uid";
 				$result = $dbh->query($query);
 				$pdata = $dbh->fetch_assoc($result);
-				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file)) ? json_decode($pdata['pic_EXIF']):NULL;
+				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata['pic_EXIF'])) ? json_decode($pdata['pic_EXIF']):NULL;
 				$taken = isset($pdata['pic_taken']) ? $pdata['pic_taken']:NULL;
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
