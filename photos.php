@@ -357,13 +357,14 @@ function showPage($thumbnails, $dir) {
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
 						const html = new DOMParser().parseFromString(response, 'text/html');
-						html.body.childNodes.forEach(element => {
-							if (element.children && element.children[0].classList.contains('glightbox')) {
+						html.body.childNodes.forEach(element => {		
+						if(element.children !== undefined && element.children.count > 0 && element.children[0].classList.contains('glightbox')) {
 								lightbox.insertSlide({
 									'href': element.children[0].href,
 									'type': element.children[0].dataset.type
 								});
-							}
+						}
+							
 						});
 						lightbox.reload();
 						checkboxes();
