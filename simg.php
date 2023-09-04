@@ -19,7 +19,6 @@ if(isset($_SERVER['HTTP_REFERER'])) {
 
 @ini_set('gd.jpeg_ignore_warning', 1);
 $rcmail = rcmail::get_instance();
-$dbh = $rcmail->get_dbh();
 
 $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
@@ -50,9 +49,8 @@ if(isset($file) && !empty($file)) {
 
 	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
 } else {
-	$query = "SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture";
-	$res = $dbh->query($query);
-	$rc = $dbh->num_rows($res);
+	$dbh = $rcmail->get_dbh();
+	$res = $dbh->query("SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture");
 	$data = $dbh->fetch_assoc($res);
 	
 	$username = $data['username'];

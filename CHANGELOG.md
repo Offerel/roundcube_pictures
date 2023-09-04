@@ -1,5 +1,5 @@
 ### v1.4.14
-- 
+- Fixed create SQL for MySQL
 
 ### v1.4.13
 - Show hint after login instead of email
