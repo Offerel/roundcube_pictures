@@ -242,7 +242,7 @@ function showShare($thumbnails, $share) {
 
 function checkDB() {
 	$dbh = rcmail_utils::db();
-	$query = "SELECT count(*) as count FROM `sqlite_master` WHERE type='table' AND `name` IN ('pic_pictures','pic_shares','pic_shared_pictures')";
+	$query = "SELECT count(*) as count FROM `sqlite_master` WHERE type='table' AND `name` IN ('pic_pictures','pic_shares','pic_shared_pictures','pic_broken')";
 	$dbh->query($query);
 	$count = $dbh->fetch_array()[0];
 	if($count != 2) {
