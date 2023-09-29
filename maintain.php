@@ -28,6 +28,8 @@ for ($x = 0; $x < $rcount; $x++) {
 	array_push($users, $db->fetch_assoc($result));
 }
 
+logm("Starting maintenance...");
+
 foreach($users as $user) {
 	$username = $user["username"];
 	$uid = $user["user_id"];
@@ -37,18 +39,18 @@ foreach($users as $user) {
 	$broken = array();
 	switch($mode) {
 		case "add":
-			logm("Maintenance for $username with mode add");
+			logm("Checking $username with mode 'add'");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			break;
 		case "clean":
-			logm("Maintenance for $username with mode clean");
+			logm("Checking $username with mode 'clean'");
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
 			break;
 		default:
-			logm("Complete Maintenance for $username");
+			logm("General check for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
@@ -290,7 +292,17 @@ function readEXIF($file) {
 		$exif_arr[2] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength'], 2) . "s":"-";
 		$exif_arr[3] = (isset($exif_data['FNumber'])) ? "f" . parse_fraction($exif_data['FNumber']):"-";
 		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
-		$exif_arr[5] = (isset($exif_data['DateTimeDigitized'])) ? strtotime($exif_data['DateTimeDigitized']):filemtime($file);
+
+		if(strpos($exif_data['DateTimeDigitized'], '0000') !== 0) {
+			$exif_arr[5] = strtotime($exif_data['DateTimeDigitized']);
+		} elseif (strpos($exif_data['DateTimeOriginal'], '0000') !== 0) {
+			$exif_arr[5] = strtotime($exif_data['DateTimeOriginal']);
+		} elseif (strpos($exif_data['DateTime'], '0000') !== 0) {
+			$exif_arr[5] = strtotime($exif_data['DateTime']);
+		} else {
+			$exif_arr[5] = $exif_data['FileDateTime'];
+		}
+
 		$exif_arr[6] = (isset($exif_data['ImageDescription'])) ? $exif_data['ImageDescription']:"-";
 		$exif_arr[7] = (isset($exif_data['CALC-GPSLATITUDE-SIG'])) ? $exif_data['CALC-GPSLATITUDE-SIG']:"-";
 		$exif_arr[8] = (isset($exif_data['Make'])) ? $exif_data['Make']:"-";
