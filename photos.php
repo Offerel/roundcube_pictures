@@ -355,7 +355,6 @@ function showPage($thumbnails, $dir) {
 			let last = document.getElementById('last') ? false:true;
 			let imgs = document.getElementsByClassName('glightbox').length;
 			if(Math.ceil($(window).scrollTop() + $(window).height()) > $(document).height() - 10 && last && imgs > 0 || slide) {
-				//aLoader('visible');
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
