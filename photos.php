@@ -526,6 +526,15 @@ function showGallery($requestedDir, $offset = 0) {
 	$forbidden = $rcmail->config->get('skip_objects', false);
 	
 	if (is_dir($current_dir) && $handle = opendir("${current_dir}")) {
+		$query = "SELECT * FROM `pic_pictures` WHERE `pic_path` LIKE \"$requestedDir%\" AND user_id = ".$rcmail->user->ID;
+		$result = $dbh->query($query);
+		$rows = $dbh->num_rows();
+		$pdata = [];
+		for ($i = 0; $i < $rows; $i++) {
+			array_push($pdata, $dbh->fetch_assoc());
+		}
+		file_put_contents("/tmp/pdata.txt",print_r($pdata, true),FILE_APPEND);
+
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
 			// Gallery folders
@@ -569,12 +578,9 @@ function showGallery($requestedDir, $offset = 0) {
 				$requestedDir = trim($requestedDir,'/').'/';
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
-				$uid = $rcmail->user->ID;
-				$query = "SELECT `pic_id`, `pic_EXIF`, `pic_taken` FROM `pic_pictures` WHERE `pic_path` = \"$dbpath\" AND user_id = $uid";
-				$result = $dbh->query($query);
-				$pdata = $dbh->fetch_assoc($result);
-				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata['pic_EXIF'])) ? json_decode($pdata['pic_EXIF']):NULL;
-				$taken = isset($pdata['pic_taken']) ? $pdata['pic_taken']:NULL;
+				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
+				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? json_decode($pdata[$key]['pic_EXIF']):NULL;
+				$taken = $pdata[$key]['pic_taken'];
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					checkpermissions($current_dir."/".$file);
