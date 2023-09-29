@@ -533,8 +533,6 @@ function showGallery($requestedDir, $offset = 0) {
 		for ($i = 0; $i < $rows; $i++) {
 			array_push($pdata, $dbh->fetch_assoc());
 		}
-		file_put_contents("/tmp/pdata.txt",print_r($pdata, true),FILE_APPEND);
-
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
 			// Gallery folders
