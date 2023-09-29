@@ -237,8 +237,7 @@ if( isset($_GET['p']) ) {
 
 function showPage($thumbnails, $dir) {
 	$maxfiles = ini_get("max_file_uploads");
-	$page = "
-	<!DOCTYPE html>
+	$page = "<!DOCTYPE html>
 	<html>
 		<head>
 			<title>$dir</title>
@@ -259,6 +258,7 @@ function showPage($thumbnails, $dir) {
 	}
 	$page.= "</head>
 	\t\t<body class='picbdy' onload='count_checks();'>
+	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
 	\t\t\t<div id='header' style='position: absolute; top: -8px;'>
 	\t\t\t\t$albumnav
 	\t\t\t</div>
@@ -267,6 +267,12 @@ function showPage($thumbnails, $dir) {
 	$gal = ltrim($dir, '/');
 	$page.="
 	<script>
+		document.onreadystatechange = function() {
+			if (document.readyState !== 'complete') {
+				aLoader('hidden');
+			}
+		}
+
 		$('#folders').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
@@ -290,7 +296,6 @@ function showPage($thumbnails, $dir) {
 		});
 		
 		$(window).scroll(function() {
-			//setTimeout(lazyload, 10);
 			lazyload();
 		});
 		
@@ -342,18 +347,26 @@ function showPage($thumbnails, $dir) {
 		
 		checkboxes();
 
+		function aLoader(mode = 'visible') {
+			document.getElementById('loader').style.visibility = mode;
+		}
+
 		function lazyload(slide = false) {
 			let last = document.getElementById('last') ? false:true;
 			let imgs = document.getElementsByClassName('glightbox').length;
 			if(Math.ceil($(window).scrollTop() + $(window).height()) > $(document).height() - 10 && last && imgs > 0 || slide) {
+				//aLoader('visible');
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
-					async: false,
+					async: true,
+					beforeSend: aLoader('visible'),
 					data: {
 						g: '$gal',
 						s: $('.glightbox').length
-					},success: function(response) {
+					},
+					success: function(response) {
+						aLoader('hidden');
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
 						const html = new DOMParser().parseFromString(response, 'text/html');
@@ -561,7 +574,7 @@ function showGallery($requestedDir, $offset = 0) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a onclick='aLoader()' id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
 								);
 				}
 			}
