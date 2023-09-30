@@ -129,7 +129,7 @@ if(isset($_FILES['galleryfiles'])) {
 
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
-	$src = $pictures_path.$_POST['src'];
+	$src = rtrim($pictures_path,'/').filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 	$target = dirname($src).'/'.$_POST['target'];
 	$mtarget = $pictures_path.$_POST['target'];
 	$oldpath = str_replace($pictures_path,'',$src);
@@ -140,7 +140,7 @@ if(isset($_POST['alb_action'])) {
 		case 'move':	mvdb("$oldpath | $nnewPath"); die(rename($src, $mtarget)); break;
 		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
-		case 'create':	die(mkdir(dirname($src)."/".trim(trim($_POST['target']),"/"), 0755, true)); break;
+		case 'create':	die(mkdir($src.'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS), 0755, true)); break;
 	}
 	die();
 }
@@ -152,10 +152,10 @@ if(isset($_POST['img_action'])) {
 	$action = $_POST['img_action'];
 	$images = $_POST['images'];
 	$org_path = urldecode($_POST['orgPath']);
-	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'], FILTER_SANITIZE_STRING),'/'):"";
+	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/'):"";
 
 	switch($action) {
-		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_STRING):"";
+		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):"";
 						if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 
 						foreach($images as $image) {

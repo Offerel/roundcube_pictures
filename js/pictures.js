@@ -208,6 +208,7 @@ function add_album() {
 	document.getElementById("albedit").style.display = "none";
 	document.getElementById("albadd").style.display = "block";
 	document.getElementById("album_edit").style.display = "block";
+	document.getElementById("album_name").focus();
 }
 
 function create_album() {
@@ -244,6 +245,7 @@ function edit_album() {
 	document.getElementById("albadd").style.display = "none";
 	document.getElementById("mv_target").style.display = "block";
 	document.getElementById("album_edit").style.display = "block";
+	document.getElementById("album_name").focus();
 }
 
 function getsubs() {

@@ -210,7 +210,8 @@
 	width:100%;
 	height:22px;
 	margin:13px auto;
-	border:1px solid #b2b2b2
+	border:1px solid #b2b2b2;
+	outline: 0;
 }
 .mv_target,.mv_target::after{
 	border-radius:50%;
