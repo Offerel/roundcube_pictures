@@ -10,8 +10,8 @@
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
-$rcmail = rcube::get_instance();
 $mode = isset($argv[1]) ? $argv[1]:"";
+$rcmail = rcube::get_instance();
 $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
@@ -83,8 +83,7 @@ function logm($message, $mmode = 3) {
 		case 4: $msmode = " [DBUG] "; break;
 	}
 
-	$debug = $rcmail->config->get('log_dir', false);
-	if($debug != true && $mmode > 3) {
+	if($mode != 'debug' && $mmode > 3) {
 		return;
 	} else {
 		$line = $dtime.$msmode.$message."\n";
@@ -294,11 +293,11 @@ function readEXIF($file) {
 		$exif_arr[3] = (isset($exif_data['FNumber'])) ? "f" . parse_fraction($exif_data['FNumber']):"-";
 		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
 
-		if(strpos($exif_data['DateTimeDigitized'], '0000') !== 0) {
+		if(strpos(isset($exif_data['DateTimeDigitized']) && $exif_data['DateTimeDigitized'], '0000') !== 0) {
 			$exif_arr[5] = strtotime($exif_data['DateTimeDigitized']);
-		} elseif (strpos($exif_data['DateTimeOriginal'], '0000') !== 0) {
+		} elseif (isset($exif_data['DateTimeOriginal']) && strpos($exif_data['DateTimeOriginal'], '0000') !== 0) {
 			$exif_arr[5] = strtotime($exif_data['DateTimeOriginal']);
-		} elseif (strpos($exif_data['DateTime'], '0000') !== 0) {
+		} elseif (isset($exif_data['DateTime']) && strpos($exif_data['DateTime'], '0000') !== 0) {
 			$exif_arr[5] = strtotime($exif_data['DateTime']);
 		} else {
 			$exif_arr[5] = $exif_data['FileDateTime'];
