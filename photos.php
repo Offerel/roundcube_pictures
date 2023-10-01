@@ -160,7 +160,7 @@ if(isset($_POST['img_action'])) {
 	$action = $_POST['img_action'];
 	$images = $_POST['images'];
 	$org_path = urldecode($_POST['orgPath']);
-	$album_target = isset($_POST['target']) ? trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/'):"";
+	$album_target = isset($_POST['target']) ? html_entity_decode(trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
 
 	switch($action) {
 		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):"";
@@ -234,7 +234,7 @@ function removeDirectory($path, $user) {
 }
 
 if( isset($_GET['p']) ) {
-	$dir = urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$dir = html_entity_decode(urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS)));
 	guardAgainstDirectoryTraversal($dir);
 	echo showPage(showGallery($dir), $dir);
 	die();
@@ -1005,7 +1005,7 @@ function mvdb($oldpath, $newPath) {
 }
 
 function mvimg($oldpath, $newPath) {
-	global $rcmail, $pictures_path;
+	global $rcmail, $pictures_path, $thumb_path;
 	$dfiles = $rcmail->config->get('dummy_files', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($oldpath);
@@ -1021,7 +1021,7 @@ function mvimg($oldpath, $newPath) {
 }
 
 function delimg($file) {
-	global $rcmail, $pictures_path;
+	global $rcmail, $pictures_path, $thumb_path;
 	$dfiles = $rcmail->config->get('dummy_files', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($file);
