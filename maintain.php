@@ -10,8 +10,8 @@
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
-$mode = isset($argv[1]) ? $argv[1]:"";
 $rcmail = rcube::get_instance();
+$mode = isset($argv[1]) ? $argv[1]:"";
 $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
@@ -83,7 +83,8 @@ function logm($message, $mmode = 3) {
 		case 4: $msmode = " [DBUG] "; break;
 	}
 
-	if($mode != 'debug' && $mmode > 3) {
+	$debug = $rcmail->config->get('log_dir', false);
+	if($debug != true && $mmode > 3) {
 		return;
 	} else {
 		$line = $dtime.$msmode.$message."\n";
