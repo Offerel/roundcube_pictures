@@ -129,8 +129,8 @@ if(isset($_FILES['galleryfiles'])) {
 
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
-	$src = rtrim($pictures_path,'/').filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = dirname($src).'/'.$_POST['target'];
+	$src = rtrim($pictures_path,'/').'/'.filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$target = urldecode($src.'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
 	$mtarget = $pictures_path.$_POST['target'];
 	$oldpath = str_replace($pictures_path,'',$src);
 	$newPath = str_replace($pictures_path,'',$target);
@@ -140,7 +140,15 @@ if(isset($_POST['alb_action'])) {
 		case 'move':	mvdb("$oldpath | $nnewPath"); die(rename($src, $mtarget)); break;
 		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
-		case 'create':	die(mkdir($src.'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS), 0755, true)); break;
+		case 'create':
+			if (!@mkdir($target, 0755, true)) {
+				$error = error_get_last();
+				error_log($error['message'].': '.$target);
+				die($error['message']);
+			} else {
+				die(1);
+			}
+			break;
 	}
 	die();
 }
@@ -226,7 +234,7 @@ function removeDirectory($path, $user) {
 }
 
 if( isset($_GET['p']) ) {
-	$dir = $_GET['p'];
+	$dir = urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS));
 	guardAgainstDirectoryTraversal($dir);
 	echo showPage(showGallery($dir), $dir);
 	die();

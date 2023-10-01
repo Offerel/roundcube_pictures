@@ -223,7 +223,12 @@ function create_album() {
 			src: a
 		},
 		success: function(b) {
-			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
+			if(b == 1 && (document.getElementById("album_edit").style.display = "none")) {
+				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a);
+				getsubs();
+			} else {
+				alert(b);
+			}
 		}
 	})
 }
