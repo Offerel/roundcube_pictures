@@ -293,7 +293,7 @@ function readEXIF($file) {
 		$exif_arr[3] = (isset($exif_data['FNumber'])) ? "f" . parse_fraction($exif_data['FNumber']):"-";
 		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
 
-		if(strpos(isset($exif_data['DateTimeDigitized']) && $exif_data['DateTimeDigitized'], '0000') !== 0) {
+		if(isset($exif_data['DateTimeDigitized']) && strpos($exif_data['DateTimeDigitized'], '0000') !== 0) {
 			$exif_arr[5] = strtotime($exif_data['DateTimeDigitized']);
 		} elseif (isset($exif_data['DateTimeOriginal']) && strpos($exif_data['DateTimeOriginal'], '0000') !== 0) {
 			$exif_arr[5] = strtotime($exif_data['DateTimeOriginal']);
