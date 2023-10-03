@@ -50,7 +50,7 @@ foreach($users as $user) {
 			}
 			break;
 		default:
-			logm("General check for $username");
+			logm("Search pictures for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
@@ -73,9 +73,10 @@ logm("Maintenance finished after $tdiff.");
 die();
 
 function logm($message, $mmode = 3) {
-	global $rcmail, $mode;
+	global $rcmail;
 	$dtime = date("d.m.Y H:i:s");
 	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+	$debug = $rcmail->config->get('debug', false);
 	switch($mmode) {
 		case 1: $msmode = " [ERRO] "; break;
 		case 2: $msmode = " [WARN] "; break;
@@ -83,7 +84,7 @@ function logm($message, $mmode = 3) {
 		case 4: $msmode = " [DBUG] "; break;
 	}
 
-	if($mode != 'debug' && $mmode > 3) {
+	if(!$debug && $mmode > 3) {
 		return;
 	} else {
 		$line = $dtime.$msmode.$message."\n";
@@ -226,7 +227,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 function todb($file, $user, $pictures_basepath) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
-
 	$result = $db->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
 	if($db->fetch_array($result)[0] == 0) {
 		$type = explode('/',mime_content_type($file))[0];
@@ -241,7 +241,7 @@ function todb($file, $user, $pictures_basepath) {
 		}
 
 		$db->startTransaction();
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
 		$db->query($query);
 		if($db->is_error()) {
 			sleep(1);

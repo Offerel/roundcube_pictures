@@ -50,6 +50,9 @@
 #picturestoolbar #sharepicture::before {
 	content: "\f14d";
 }
+#picturestoolbar #uploadpicture::before {
+	content: "\f093";
+}
 #picturestoolbar #delpicture::before {
 	content: "\f2ed";
 }

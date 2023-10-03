@@ -15,6 +15,7 @@ $labels['move'] = "Move";
 $labels['move_image'] = "Move picture";
 $labels['delete'] = "Delete";
 $labels['share'] = "Share";
+$labels['upload'] = "Upload";
 $labels['picdconfirm'] = "Do you want to delete the marked images (%c)?";
 $labels['galdconfirm'] = "Do you want to delete the marked album?";
 $labels['selalb'] = "Choose Album";

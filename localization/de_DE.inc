@@ -15,6 +15,7 @@ $labels['move'] = "Verschieben";
 $labels['move_image'] = "Bild verschieben";
 $labels['delete'] = "Löschen";
 $labels['share'] = "Teilen";
+$labels['upload'] = "Hochladen";
 $labels['picdconfirm'] = "Sollen die markierten Bilder (%c) gelöscht werden?";
 $labels['galdconfirm'] = "Soll das markierte Album gelöscht werden?";
 $labels['selalb'] = "Album auswählen";

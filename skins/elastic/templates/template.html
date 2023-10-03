@@ -8,12 +8,13 @@
 	<div class="iframe-wrapper">	
 		<div id="picturestoolbar" class="toolbar" role="toolbar">
 			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
-			<roundcube:button innerclass="inner" id="editalbum" command="editalbum" type="link" class="button edit disabled" label="pictures.album" title="pictures.album" />
+			<!-- <roundcube:button innerclass="inner" id="editalbum" command="editalbum" type="link" class="button edit disabled" label="pictures.album" title="pictures.album" /> -->
 			<roundcube:button innerclass="inner" id="addalbum" command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" />
 			<span class="divider"></span>
 			<roundcube:button innerclass="inner" id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
 			<roundcube:button innerclass="inner" id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
 			<roundcube:button innerclass="inner" id="sharepicture" command="sharepicture" type="link" class="button share disabled" label="pictures.share" title="pictures.share" />
+			<roundcube:button innerclass="inner" id="uploadpicture" command="uploadpicture" type="link" class="button upload" label="pictures.upload" title="pictures.upload" />
 		</div>
 		<div id="pluginbody" class="offset">
 			<div class="iframebox pictures_<roundcube:var name='env:action' />">

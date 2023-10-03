@@ -18,18 +18,18 @@ if (!empty($rcmail->user->ID)) {
 	$thumbsize = $rcmail->config->get('thumb_size', false);
 	
 	if(substr($pictures_path, -1) != '/') {
-		error_log('Pictures Plugin(Photos): check $config[\'pictures_path\'], the path must end with a backslash.');
+		error_log('Pictures: check $config[\'pictures_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if(substr($thumb_path, -1) != '/') {
-		error_log('Pictures Plugin(Photos): check $config[\'thumb_path\'], the path must end with a backslash.');
+		error_log('Picturesv check $config[\'thumb_path\'], the path must end with a backslash.');
 		die();
 	}
 	
 	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
-			error_log('Pictures Plugin(Photos): Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
+			error_log('Pictures: Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
 			die();
 		}
 	}
@@ -84,44 +84,21 @@ if(isset($_FILES['galleryfiles'])) {
 	$folder = $_POST['folder'];
 	$aAllowedMimeTypes = [ 'image/jpeg', 'video/mp4' ];
 
-	foreach($_FILES['galleryfiles']['error'] as $key => $error) {
-		$err = 0;
-		if ($error == UPLOAD_ERR_OK) {
-			$tmp_name = $_FILES['galleryfiles']['tmp_name'][$key];
-			$name = basename($_FILES["galleryfiles"]["name"][$key]);
-			
-			if (!in_array($_FILES['galleryfiles']['type'][$key], $aAllowedMimeTypes)) {
-				$errmsg = 'The filetype of \"$name\" is not supported by this script.';
-				$test[] = array('message' => $errmsg, 'type' => 'error');
-				error_log("Pictures Plugin(Photos): $errmsg");
-				$err = 1;
-			}
-			
-			if(file_exists($pictures_path.$folder."/".$name)) {
-				$errmsg = 'The file "'.$folder."/".$name.'" already exists.';
-				$test[] = array('message' => $errmsg, 'type' => 'warning');
-				error_log("Pictures Plugin(Photos): $errmsg");
-				$err = 1;
-			}
+	$cFiles = count($_FILES['galleryfiles']['name']);
 
-			if($err == 0) {
-				if(!move_uploaded_file($tmp_name, "$pictures_path$folder/$name")) {
-					$errmsg = 'Upload of "'.$folder."/".$name.'" failed. Please check permissions.';
-					$test[] = array('message' => $errmsg, 'type' => 'error');
-					error_log("Pictures Plugin(Photos): $errmsg");
-				} else {
-					$errmsg = 'Upload successfully.';
-					$test[] = array('message' => $errmsg, 'type' => 'info');
-					createthumb("$pictures_path$folder/$name", $pictures_path);
-					todb("$pictures_path$folder/$name", $rcmail->user->ID, $pictures_path);
-				}
+	for($i = 0; $i < $cFiles; $i++) {
+		if($_FILES['galleryfiles']['size'][$i] > 0 && in_array($_FILES['galleryfiles']['type'][$i], $aAllowedMimeTypes) && !file_exists($pictures_path.$folder."/".$_FILES['galleryfiles']['name'][$i])) {
+			if(move_uploaded_file($_FILES['galleryfiles']['tmp_name'][$i], "$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i])) {
+				createthumb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $pictures_path);
+				todb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $rcmail->user->ID, $pictures_path);
+				$test[] = array('message' => $'Upload successful.', 'type' => 'info');
+			} else {
+				error_log("Pictures: Uploaded picture could not moved into target folder");
+				$test[] = array('message' => 'Upload failed. Permission error', 'type' => 'error');
 			}
-		}
-		else {
-			$errmsg = 'There was some error during upload. Please check your configuration. Exiting now.';
-			error_log("Pictures Plugin(Photos): $errmsg");
-			$test[] = array('message' => $errmsg, 'type' => 'error');
-			break;
+		} else {
+			error_log("Pictures: Uploaded picture internal error (size, mimetype, already existing");
+			$test[] = array('message' => 'Upload failed. Internal Error', 'type' => 'error');
 		}
 	}
 	die(json_encode($test));
@@ -143,7 +120,7 @@ if(isset($_POST['alb_action'])) {
 		case 'create':
 			if (!@mkdir($target, 0755, true)) {
 				$error = error_get_last();
-				error_log($error['message'].': '.$target);
+				error_log("Pictures: ".$error['message'].$target);
 				die($error['message']);
 			} else {
 				die(1);
@@ -279,6 +256,14 @@ function showPage($thumbnails, $dir) {
 			if (document.readyState !== 'complete') {
 				aLoader('hidden');
 			}
+
+			let headerN = document.getElementById('header');
+			headerN.lastElementChild.addEventListener('click', function(e){
+				if(headerN.childElementCount > 1) {
+					e.preventDefault();
+					window.parent.edit_album();
+				}
+			});
 		}
 
 		$('#folders').justifiedGallery({
@@ -345,13 +330,6 @@ function showPage($thumbnails, $dir) {
 				setTimeout(lazyload, 100, true);
 			}
 		});
-
-		let p = new URL(self.location).searchParams.get('p');
-		if(p && p.length > 0) {
-			window.parent.document.getElementById('editalbum').classList.remove('disabled');
-		} else {
-			window.parent.document.getElementById('editalbum').classList.add('disabled');
-		}
 		
 		checkboxes();
 
@@ -426,16 +404,25 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		var dropZones = document.getElementsByClassName('dropzone');
+		var dropZone = document.querySelector('.picbdy');
 		
 		for (var i = 0; i < dropZones.length; i++) {
 			dropZones[i].addEventListener('dragover', handleDragOver, false);
 			dropZones[i].addEventListener('dragleave', handleDragLeave, false);
 			dropZones[i].addEventListener('drop', handleDrop, false);
 		}
+
+		dropZone.addEventListener('dragover', handleDragOver, false);
+		dropZone.addEventListener('dragleave', handleDragLeave, false);
+		dropZone.addEventListener('drop', handleDrop, false);
 		
 		function handleDragOver(event){
 			event.preventDefault();
-			this.classList.add('mmn-drop');
+			if(this.localName != 'body') {
+				this.classList.add('mmn-drop');
+			} else {
+				this.classList.add('body-drop');
+			}
 		}
 		
 		function handleDragLeave(event){
@@ -465,22 +452,20 @@ function showPage($thumbnails, $dir) {
 			xhr = new XMLHttpRequest();
 			var maxfiles = $maxfiles;
 			var mimeTypes = ['image/jpeg', 'video/mp4'];
-			folder = decodeURIComponent(folder);
+			folder = decodeURIComponent((folder + '').replace(/\+/g, '%20'));
 			var progressBar = document.getElementById('' + folder + '').getElementsByClassName('progress')[0];
 			if (files.length > maxfiles) {
 				console.log('You try to upload more than the max count of allowed files(' + maxfiles + ')');
 				return false;
-			}
-			else {
+			} else {
 				for (var i = 0; i < files.length; i++) {
 					if (mimeTypes.indexOf(files.item(i).type) == -1) {
 						console.log('Unsupported filetype(' + files.item(i).name + '), exiting');
 						return false;
-				} 
-				else {
-					formdata.append('galleryfiles[]', files.item(i), files.item(i).name);
-					formdata.append('folder',folder);
-				}
+					} else {
+						formdata.append('galleryfiles[]', files.item(i), files.item(i).name);
+						formdata.append('folder',folder);
+					}
 				}
 				
 				xhr.upload.addEventListener('progress', function(event) {
@@ -527,7 +512,7 @@ function showPage($thumbnails, $dir) {
 			}
 		}
 	</script>
-	";	
+	";
 
 	$page.= "</div></body></html>";
 	return $page;
@@ -670,7 +655,7 @@ function showGallery($requestedDir, $offset = 0) {
 		}
 		closedir($handle);
 	} else {
-		error_log('Pictures Plugin(Photos): Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
+		error_log('Pictures: Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		die("ERROR: Please check server error log");
 	}
 
@@ -720,7 +705,6 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid;
-	//$thumbnails.= (count($files) > 0) "<div id='btm'></div>":"";
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 	if($offset > 0) {
 		die($thumbnails2);
@@ -754,7 +738,7 @@ function getExistingShares() {
 }
 
 if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', false) == 1) {
-	error_log('Pictures Plugin(Photos): PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
+	error_log('Pictures: PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
 }
 
 function strposa($haystack, $needle, $offset=0) {
@@ -879,7 +863,7 @@ function gps($coordinate, $hemisphere) {
 
 function checkpermissions($file) {
 	if (!is_readable($file)) {
-		error_log('Pictures Plugin(Photos): Can\'t read image $file, check your permissions.');
+		error_log('Pictures: Can\'t read image $file, check your permissions.');
 	}
 }
 
@@ -888,7 +872,7 @@ function guardAgainstDirectoryTraversal($path) {
 	$directory_traversal = preg_match($pattern, $path);
 
 	if ($directory_traversal === 1) {
-		error_log('Pictures Plugin(Photos): Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
+		error_log('Pictures: Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
 		die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
 	}
 }
@@ -903,26 +887,26 @@ function createthumb($image) {
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {
-			error_log("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
+			error_log("Pictures: Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
 		}
 	}
 
 	if (preg_match("/.jpg$|.jpeg$|.png$/i", $image)) {
 		list($width, $height, $type) = getimagesize($image);
 		$newwidth = ceil($width * $thumbsize / $height);
-		if($newwidth <= 0) error_log("Calculating the width failed.");
+		if($newwidth <= 0) error_log("Pictures: Calculating the width failed.");
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($image); break;
 			case 2: $source = @imagecreatefromjpeg($image); break;
 			case 3: $source = @imagecreatefrompng($image); break;
-			default: error_log("Unsupported fileformat ($type)."); die();
+			default: error_log("Pictures: Unsupported fileformat ($type)."); die();
 		}
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
-		$exif = @exif_read_data($org_pic, 0, true);
+		$exif = @exif_read_data($image, 0, true);
 		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
 		switch ($ort) {
 			case 3: $degrees = 180; break;
@@ -931,13 +915,14 @@ function createthumb($image) {
 			case 6: $degrees = 270; break;
 			case 7: $degrees = 90; break;
 			case 8: $degrees = 90; break;
+			default: $degrees = 0;
 		}
 		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumbnailpath, 85);
 		} else {
-			error_log("Can't write Thumbnail. Please check your directory permissions.");
+			error_log("Pictures: Can't write Thumbnail. Please check your directory permissions.");
 		}
 	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
 		$ffmpeg = exec("which ffmpeg");
@@ -950,7 +935,7 @@ function createthumb($image) {
 			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $out, $ccmd)));
 			exec($ccmd);
 		} else {
-			error_log("ffmpeg is not installed, so video formats are not supported.");
+			error_log("Pictures: ffmpeg is not installed, so video formats are not supported.");
 		}
 	}
 }

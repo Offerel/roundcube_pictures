@@ -1,5 +1,6 @@
-html{
+html {
 	font-size: 62.5%;
+	height: 100%;
 }
 #galdiv a {
 	border: 1px solid #0000001a;
@@ -11,6 +12,10 @@ html{
 	border: 1px dashed #00386f;
 	width: calc(100% - 2px) !important;
 	height: calc(100% - 2px) !important;
+}
+.body-drop {
+	background: linear-gradient(0deg, rgba(122, 204, 181, 0.84) 0%, rgba(255,255,255,0.7889325519588785) 90%);
+	opacity: .8;
 }
 .progress {
 	background-image: -webkit-linear-gradient( -45deg, transparent 33%, rgba(0, 0, 0, .1) 33%, rgba(0, 0, 0, .1) 66%, transparent 66% ), -webkit-linear-gradient( top, rgba(255, 255, 255, .25), rgba(0, 0, 0, .25) ), -webkit-linear-gradient(left, #335EC4, #1F71F4);
@@ -294,6 +299,9 @@ textarea.edit {
 	padding-right: 10px;
 	box-shadow: 2px 2px 2px 0px rgba(50, 50, 50, 0.60);
 }
+#ufrm {
+	display: none;
+}
 body {
 	position: relative;
 	font-size: 1.5rem;
@@ -302,6 +310,7 @@ body {
 	margin: 7px;
 	overflow-y: scroll;
 	padding-top: 48px;
+	height: calc(100% - 64px);
 }
 a {
 	color: #333333;
@@ -518,7 +527,7 @@ footer a {
 	font-family: "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Droid Sans", "Helvetica Neue", sans-serif;
 	font-weight: normal;
 }
-.breadcrumbs__item:hover:after, .breadcrumbs__item:hover {
+.breadcrumbs__item:hover:not(:last-child):after, .breadcrumbs__item:hover:not(:last-child) {
 	background: #edf1f5;
 }
 .breadcrumbs__item:after, .breadcrumbs__item:before {
@@ -539,8 +548,10 @@ footer a {
 }
 .breadcrumbs__item:last-child {
 	border-right: none;
-	pointer-events: none;
 	font-weight: bold;
+}
+.breadcrumbs__item:last-child:hover:not(:first-child) {
+	color: cornflowerblue;
 }
 .glightbox:hover::before {
     content: ' ';

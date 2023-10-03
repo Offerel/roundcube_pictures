@@ -12,6 +12,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
 	rcmail.register_command("sharepicture", selectShare, !0);
+	rcmail.register_command("uploadpicture", uploadpicture, !0);
 	rcmail.register_command("sharepic", sharepicture, !0);
 	rcmail.register_command("delete_alb", delete_album, !0);
 	rcmail.register_command("addalbum", add_album, !0);
@@ -181,6 +182,36 @@ function lazyload(slide = false) {
 			return response;
 		}
 	});
+}
+
+function uploadpicture() {
+	let ufrm = document.createElement('input');
+	const folder = decodeURI(new URL(document.getElementById("picturescontentframe").contentWindow.document.getElementById('header').lastElementChild.href).search.substring(3));
+	ufrm.type = 'file';
+	ufrm.multiple = 'multiple';
+	ufrm.accept = 'image/webp, image/jpeg, image/png';
+	ufrm.id = 'ufrm';
+	ufrm.addEventListener('change', function() {
+		document.getElementById("picturescontentframe").contentWindow.document.getElementById('loader').style.visibility = 'visible';
+		xhr = new XMLHttpRequest();
+		let formdata = new FormData();
+		const files = ufrm.files;
+		for (let i = 0; i < files.length; i++) {
+			const file = files[i];
+			formdata.append('galleryfiles[]', file, file.name);
+		}
+		formdata.append('folder',folder);
+		xhr.onload = function () {
+			if(xhr.status === 200) {
+				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(folder);
+			}
+		}
+		xhr.open('POST', './plugins/pictures/photos.php');
+		xhr.send(formdata);
+	})
+	let ifrm = document.getElementById("picturescontentframe").contentWindow.document.body;
+	ifrm.appendChild(ufrm);
+	ufrm.click();
 }
 
 function selectShare() {
