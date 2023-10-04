@@ -91,7 +91,7 @@ if(isset($_FILES['galleryfiles'])) {
 			if(move_uploaded_file($_FILES['galleryfiles']['tmp_name'][$i], "$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i])) {
 				createthumb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $pictures_path);
 				todb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $rcmail->user->ID, $pictures_path);
-				$test[] = array('message' => $'Upload successful.', 'type' => 'info');
+				$test[] = array('message' => 'Upload successful.', 'type' => 'info');
 			} else {
 				error_log("Pictures: Uploaded picture could not moved into target folder");
 				$test[] = array('message' => 'Upload failed. Permission error', 'type' => 'error');
@@ -238,7 +238,7 @@ function showPage($thumbnails, $dir) {
 	$path = "";
 	$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
 	foreach ($aarr as $folder) {
-		$path = $path.'/'.$folder;
+		$path = urlencode($path.'/'.$folder);
 		if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
 	}
 	$page.= "</head>
@@ -572,7 +572,7 @@ function showGallery($requestedDir, $offset = 0) {
 			}
 			
 			// Gallery images
-			$allowed = (in_array(substr($file, strrpos($file,".")+1), $ballowed)) ? true:false;
+			$allowed = (in_array(strtolower(substr($file, strrpos($file,".")+1)), $ballowed)) ? true:false;
 			$fullpath = $current_dir."/".$file;
 			$fs = filesize($fullpath);
 			
@@ -996,7 +996,8 @@ function mvimg($oldpath, $newPath) {
 	$ftime = filemtime($oldpath);
 
 	if($dfiles && substr_count($oldpath, $dfolder) > 0) {
-		if(rename($oldpath, $newPath)) touch($oldpath, $ftime);
+		rename($oldpath, $newPath);
+		touch($oldpath, $ftime);
 	} else {
 		rename($oldpath, $newPath);
 	}
