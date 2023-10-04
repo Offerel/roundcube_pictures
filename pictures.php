@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.14
+ * @version 1.4.15
  * @author Offerel
  * @copyright Copyright (c) 2023, Offerel
  * @license GNU General Public License, version 3
@@ -248,10 +248,6 @@ function checkDB() {
 		$dbh->exec_script($sql);
 	}
 
-	//$dbh->query("CREATE TABLE IF NOT EXISTS `pic_pictures` (`pic_id` INT(11) NOT NULL AUTO_INCREMENT, `pic_path` TEXT NOT NULL, `pic_type` TEXT NOT NULL, `pic_taken` INT(11) NOT NULL, `pic_EXIF` TEXT DEFAULT NULL, `user_id` INT(10) unsigned NOT NULL, PRIMARY KEY (`pic_id`), UNIQUE KEY `pic_path` (`pic_path`,`user_id`) USING HASH, KEY `user_id` (`user_id`), CONSTRAINT `pic_pictures_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE) ENGINE=InnoDB AUTO_INCREMENT=18310 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
-	//$dbh->query("CREATE TABLE IF NOT EXISTS `pic_shares` (`share_id` INTEGER,`share_name` TEXT NOT NULL,`share_link` TEXT NOT NULL, `expire_date` INTEGER, `user_id` INT(10) NOT NULL, PRIMARY KEY(`share_id`), FOREIGN KEY(`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE)");
-	//$dbh->query("CREATE TABLE IF NOT EXISTS `pic_shared_pictures` (`shared_pic_id` INTEGER, `share_id` INTEGER NOT NULL, `user_id` INT(10), `pic_id` INTEGER, UNIQUE(`share_id`,`pic_id`), PRIMARY KEY(`shared_pic_id`), FOREIGN KEY(`pic_id`) REFERENCES `pic_pictures`(`pic_id`) ON DELETE CASCADE, FOREIGN KEY(`share_id`) REFERENCES `pic_shares`(`share_id`) ON DELETE CASCADE)");
-	//$dbh->query("CREATE TABLE IF NOT EXISTS `pic_broken` (`broken_id` INTEGER, `user_id` INT(10) NOT NULL, `pic_path` TEXT NOT NULL, PRIMARY KEY(`broken_id`), UNIQUE(`pic_path`,`user_id`), FOREIGN KEY(`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE)");
 	$atime = time();
 	$result = $dbh->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
 }
