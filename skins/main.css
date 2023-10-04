@@ -6,16 +6,14 @@ html {
 	border: 1px solid #0000001a;
 }
 .mmn-drop {
-	background: url(../images/upload.png) no-repeat center;
-	background-color: #4788c7;
-	opacity: 0.8;
+	opacity: .7;
 	border: 1px dashed #00386f;
 	width: calc(100% - 2px) !important;
 	height: calc(100% - 2px) !important;
-}
-.body-drop {
-	background: linear-gradient(0deg, rgba(122, 204, 181, 0.84) 0%, rgba(255,255,255,0.7889325519588785) 90%);
-	opacity: .8;
+	color: transparent !important;
+	text-shadow: none !important;
+	background: url('data:image/svg+xml,%3Csvg xmlns="http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width="50" height="48.08" viewBox="0 0 1664 1600"%3E%3Cpath fill="white" d="M1280 1408q0-26-19-45t-45-19t-45 19t-19 45t19 45t45 19t45-19t19-45zm256 0q0-26-19-45t-45-19t-45 19t-19 45t19 45t45 19t45-19t19-45zm128-224v320q0 40-28 68t-68 28H96q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h427q21 56 70.5 92t110.5 36h256q61 0 110.5-36t70.5-92h427q40 0 68 28t28 68zm-325-648q-17 40-59 40h-256v448q0 26-19 45t-45 19H704q-26 0-45-19t-19-45V576H384q-42 0-59-40q-17-39 14-69L787 19q18-19 45-19t45 19l448 448q31 30 14 69z"%2F%3E%3C%2Fsvg%3E') no-repeat center;
+	background-color: #4788c7;
 }
 .progress {
 	background-image: -webkit-linear-gradient( -45deg, transparent 33%, rgba(0, 0, 0, .1) 33%, rgba(0, 0, 0, .1) 66%, transparent 66% ), -webkit-linear-gradient( top, rgba(255, 255, 255, .25), rgba(0, 0, 0, .25) ), -webkit-linear-gradient(left, #335EC4, #1F71F4);

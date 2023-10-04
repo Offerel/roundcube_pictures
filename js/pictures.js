@@ -8,7 +8,6 @@
  */
 var lightbox;
 window.rcmail && rcmail.addEventListener("init", function(a) {
-	//rcmail.register_command("editalbum", edit_album, !0);
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
 	rcmail.register_command("sharepicture", selectShare, !0);

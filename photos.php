@@ -404,24 +404,17 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		var dropZones = document.getElementsByClassName('dropzone');
-		var dropZone = document.querySelector('.picbdy');
 		
 		for (var i = 0; i < dropZones.length; i++) {
 			dropZones[i].addEventListener('dragover', handleDragOver, false);
 			dropZones[i].addEventListener('dragleave', handleDragLeave, false);
 			dropZones[i].addEventListener('drop', handleDrop, false);
 		}
-
-		dropZone.addEventListener('dragover', handleDragOver, false);
-		dropZone.addEventListener('dragleave', handleDragLeave, false);
-		dropZone.addEventListener('drop', handleDrop, false);
 		
 		function handleDragOver(event){
 			event.preventDefault();
 			if(this.localName != 'body') {
 				this.classList.add('mmn-drop');
-			} else {
-				this.classList.add('body-drop');
 			}
 		}
 		
