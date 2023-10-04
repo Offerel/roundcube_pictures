@@ -1,5 +1,14 @@
 ### v1.4.14
-- Fixed create SQL for MySQL
+- Fixed create SQL
+- Fix dropzone
+- Fix encoding
+- Fix Upload
+- Fix DateTimeDigitized
+- Fix create album
+- Other minor fixes
+- Faster loading times
+- Added debug switch
+- Added loading animation
 
 ### v1.4.13
 - Show hint after login instead of email
