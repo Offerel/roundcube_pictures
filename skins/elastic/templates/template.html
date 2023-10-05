@@ -2,18 +2,20 @@
 <roundcube:include file="includes/menu.html" />
 <h1 class="voice"><roundcube:label name="pictures.pictures" /></h1>
 <div id="content" class="content selected" role="main">
-	<div class="header">
-		<a class="button icon menu-button" href="#menu"><span class="inner"><roundcube:label name="menu" /></span></a>
+	<div id="messagelist-header" class="header">
+		<a class="button icon task-menu-button" href="#menu" style="z-index: 1; left: 0; position: absolute;"><span class="inner"><roundcube:label name="menu" /></span></a>
+		<div id="picturestoolbar" class="toolbar" role="toolbar" aria-labelledby="aria-label-toolbar">
+			<!-- toolbar -->
+			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
+			<roundcube:button command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" innerclass="inner" id="addalbum" />
+			<roundcube:button command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" innerclass="inner" id="movepicture" />
+			<roundcube:button command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" innerclass="inner" id="delpicture" />
+			<roundcube:button command="sharepicture" type="link" class="button share disabled" label="pictures.share" title="pictures.share" innerclass="inner" id="sharepicture" />
+			<roundcube:button command="uploadpicture" type="link" class="button upload" label="pictures.upload" itle="pictures.upload" innerclass="inner" id="uploadpicture" t/>
+		</div>
 	</div>
 	<div class="iframe-wrapper">	
-		<div id="picturestoolbar" class="toolbar" role="toolbar">
-			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
-			<roundcube:button innerclass="inner" id="addalbum" command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" />
-			<roundcube:button innerclass="inner" id="movepicture" command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" />
-			<roundcube:button innerclass="inner" id="delpicture" command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" />
-			<roundcube:button innerclass="inner" id="sharepicture" command="sharepicture" type="link" class="button share disabled" label="pictures.share" title="pictures.share" />
-			<roundcube:button innerclass="inner" id="uploadpicture" command="uploadpicture" type="link" class="button upload" label="pictures.upload" title="pictures.upload" />
-		</div>
+		
 		<div id="pluginbody" class="offset">
 			<div class="iframebox pictures_<roundcube:var name='env:action' />">
 				<roundcube:object name="picturescontent" id="picturescontentframe" style="width:100%; height:100%" frameborder="0" src="/watermark.html" />
