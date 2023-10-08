@@ -20,10 +20,13 @@ if(isset($_SERVER['HTTP_REFERER'])) {
 @ini_set('gd.jpeg_ignore_warning', 1);
 $rcmail = rcmail::get_instance();
 
+if($rcmail->config->get('debug', false)) error_log(print_r($_GET, true));
+
 $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 
+$m = ($mode == 1) ? "Thumbnail":"Picture";
 
 if(isset($file) && !empty($file)) {
 	if (!empty($rcmail->user->ID)) {
@@ -43,7 +46,7 @@ if(isset($file) && !empty($file)) {
 				break;
 		}
 	} else {
-		error_log('Pictures Plugin: Login failed. User is not logged in.');
+		error_log('Pictures: Login failed. User is not logged in.');
 		die();
 	}
 
@@ -92,7 +95,7 @@ if(file_exists($file)) {
 	header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 	die(readfile($file));
 } else {
-	error_log('Pictures Plugin: Not found'."$file");
-	die('Not found'."$file");
+	error_log("Pictures: $m not found: $file");
+	die('Not found '."$file");
 }
 ?>

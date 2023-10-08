@@ -221,11 +221,12 @@ if( isset($_GET['p']) ) {
 }
 
 function showPage($thumbnails, $dir) {
+	$gal = ltrim($dir, '/');
 	$maxfiles = ini_get("max_file_uploads");
 	$page = "<!DOCTYPE html>
 	<html>
 		<head>
-			<title>$dir</title>
+			<title>$gal</title>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
@@ -249,7 +250,6 @@ function showPage($thumbnails, $dir) {
 	\t\t\t</div>
 	\t\t\t<div id=\"galdiv\">";
 	$page.= $thumbnails;
-	$gal = ltrim($dir, '/');
 	$page.="
 	<script>
 		document.onreadystatechange = function() {
@@ -264,6 +264,10 @@ function showPage($thumbnails, $dir) {
 					window.parent.edit_album();
 				}
 			});
+
+			Array.from(document.getElementsByClassName('folder')).forEach(
+				function(e,i,a) { e.addEventListener('click', function() {aLoader()}) }
+			);
 		}
 
 		$('#folders').justifiedGallery({
@@ -559,7 +563,7 @@ function showGallery($requestedDir, $offset = 0) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a onclick='aLoader()' id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
 								);
 				}
 			}
@@ -755,6 +759,11 @@ function getfirstImage($dirname) {
 				continue;
 			}
 			$ext = strtolower($pathinfo['extension']);
+
+			if(filesize("$dirname/$file") <= 0) {
+				continue;
+			}
+
 			if (in_array($ext, $extensions)) {
 				$imageName = $file;
 				break;
