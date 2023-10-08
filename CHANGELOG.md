@@ -1,5 +1,5 @@
 ### v1.4.15
-- 
+- Fix 0 byte thumbnails
 
 ### v1.4.14
 - Fixed create SQL
