@@ -478,7 +478,7 @@ footer a {
 #infbtn {
 	right: 60px;
 	opacity: .7;
-	background-color: rgba(0, 0, 0, 0.04);
+	background-color: rgba(0,0,0,.32);
 	position: absolute;
 	top: 15px;
 	width: 40px;
@@ -489,6 +489,11 @@ footer a {
 	fill: #fff;
 }
 #infbtn:hover {
+	background-color: rgba(0,0,0,.7);
+	opacity: 1;
+}
+.exinfo:hover #infbtn {
+	background-color: rgba(0,0,0,.7);
 	opacity: 1;
 }
 .shared {
