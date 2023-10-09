@@ -64,6 +64,7 @@ window.onload = function(){
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 	
 			if(document.getElementById(exinfo)) {
+				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 				let closebtn = document.querySelector('.gclose');
 				let infobtn = document.createElement('button');
 				infobtn.id = 'infbtn';

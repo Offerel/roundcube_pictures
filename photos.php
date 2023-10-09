@@ -310,6 +310,7 @@ function showPage($thumbnails, $dir) {
 		lightbox.on('slide_changed', (data) => {
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			if(document.getElementById(file)) {
+				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 				let closebtn = document.querySelector('.gclose');
 				let infobtn = document.createElement('button');
 				infobtn.id = 'infbtn';
