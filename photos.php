@@ -87,10 +87,16 @@ if(isset($_FILES['galleryfiles'])) {
 	$cFiles = count($_FILES['galleryfiles']['name']);
 
 	for($i = 0; $i < $cFiles; $i++) {
-		if($_FILES['galleryfiles']['size'][$i] > 0 && in_array($_FILES['galleryfiles']['type'][$i], $aAllowedMimeTypes) && !file_exists($pictures_path.$folder."/".$_FILES['galleryfiles']['name'][$i])) {
-			if(move_uploaded_file($_FILES['galleryfiles']['tmp_name'][$i], "$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i])) {
-				createthumb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $pictures_path);
-				todb("$pictures_path$folder/".$_FILES['galleryfiles']['name'][$i], $rcmail->user->ID, $pictures_path);
+		$fname = $_FILES['galleryfiles']['name'][$i];
+		if($_FILES['galleryfiles']['size'][$i] > 0 && in_array($_FILES['galleryfiles']['type'][$i], $aAllowedMimeTypes) && !file_exists($pictures_path.$folder."/$fname")) {
+			if(move_uploaded_file($_FILES['galleryfiles']['tmp_name'][$i], "$pictures_path$folder/$fname")) {
+				if($fname == 'folder.jpg') {
+					rsfolderjpg("$pictures_path$folder/$fname");
+				} else {
+					createthumb("$pictures_path$folder/$fname", $pictures_path);
+					todb("$pictures_path$folder/".$fname, $rcmail->user->ID, $pictures_path);
+				}
+				
 				$test[] = array('message' => 'Upload successful.', 'type' => 'info');
 			} else {
 				error_log("Pictures: Uploaded picture could not moved into target folder");
@@ -218,6 +224,25 @@ if( isset($_GET['p']) ) {
 } else {
 	echo showPage(showGallery(""), '');
 	die();
+}
+
+function rsfolderjpg($filename) {
+	global $thumbsize;
+	list($owidth, $oheight) = getimagesize($filename);
+	if($owidth > $oheight) {
+		$new_height = $thumbsize;
+		$factor = $oheight/$thumbsize;
+		$new_width = round($owidth/$factor);
+	} else {
+		$new_width = $thumbsize;
+		$factor = $owidth/$thumbsize;
+		$new_height = round($oheight/$factor);
+	}
+
+	$image = imagecreatefromjpeg($filename);
+	$image_p = imagecreatetruecolor($new_width, $new_height);
+	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $owidth, $oheight);
+	imagejpeg($image_p, $filename, 85);
 }
 
 function showPage($thumbnails, $dir) {
