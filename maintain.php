@@ -35,12 +35,13 @@ foreach($users as $user) {
 	$uid = $user["user_id"];
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
 	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
+	$webp_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)), '/');
 	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
 	$broken = array();
 	switch($mode) {
 		case "add":
 			logm("Checking $username with mode 'add'");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 			break;
 		case "clean":
 			logm("Checking $username with mode 'clean'");
@@ -51,7 +52,7 @@ foreach($users as $user) {
 			break;
 		default:
 			logm("Search pictures for $username");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"]);
+			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
@@ -93,7 +94,7 @@ function logm($message, $mmode = 3) {
 	file_put_contents($logfile, $line, FILE_APPEND);
 }
 
-function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
+function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_basepath) {
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
@@ -101,11 +102,12 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user) {
 				if($file === '.' || $file === '..') continue;
 				if(is_dir($path."/".$file."/")) {
 					logm("Parse directory $path/$file/", 4);
-					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user);
+					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user, $webp_basepath);
 				} else {
 					$pathparts = pathinfo($path."/".$file);
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
 						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
+						if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath);
 						todb($path."/".$file, $user, $pictures_basepath);
 						checkorphaned($path."/".$file);
 					}
@@ -141,6 +143,51 @@ function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
 		unlink($thumbnail);
 		logm("Delete thumbnail $thumbnail", 4);
 	}
+}
+
+function create_webp($ofile, $pictures_basepath, $webp_basepath) {
+	global $rcmail;
+	$swidth = 1920;
+	
+	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
+
+	if(file_exists($webp_file)) return false;
+
+	list($owidth, $oheight) = getimagesize($ofile);			
+	$image = imagecreatefromjpeg($ofile);
+	$exif = exif_read_data($ofile);
+	
+	switch($exif['Orientation']) {
+		case 3:
+			$degrees = 180;
+			$rotate = true;
+			break;
+		case 6:
+			$degrees = 270;
+			$rotate = true;
+			break;
+		case 8:
+			$degrees = 90;
+			$rotate = true;
+			break;
+		default:
+			$degrees = 0;
+			$rotate = false;
+	}
+	
+	if($rotate) $image = imagerotate($image, $degrees, 0);
+	
+	if($owidth > $swidth) {
+		$mult = $owidth/$swidth;
+		$img = (!$rotate) ? imagescale($image, $swidth):imagescale($image, round($oheight/$mult));
+	} else {
+		$img = $image;
+	}
+
+	
+	$directory = dirname($webp_file);
+	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
+	imagewebp($img, $webp_file, 80);
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {

@@ -25,6 +25,9 @@ if($rcmail->config->get('debug', false)) error_log(print_r($_GET, true));
 $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
+$type = isset($_GET['w']) ? filter_var($_GET['w'], FILTER_SANITIZE_NUMBER_INT):0;
+//$swidth = (isset($_COOKIE["swidth"])) ? htmlspecialchars($_COOKIE["swidth"]):'1920';
+$swidth = 1920;
 
 $m = ($mode == 1) ? "Thumbnail":"Picture";
 
@@ -87,13 +90,209 @@ if(file_exists($file)) {
 		}
 	}
 	
-	$filesize = filesize($file);
-	header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-	header("Content-Type: $mimeType");
-	header('Accept-Ranges: bytes');
-	header("Content-Length: ".$filesize);
-	header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
-	die(readfile($file));
+	if(strpos($mimeType, 'image/jp') === false){
+		$type = 0;
+	}
+	
+	switch($type) {
+		case 1:
+			// JPEG
+			$filesize = filesize($file);
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: $mimeType");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$filesize);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die(readfile($file));
+			break;
+		case 2:
+			// JPEG, 80 Qualität
+			$image = imagecreatefromjpeg($file);
+			ob_start();
+			imagejpeg($image, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/jpeg");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die($ImageData);
+			break;
+		case 3:
+			// webp, 80 Qualität
+			$image = imagecreatefromjpeg($file);
+			ob_start();
+			imagewebp($image, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/webp");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die($ImageData);
+			break;
+		case 4:
+			//imagick
+			if(class_exists('Imagick')) {
+				$image = new Imagick();
+				$image->readImage($file);
+				$image->setImageFormat('webp');
+				$image->setImageCompressionQuality(80);
+				$image->setOption('webp:lossless', 'true');
+				header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+				header("Content-Type: image/webp");
+				header('Accept-Ranges: bytes');
+				header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+				die($image);
+			} else {
+				die("Imagick Not supported");
+			}
+			break;
+		case 5:
+			$image = imagecreatefromjpeg($file);
+			$img = imagescale($image, $swidth);
+			
+			ob_start();
+			imagejpeg($img, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/jpeg");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die($ImageData);
+			break;
+		case 6:
+			//Rescale, webpb
+			list($owidth, $oheight) = getimagesize($file);
+			
+			$image = imagecreatefromjpeg($file);
+			$exif = exif_read_data($file);
+			//$exif["MimeType"]
+			//var_dump($exif);
+			//die($exif["MimeType"]);
+			
+			switch($exif['Orientation']) {
+				case 3:
+					$degrees = 180;
+					$rotate = true;
+					break;
+				case 6:
+					$degrees = 270;
+					$rotate = true;
+					break;
+				case 8:
+					$degrees = 90;
+					$rotate = true;
+					break;
+				default:
+					$degrees = 90;
+					$rotate = false;
+			}
+			
+			if($rotate) {
+				$image = imagerotate($image, $degrees, 0);
+			}
+			
+			if($owidth > $swidth) {
+				$mult = $owidth/$swidth;
+				$img = (!$rotate) ? imagescale($image, $swidth):imagescale($image, round($oheight/$mult));
+			}
+
+			ob_start();
+			imagewebp($img, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/webp");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file).'.webp','.').'"');
+			die($ImageData);
+			break;
+		case 7:
+			// imagecopyresampled, jpeg
+			list($owidth, $oheight) = getimagesize($file);
+			$mult = $owidth / $swidth;
+			$sheight = round($oheight / $mult);
+			
+			$image_p = imagecreatetruecolor($swidth, $sheight);
+			$image = imagecreatefromjpeg($file);
+			imagecopyresampled($image_p, $image, 0, 0, 0, 0, $swidth, $sheight, $owidth, $oheight);
+			
+			ob_start();
+			imagejpeg($image_p, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/jpeg");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die($ImageData);
+			break;
+		case 8:
+			// imagecopyresampled, webp
+			list($owidth, $oheight) = getimagesize($file);
+			$mult = $owidth / $swidth;
+			$sheight = round($oheight / $mult);
+			
+			$image_p = imagecreatetruecolor($swidth, $sheight);
+			$image = imagecreatefromjpeg($file);
+			imagecopyresampled($image_p, $image, 0, 0, 0, 0, $swidth, $sheight, $owidth, $oheight);
+			
+			ob_start();
+			imagewebp($image_p, null, 80);
+			$ImageData = ob_get_contents();
+			$ImageDataLength = ob_get_length();
+			ob_end_clean();
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: image/webp");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$ImageDataLength);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die($ImageData);
+			break;
+		case 9:
+			$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
+			$webp_path = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)),'/').'/';
+			$webp_file = str_replace($pictures_basepath, $webp_path, $file).".webp";
+
+			if(file_exists($webp_file)) {
+				$file = $webp_file;
+				header("Content-Type: image/webp");
+			} else {
+				header("Content-Type: imag/jpeg");
+			}
+			
+			$image = imagecreatefromwebp($file);
+			$filesize = filesize($file);
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$filesize);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			die(readfile($file));
+			break;
+		default:
+			// JPEG
+			$filesize = filesize($file);
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header("Content-Type: $mimeType");
+			header('Accept-Ranges: bytes');
+			header("Content-Length: ".$filesize);
+			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'.webp"');
+			die(readfile($file));
+			break;
+	}
 } else {
 	error_log("Pictures: $m not found: $file");
 	die('Not found '."$file");

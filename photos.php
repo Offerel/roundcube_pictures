@@ -602,7 +602,7 @@ function showGallery($requestedDir, $offset = 0) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
-				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
+				$linkUrl = "simg.php?w=9&file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
 				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? json_decode($pdata[$key]['pic_EXIF']):NULL;
