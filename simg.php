@@ -106,7 +106,7 @@ if(file_exists($file)) {
 			die(readfile($file));
 			break;
 		case 2:
-			// JPEG, 80 Qualität
+			// JPEG, 80 Quality
 			$image = imagecreatefromjpeg($file);
 			ob_start();
 			imagejpeg($image, null, 80);
@@ -121,7 +121,7 @@ if(file_exists($file)) {
 			die($ImageData);
 			break;
 		case 3:
-			// webp, 80 Qualität
+			// webp, 80 Quality
 			$image = imagecreatefromjpeg($file);
 			ob_start();
 			imagewebp($image, null, 80);
@@ -174,9 +174,6 @@ if(file_exists($file)) {
 			
 			$image = imagecreatefromjpeg($file);
 			$exif = exif_read_data($file);
-			//$exif["MimeType"]
-			//var_dump($exif);
-			//die($exif["MimeType"]);
 			
 			switch($exif['Orientation']) {
 				case 3:
@@ -262,7 +259,7 @@ if(file_exists($file)) {
 			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 			die($ImageData);
 			break;
-		case 9:
+		default:
 			$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
 			$webp_path = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)),'/').'/';
 			$webp_file = str_replace($pictures_basepath, $webp_path, $file).".webp";
@@ -280,16 +277,6 @@ if(file_exists($file)) {
 			header('Accept-Ranges: bytes');
 			header("Content-Length: ".$filesize);
 			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
-			die(readfile($file));
-			break;
-		default:
-			// JPEG
-			$filesize = filesize($file);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Content-Type: $mimeType");
-			header('Accept-Ranges: bytes');
-			header("Content-Length: ".$filesize);
-			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'.webp"');
 			die(readfile($file));
 			break;
 	}
