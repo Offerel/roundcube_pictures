@@ -271,7 +271,6 @@ if(file_exists($file)) {
 				header("Content-Type: imag/jpeg");
 			}
 			
-			$image = imagecreatefromwebp($file);
 			$filesize = filesize($file);
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 			header('Accept-Ranges: bytes');
