@@ -49,14 +49,26 @@ foreach($users as $user) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
+
+			if(is_dir($webp_basepath)) {
+				$path = $webp_basepath;
+				read_webp($path, $webp_basepath, $pictures_basepath);
+			}
 			break;
 		default:
 			logm("Search pictures for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
+
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
+
+			if(is_dir($webp_basepath)) {
+				$path = $webp_basepath;
+				read_webp($path, $webp_basepath, $pictures_basepath);
+			}
+			
 			rmexpires();
 			break;
 	}
@@ -118,7 +130,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 	}
 }
 
-function read_thumbs($path, $thumb_basepath, $picture_basepath) {
+function read_thumbs($path, $webp_basepath, $picture_basepath) {
 	if($handle = opendir($path)) {
 		while (false !== ($file = readdir($handle))) {
 			if($file === '.' || $file === '..') continue;
@@ -129,19 +141,37 @@ function read_thumbs($path, $thumb_basepath, $picture_basepath) {
 					rmdir($path."/".$file);
 				}
 			} else {
-				deletethumb($path."/".$file, $thumb_basepath, $picture_basepath);
+				delete_asset($path."/".$file, $thumb_basepath, $picture_basepath);
 			}
 		}
 		closedir($handle);
 	}
 }
 
-function deletethumb($thumbnail, $thumb_basepath, $picture_basepath) {
-	$thumbnail = str_replace('//','/',$thumbnail);
-	$org_pinfo = pathinfo(str_replace($thumb_basepath, $picture_basepath, $thumbnail));
+function read_webp($path, $webp_basepath, $picture_basepath) {
+	if($handle = opendir($path)) {
+		while (false !== ($file = readdir($handle))) {
+			if($file === '.' || $file === '..') continue;
+			
+			if(is_dir($path."/".$file."/")) {
+				read_webp($path."/".$file, $webp_basepath, $picture_basepath);
+				if(count(glob($path."/".$file."/*")) === 0) {
+					rmdir($path."/".$file);
+				}
+			} else {
+				delete_asset($path."/".$file, $webp_basepath, $picture_basepath);
+			}
+		}
+		closedir($handle);
+	}
+}
+
+function delete_asset($image, $asset_basepath, $picture_basepath) {
+	$image = str_replace('//','/',$image);
+	$org_pinfo = pathinfo(str_replace($asset_basepath, $picture_basepath, $image));
 	if(!file_exists($org_pinfo['dirname']."/".$org_pinfo['filename'])) {
-		unlink($thumbnail);
-		logm("Delete thumbnail $thumbnail", 4);
+		unlink($image);
+		logm("Delete thumbnail/webp $image", 4);
 	}
 }
 

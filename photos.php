@@ -15,6 +15,7 @@ if (!empty($rcmail->user->ID)) {
 	$username = $rcmail->user->get_username();
 	$pictures_path = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
 	$thumb_path = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
+	$webp_path = str_replace("%u", $username, $rcmail->config->get('webp_path', false));
 	$thumbsize = $rcmail->config->get('thumb_size', false);
 	
 	if(substr($pictures_path, -1) != '/') {
@@ -1051,7 +1052,7 @@ function mvimg($oldpath, $newPath) {
 }
 
 function delimg($file) {
-	global $rcmail, $pictures_path, $thumb_path;
+	global $rcmail, $pictures_path, $thumb_path, $webp_path;
 	$dfiles = $rcmail->config->get('dummy_files', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($file);
@@ -1068,6 +1069,9 @@ function delimg($file) {
 
 	$thumbnailpath = $thumb_path.str_replace($pictures_path, '', $file).".jpg";
 	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
+
+	$webp = str_replace($pictures_path, $webp_path, $file).".webp";
+	if(file_exists($webp)) unlink($webp);
 }
 
 $thumbdir = rtrim($pictures_path.$requestedDir,'/');
