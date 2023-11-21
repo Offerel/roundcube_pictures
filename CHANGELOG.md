@@ -1,5 +1,11 @@
 ### v1.4.15
 - Fix 0 byte thumbnails
+- Fix CSS
+- Fix Info Button
+- Add automatic resize folder.jpg
+- Add webp support
+- Add gallery fullscreen function
+- Add plyr locally
 
 ### v1.4.14
 - Fixed create SQL
