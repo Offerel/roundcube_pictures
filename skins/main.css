@@ -475,6 +475,18 @@ footer a {
 		padding-bottom: 100%;
 	}
 }
+#fbtn {
+    position: absolute;
+    top: 15px;
+    right: 105px;
+    width: 35px;
+    height: 35px;
+    background-color: rgba(0,0,0,.32);
+    opacity: .7;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
 #infbtn {
 	right: 60px;
 	opacity: .7;
@@ -488,7 +500,7 @@ footer a {
 	border: none;
 	fill: #fff;
 }
-#infbtn:hover {
+#infbtn:hover, #fbtn:hover {
 	background-color: rgba(0,0,0,.7);
 	opacity: 1;
 }
