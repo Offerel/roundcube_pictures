@@ -2,6 +2,7 @@
 - Fix 0 byte thumbnails
 - Fix CSS
 - Fix Info Button
+- Fix lazyload issue
 - Add automatic resize folder.jpg
 - Add webp support
 - Add gallery fullscreen function

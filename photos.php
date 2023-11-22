@@ -385,13 +385,17 @@ function showPage($thumbnails, $dir) {
 		}
 
 		function lazyload(slide = false) {
-			let last = document.getElementById('last') ? false:true;
-			let imgs = document.getElementsByClassName('glightbox').length;
-			if(Math.ceil($(window).scrollTop() + $(window).height()) > $(document).height() - 10 && last && imgs > 0 || slide) {
+			if(document.getElementById('last') && !slide) return false;
+			if(document.getElementsByClassName('glightbox').length <= 0 && !slide) return false;
+
+			let wheight = $(document).height() - 10;
+			let wposition = Math.ceil($(window).scrollTop() + $(window).height());
+
+			if(wposition > wheight || slide) {
 				$.ajax({
 					type: 'POST',
 					url: 'photos.php?g=1',
-					async: true,
+					async: false,
 					beforeSend: aLoader('visible'),
 					data: {
 						g: '$gal',
@@ -745,7 +749,9 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
 	$thumbnails.= $hidden_vid;
+
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
+
 	if($offset > 0) {
 		die($thumbnails2);
 	} else {
