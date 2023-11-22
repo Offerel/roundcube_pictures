@@ -889,27 +889,24 @@ function readEXIF($file) {
 		$exif_arr[13] = (isset($exif_data['WhiteBalance'])) ? $exif_data['WhiteBalance']:"-";
 		$exif_arr[14] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"-";
 		$exif_arr[15] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"-";
+		$exif_arr[16] = (isset($exif_data['Orientation'])) ? $exif_data['Orientation']:"-";
 	}
 	return $exif_arr;
 }
 	
-function gps($coordinate, $hemisphere) {
-  if (is_string($coordinate)) {
-	$coordinate = array_map("trim", explode(",", $coordinate));
-  }
-  for ($i = 0; $i < 3; $i++) {
-	$part = explode('/', $coordinate[$i]);
-	if (count($part) == 1) {
-	  $coordinate[$i] = $part[0];
-	} else if (count($part) == 2) {
-	  $coordinate[$i] = floatval($part[0])/floatval($part[1]);
-	} else {
-	  $coordinate[$i] = 0;
-	}
-  }
-  list($degrees, $minutes, $seconds) = $coordinate;
-  $sign = ($hemisphere == 'W' || $hemisphere == 'S') ? -1 : 1;
-  return $sign * ($degrees + $minutes/60 + $seconds/3600);
+function gps($exifCoord, $hemi) {
+	$degrees = count($exifCoord) > 0 ? gps2Num($exifCoord[0]) : 0;
+	$minutes = count($exifCoord) > 1 ? gps2Num($exifCoord[1]) : 0;
+	$seconds = count($exifCoord) > 2 ? gps2Num($exifCoord[2]) : 0;
+	$flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+	return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+}
+
+function gps2Num($coordPart) {
+	$parts = explode('/', $coordPart);
+	if (count($parts) <= 0) return 0;
+	if (count($parts) == 1) return $parts[0];
+	return floatval($parts[0]) / floatval($parts[1]);
 }
 
 function checkpermissions($file) {
@@ -997,13 +994,15 @@ function todb($file, $user, $pictures_basepath) {
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $dbh->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
 	if($dbh->fetch_array($result)[0] == 0) {
-		$type = explode('/',mime_content_type($file))[0];
+		$mimetype = mime_content_type($file);
+		$type = explode('/',$mimetype)[0];
 		if($type == 'image') {
 			$exif = readEXIF($file);
+			$exif['17'] = $mimetype;
 			$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
 			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 		} else {
-			$exif = 'NULL';
+			$exif['17'] = $mimetype;
 			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
 			$taken = (empty($taken)) ? filemtime($file):$taken;
 		}

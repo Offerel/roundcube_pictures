@@ -237,7 +237,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$target = "";
 	$degrees = 0;
 	$ppath = "";
-	$type = explode('/',mime_content_type($org_pic))[0];
+	$mimetype = mime_content_type($org_pic);
+	$type = explode('/',$mimetype)[0];
 
 	if(!in_array($type, ['image','video'])) {
 		logm("Unsupported: $org_pic", 4);
@@ -272,7 +273,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if ($source) {
 			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 			imagedestroy($source);
-			//$exif = @exif_read_data($org_pic, 0, true);
 			$exifArr = readEXIF($org_pic);
 			$ort = (isset($exifArr['16'])) ? $ort = $exifArr['16']:NULL;
 			switch ($ort) {
@@ -283,10 +283,11 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				case 7: $degrees = 90; break;
 				case 8: $degrees = 90; break;
 			}
+
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 80);
-				logm("Save thmb (image): $thumb_pic", 4);
+				logm("Save thmb: $thumb_pic", 4);
 			} else {
 				logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
 			}
@@ -299,7 +300,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
-			logm("Save thmb (video): $thumb_pic", 4);
+			logm("Save thmb: $thumb_pic", 4);
 			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if($hevc && "$vcodec" != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
@@ -317,6 +318,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
+	$exifArr['17'] = $mimetype;
 	return $exifArr;
 }
 
@@ -462,34 +464,18 @@ function parse_fraction($v, $round = 0) {
 	return round($x / $y, $round);
 }
 
-function gps($coordinate, $hemisphere) {
-	if(is_string($coordinate)) {
-	  $coordinate = array_map("trim", explode(",", $coordinate));
-	} else {
-		logm("GPS-Coordinates: Wrong: 0", 4);
-		return 0;
-	}
+function gps($exifCoord, $hemi) {
+	$degrees = count($exifCoord) > 0 ? gps2Num($exifCoord[0]) : 0;
+	$minutes = count($exifCoord) > 1 ? gps2Num($exifCoord[1]) : 0;
+	$seconds = count($exifCoord) > 2 ? gps2Num($exifCoord[2]) : 0;
+	$flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+	return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+}
 
-	for ($i = 0; $i < 3; $i++) {
-	  $part = explode('/', $coordinate[$i]);
-	  if (count($part) == 1) {
-		$coordinate[$i] = $part[0];
-	  } else if (count($part) == 2) {
-		$first = floatval($part[0]);
-		$second = floatval($part[1]);
-		if($first != 0 && $second != 0) {
-			$coordinate[$i] = floatval($part[0])/floatval($part[1]);
-	  	} else {
-			$coordinate[$i] = 0;
-		}
-	  } else {
-		$coordinate[$i] = 0;
-	  }
-	}
-	
-	logm("GPS-Coordinates: ".$coordinate[$i], 4);
-	list($degrees, $minutes, $seconds) = $coordinate;
-	$sign = ($hemisphere == 'W' || $hemisphere == 'S') ? -1 : 1;
-	return $sign * ($degrees + $minutes/60 + $seconds/3600);
-  }
+function gps2Num($coordPart) {
+	$parts = explode('/', $coordPart);
+	if (count($parts) <= 0) return 0;
+	if (count($parts) == 1) return $parts[0];
+	return floatval($parts[0]) / floatval($parts[1]);
+}
 ?>
