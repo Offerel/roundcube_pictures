@@ -118,9 +118,9 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 				} else {
 					$pathparts = pathinfo($path."/".$file);
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
-						createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
-						if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath);
-						todb($path."/".$file, $user, $pictures_basepath);
+						$exifArr = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
+						if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
+						todb($path."/".$file, $user, $pictures_basepath, $exifArr);
 						checkorphaned($path."/".$file);
 					}
 				}
@@ -175,19 +175,19 @@ function delete_asset($image, $asset_basepath, $picture_basepath) {
 	}
 }
 
-function create_webp($ofile, $pictures_basepath, $webp_basepath) {
+function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	global $rcmail;
-	$swidth = 1920;
+	$swidth = rtrim(str_replace("%u", $username, $rcmail->config->get('swidth', false)), '/');
 	
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
 
 	if(file_exists($webp_file)) return false;
 
-	list($owidth, $oheight) = getimagesize($ofile);			
+	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-	$exif = exif_read_data($ofile);
+	//$exif = exif_read_data($ofile);
 	
-	switch($exif['Orientation']) {
+	switch($exif['16']) {
 		case 3:
 			$degrees = 180;
 			$rotate = true;
@@ -225,12 +225,21 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
-	if(file_exists($thumb_pic)) return false;
+
+	if(file_exists($thumb_pic)) {
+		logm("Ignoring: $org_pic > Thumbnail exists", 4);
+		return false;
+	}
+
 	$target = "";
 	$degrees = 0;
 	$ppath = "";
 	$type = explode('/',mime_content_type($org_pic))[0];
-	if(!in_array($type, ['image','video'])) return false;
+
+	if(!in_array($type, ['image','video'])) {
+		logm("Unsupported: $org_pic", 4);
+		return false;
+	}
 	
 	$thumbpath = pathinfo($thumb_pic)['dirname'];
 		
@@ -240,9 +249,11 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		}
 	}
 
-	if ($type == "image") {
-		list($width, $height, $type) = getimagesize($org_pic);
+	$exifArr = [];
 
+	if ($type == "image") {
+		logm("createthumb: $org_pic is image", 4);
+		list($width, $height, $type) = getimagesize($org_pic);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculating the width failed.", 2);
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
@@ -258,6 +269,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 			imagedestroy($source);
 			$exif = @exif_read_data($org_pic, 0, true);
+			$exifArr = readEXIF($org_pic);
 			$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
 			switch ($ort) {
 				case 3: $degrees = 180; break;
@@ -279,6 +291,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("Can't create thumbnail for $ppath. Picture is broken",1);
 		}
 	} elseif ($type == "video") {
+		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
 			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
@@ -298,17 +311,18 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
-	return $ppath;
+	return $exifArr;
 }
 
-function todb($file, $user, $pictures_basepath) {
+function todb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $db->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
 	if($db->fetch_array($result)[0] == 0) {
+		logm("Add $file to db", 4);
 		$type = explode('/',mime_content_type($file))[0];
 		if($type == 'image') {
-			$exif = readEXIF($file);
+			//$exif = readEXIF($file);
 			$taken = (isset($exif[5]) && is_int($exif[5])) ? $exif[5]:filemtime($file);
 			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 		} else {
@@ -327,6 +341,8 @@ function todb($file, $user, $pictures_basepath) {
 		} else {
 			$db->endTransaction();
 		}
+	} else {
+		logm("Ignoring: $file > Exists in db", 4);
 	}
 }
 
@@ -421,6 +437,7 @@ function readEXIF($file) {
 		$exif_arr[13] = (isset($exif_data['WhiteBalance'])) ? $exif_data['WhiteBalance']:"-";
 		$exif_arr[14] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"-";
 		$exif_arr[15] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"-";
+		$exif_arr[16] = (isset($exif_data['Orientation'])) ? $exif_data['Orientation']:"-";
 	}
 	return $exif_arr;
 }

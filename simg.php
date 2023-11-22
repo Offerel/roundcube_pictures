@@ -26,8 +26,7 @@ $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 $type = isset($_GET['w']) ? filter_var($_GET['w'], FILTER_SANITIZE_NUMBER_INT):0;
-//$swidth = (isset($_COOKIE["swidth"])) ? htmlspecialchars($_COOKIE["swidth"]):'1920';
-$swidth = 1920;
+$swidth = $rcmail->config->get('swidth', false);
 
 $m = ($mode == 1) ? "Thumbnail":"Picture";
 
