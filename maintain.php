@@ -177,7 +177,7 @@ function delete_asset($image, $asset_basepath, $picture_basepath) {
 
 function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	global $rcmail;
-	$swidth = rtrim(str_replace("%u", $username, $rcmail->config->get('swidth', false)), '/');
+	$swidth = $rcmail->config->get('swidth', false);
 	
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
 
@@ -204,6 +204,8 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 			$degrees = 0;
 			$rotate = false;
 	}
+
+	
 	
 	if($rotate) $image = imagerotate($image, $degrees, 0);
 	
@@ -218,16 +220,17 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	$directory = dirname($webp_file);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
 	imagewebp($img, $webp_file, 80);
+	logm("Save webp: $webp_file, 4);
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd;
 	$org_pic = str_replace('//','/',$image);
-	$thumb_pic = str_replace($pictures_basepath,$thumb_basepath,$org_pic).".jpg";
+	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
 
 	if(file_exists($thumb_pic)) {
-		logm("Ignoring: $org_pic > Thumbnail exists", 4);
+		logm("Ignoring: $thumb_pic > Thumbnail exists", 4);
 		return false;
 	}
 
@@ -264,13 +267,14 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			default: logm("Unsupported fileformat ($org_pic $type).", 1); die();
 		}
 
-		logm("Create thumbnail for: $org_pic", 4);
+		logm("Create thumbnail: $thumb_pic", 4);
+
 		if ($source) {
 			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 			imagedestroy($source);
-			$exif = @exif_read_data($org_pic, 0, true);
+			//$exif = @exif_read_data($org_pic, 0, true);
 			$exifArr = readEXIF($org_pic);
-			$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
+			$ort = (isset($exifArr['16'])) ? $ort = $exifArr['16']:NULL;
 			switch ($ort) {
 				case 3: $degrees = 180; break;
 				case 4: $degrees = 180; break;
@@ -282,6 +286,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 80);
+				logm("Save thmb (image): $thumb_pic", 4);
 			} else {
 				logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
 			}
@@ -294,6 +299,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
+			logm("Save thmb (video): $thumb_pic", 4);
 			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if($hevc && "$vcodec" != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
@@ -457,15 +463,23 @@ function parse_fraction($v, $round = 0) {
 }
 
 function gps($coordinate, $hemisphere) {
-	if (is_string($coordinate)) {
+	if(is_string($coordinate)) {
 	  $coordinate = array_map("trim", explode(",", $coordinate));
 	}
+
 	for ($i = 0; $i < 3; $i++) {
 	  $part = explode('/', $coordinate[$i]);
 	  if (count($part) == 1) {
 		$coordinate[$i] = $part[0];
 	  } else if (count($part) == 2) {
-		$coordinate[$i] = floatval($part[0])/floatval($part[1]);
+		$first = floatval($part[0]);
+		$second = floatval($part[1]);
+		logm("GPS: $first | $second", 4);
+		if($first != 0 && $second != 0) {
+			$coordinate[$i] = floatval($part[0])/floatval($part[1]);
+			logm("GPS: Wrong coordinates", 4);
+			return "";
+	  	}
 	  } else {
 		$coordinate[$i] = 0;
 	  }
