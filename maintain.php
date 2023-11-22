@@ -136,12 +136,12 @@ function read_thumbs($path, $webp_basepath, $picture_basepath) {
 			if($file === '.' || $file === '..') continue;
 			
 			if(is_dir($path."/".$file."/")) {
-				read_thumbs($path."/".$file, $thumb_basepath, $picture_basepath);
+				read_thumbs($path."/".$file, $webp_basepath, $picture_basepath);
 				if(count(glob($path."/".$file."/*")) === 0) {
 					rmdir($path."/".$file);
 				}
 			} else {
-				delete_asset($path."/".$file, $thumb_basepath, $picture_basepath);
+				delete_asset($path."/".$file, $webp_basepath, $picture_basepath);
 			}
 		}
 		closedir($handle);
@@ -220,7 +220,7 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	$directory = dirname($webp_file);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
 	imagewebp($img, $webp_file, 80);
-	logm("Save webp: $webp_file, 4);
+	logm("Save webp: $webp_file", 4);
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
@@ -465,6 +465,9 @@ function parse_fraction($v, $round = 0) {
 function gps($coordinate, $hemisphere) {
 	if(is_string($coordinate)) {
 	  $coordinate = array_map("trim", explode(",", $coordinate));
+	} else {
+		logm("GPS-Coordinates: Wrong: 0", 4);
+		return 0;
 	}
 
 	for ($i = 0; $i < 3; $i++) {
@@ -474,16 +477,17 @@ function gps($coordinate, $hemisphere) {
 	  } else if (count($part) == 2) {
 		$first = floatval($part[0]);
 		$second = floatval($part[1]);
-		logm("GPS: $first | $second", 4);
 		if($first != 0 && $second != 0) {
 			$coordinate[$i] = floatval($part[0])/floatval($part[1]);
-			logm("GPS: Wrong coordinates", 4);
-			return "";
-	  	}
+	  	} else {
+			$coordinate[$i] = 0;
+		}
 	  } else {
 		$coordinate[$i] = 0;
 	  }
 	}
+	
+	logm("GPS-Coordinates: ".$coordinate[$i], 4);
 	list($degrees, $minutes, $seconds) = $coordinate;
 	$sign = ($hemisphere == 'W' || $hemisphere == 'S') ? -1 : 1;
 	return $sign * ($degrees + $minutes/60 + $seconds/3600);
