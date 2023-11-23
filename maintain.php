@@ -330,14 +330,13 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		logm("Add $file to db", 4);
 		$type = explode('/',mime_content_type($file))[0];
 		if($type == 'image') {
-			//$exif = readEXIF($file);
 			$taken = (isset($exif[5]) && is_int($exif[5])) ? $exif[5]:filemtime($file);
-			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 		} else {
-			$exif = 'NULL';
 			$taken = shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
 			$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
 		}
+
+		$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 
 		$db->startTransaction();
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
@@ -468,6 +467,7 @@ function gps($exifCoord, $hemi) {
 	$degrees = count($exifCoord) > 0 ? gps2Num($exifCoord[0]) : 0;
 	$minutes = count($exifCoord) > 1 ? gps2Num($exifCoord[1]) : 0;
 	$seconds = count($exifCoord) > 2 ? gps2Num($exifCoord[2]) : 0;
+
 	$flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
 	return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
 }
@@ -476,6 +476,11 @@ function gps2Num($coordPart) {
 	$parts = explode('/', $coordPart);
 	if (count($parts) <= 0) return 0;
 	if (count($parts) == 1) return $parts[0];
-	return floatval($parts[0]) / floatval($parts[1]);
+
+    $f = floatval($parts[0]);
+    $s = floatval($parts[1]);
+
+    $e = ($s == 0) ? 0:$f/$s;
+	return $e;
 }
 ?>
