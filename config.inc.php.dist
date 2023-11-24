@@ -1,7 +1,7 @@
 <?php
 $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
-$config['webp_path'] = '/mnt/stick/gal_thmbs/%u/webp/'; // Absolute path to webp version of image. Use %u for the username
-$config['thumb_path'] = '/path/to/gal_thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
+$config['webp_path'] = '/path/to/thmbs/%u/webp/'; // Absolute path to webp version of image. Use %u for the username
+$config['thumb_path'] = '/path/to/thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
 $config['swidth'] = 1920; // width for webp version
 $config['date_format'] = "d.m.Y"; // please see https://secure.php.net/manual/de/function.date.php
 $config['time_format'] = "H:i"; // please see https://secure.php.net/manual/de/function.date.php 

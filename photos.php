@@ -906,7 +906,12 @@ function gps2Num($coordPart) {
 	$parts = explode('/', $coordPart);
 	if (count($parts) <= 0) return 0;
 	if (count($parts) == 1) return $parts[0];
-	return floatval($parts[0]) / floatval($parts[1]);
+
+    $f = floatval($parts[0]);
+    $s = floatval($parts[1]);
+
+    $e = ($s == 0) ? 0:$f/$s;
+	return $e;
 }
 
 function checkpermissions($file) {
