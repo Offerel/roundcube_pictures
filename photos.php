@@ -36,7 +36,6 @@ if (!empty($rcmail->user->ID)) {
 	}
 } else {
 	http_response_code(403);
-	header('location: ../../');
 	die('Login failed. User is not logged in.');
 }
 
@@ -574,7 +573,7 @@ function showGallery($requestedDir, $offset = 0) {
 	$current_dir = $thumbdir;
 	$forbidden = $rcmail->config->get('skip_objects', false);
 	
-	if (is_dir($current_dir) && $handle = opendir("${current_dir}")) {
+	if (is_dir($current_dir) && $handle = @opendir("${current_dir}")) {
 		$query = "SELECT * FROM `pic_pictures` WHERE `pic_path` LIKE \"$requestedDir%\" AND user_id = ".$rcmail->user->ID;
 		$result = $dbh->query($query);
 		$rows = $dbh->num_rows();
