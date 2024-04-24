@@ -142,7 +142,7 @@ if(isset($_POST['img_action'])) {
 	$user_id = $rcmail->user->ID;
 	$action = $_POST['img_action'];
 	$images = $_POST['images'];
-	$org_path = urldecode($_POST['orgPath']);
+	$org_path = isset($_POST['orgPath']) ? urldecode($_POST['orgPath']):'';
 	$album_target = isset($_POST['target']) ? html_entity_decode(trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
 
 	switch($action) {
@@ -163,7 +163,7 @@ if(isset($_POST['img_action'])) {
 						break;
 		case 'share':	$shareid = filter_var($_POST['shareid'], FILTER_SANITIZE_NUMBER_INT);
 						$cdate = date("Y-m-d");
-						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_SANITIZE_STRING);
+						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_UNSAFE_RAW);
 						$sharelink = bin2hex(random_bytes(25));
 						$edate = filter_var($_POST['expiredate'], FILTER_SANITIZE_NUMBER_INT);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
@@ -246,6 +246,7 @@ function rsfolderjpg($filename) {
 }
 
 function showPage($thumbnails, $dir) {
+	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
 	$maxfiles = ini_get("max_file_uploads");
 	$page = "<!DOCTYPE html>
@@ -261,12 +262,11 @@ function showPage($thumbnails, $dir) {
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
 			";
-
 	$aarr = explode('/',$dir);
 	$path = "";
 	$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
 	foreach ($aarr as $folder) {
-		$path = urlencode($path.'/'.$folder);
+		$path = $path.'/'.$folder;
 		if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
 	}
 	$page.= "</head>
@@ -280,6 +280,10 @@ function showPage($thumbnails, $dir) {
 	$page.="
 	<script>
 		document.onreadystatechange = function() {
+			let ntitle = '$gal';
+			let btitle = ntitle.split('/');
+			let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
+			window.parent.document.title = ttitle;
 			if (document.readyState !== 'complete') {
 				aLoader('hidden');
 			}
@@ -569,6 +573,7 @@ function showGallery($requestedDir, $offset = 0) {
 	
 	global $pictures_path, $rcmail, $label_max_length;
 	$dbh = rcmail_utils::db();
+	$requestedDir = ltrim(rawurldecode($requestedDir), '/');
 	$thumbdir = $pictures_path.$requestedDir;
 	$current_dir = $thumbdir;
 	$forbidden = $rcmail->config->get('skip_objects', false);

@@ -309,6 +309,7 @@ body {
 	overflow-y: scroll;
 	padding-top: 48px;
 	height: calc(100% - 64px);
+	background-color: white;
 }
 a {
 	color: #333333;
@@ -527,7 +528,7 @@ footer a {
     top: 0;
     transition: top .3s;
     display: block;
-    z-index: 1;
+    z-index: 2;
     left: 0;
     display: inline-flex;
     overflow: hidden;
@@ -580,10 +581,11 @@ footer a {
 }
 #btm {
     height: 50px;
-    z-index: 100;
-    position: absolute;
+    /* z-index: 100;
+	position: absolute;
+	bottom: 0;*/
     width: 10px;
-    bottom: 0;
+    
 }
 #header h2 span {
     font-size: small;

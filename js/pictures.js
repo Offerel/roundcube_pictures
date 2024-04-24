@@ -223,6 +223,7 @@ function selectShare() {
 	document.getElementById('rsh').disabled = true;
 	document.getElementById('never').checked = false;
 	document.getElementById('link').value = '';
+	document.getElementById('link').style.visibility = "hidden";
 	document.getElementById('sbtn').style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
@@ -388,6 +389,10 @@ function delete_album() {
 
 function sharepicture() {
 	var pictures = [];
+	let sbtn = document.getElementById('sbtn');
+	sbtn.classList.add('loading');
+	let link = document.getElementById('link');
+	link.style.visibility = "hidden";
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
 		const urlParams = new URL($(this)[0].previousElementSibling.firstChild.src).searchParams;
 		pictures.push(urlParams.get('file'));
@@ -404,20 +409,20 @@ function sharepicture() {
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000)
 		},
 		success: function(a) {
-			let link = document.getElementById('link');
 			const url = new URL(location.href);
 			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
 			$("#link").contents().get(0).nodeValue = nurl;
 			link.style.visibility = "visible";
-			document.getElementById('scpy').removeEventListener('click', copyLink);
-			document.getElementById('scpy').addEventListener('click', copyLink);
-			document.getElementById('sbtn').style.visibility = "hidden";
+			sbtn.classList.remove('loading');
+			sbtn.style.visibility = "hidden";
 		}
 	});
 }
 
 function copyLink() {
-	navigator.clipboard.writeText(document.getElementById('link').innerText);
+	let link = document.getElementById('link').innerText;
+	console.log("copylink", link);
+	navigator.clipboard.writeText(link);
 	document.getElementById('share_edit').style.display='none';
 	window.parent.document.getElementById('info').style.display = 'none';
 	return false;
