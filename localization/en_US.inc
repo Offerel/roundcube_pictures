@@ -59,4 +59,5 @@ $labels['ptheme'] = "Theme";
 $labels['theme_dark'] = "Dark";
 $labels['theme_dynamic'] = "Dynamic";
 $labels['thumbs_pr_page'] = "Thumbnail Count";
+$labels['pmargins'] = "Margin";
 ?>

@@ -59,4 +59,5 @@ $labels['ptheme'] = "Theme";
 $labels['pthemedark'] = "Dunkel";
 $labels['pthemedynamic'] = "Dynamisch";
 $labels['thumbs_pr_page'] = "Anzahl Thumbnails";
+$labels['pmargins'] = "Abstand";
 ?>

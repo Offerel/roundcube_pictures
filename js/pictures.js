@@ -26,7 +26,7 @@ window.onload = function(){
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 3,
+			margins: 7,
 			border: 0,
 			lastRow: 'nojustify',
 			captions: false,

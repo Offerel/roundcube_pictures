@@ -134,6 +134,12 @@ class pictures extends rcube_plugin {
 														'title'=> html::label($field_id, $this->gettext('thumbs_pr_page')),
 														'content'=> $input->show($rcmail->config->get('thumbs_pr_page')));
 
+		$field_id='pmargins';
+		$input = new html_inputfield(array('name' => 'pmargins', 'id' => $field_id));
+		$p['blocks']['main']['options']['pmargins'] = array(
+														'title'=> html::label($field_id, $this->gettext('pmargins')),
+														'content'=> $input->show($rcmail->config->get('pmargins')));
+
 		return $p;
 	}
 
@@ -142,7 +148,8 @@ class pictures extends rcube_plugin {
 
             $p['prefs'] = array(
                 'ptheme'		=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
-				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST))
+				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
+				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST))
             );
 		}
 

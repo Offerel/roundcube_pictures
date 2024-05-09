@@ -247,6 +247,7 @@ function rsfolderjpg($filename) {
 function showPage($thumbnails, $dir) {
 	$rcmail = rcmail::get_instance();
 	$theme = $rcmail->config->get('ptheme');
+	$pmargins = $rcmail->config->get('pmargins');
 	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
 	$maxfiles = ini_get("max_file_uploads");
@@ -310,7 +311,7 @@ function showPage($thumbnails, $dir) {
 		$('#folders').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 7,
+			margins: $pmargins,
 			border: 0,
 			rel: 'folders',
 			lastRow: 'justify',
@@ -321,7 +322,7 @@ function showPage($thumbnails, $dir) {
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 9,
+			margins: $pmargins,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
