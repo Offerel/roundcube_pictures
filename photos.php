@@ -40,7 +40,6 @@ if (!empty($rcmail->user->ID)) {
 }
 
 $page_navigation = "";
-//$breadcrumb_navigation = "";
 $thumbnails = "";
 $new = "";
 $images = "";
@@ -267,17 +266,16 @@ function showPage($thumbnails, $dir) {
 			";
 	$aarr = explode('/',$dir);
 	$path = "";
-	//$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
 	$albumnav = "<li><a href='?p='>Start</a></li>";
 	foreach ($aarr as $folder) {
 		$path = $path.'/'.$folder;
-		//if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
 		if(strlen($folder) > 0) $albumnav.= "<li><a href='?p=$path'>$folder</a></li>";
 	}
 	$page.= "</head>
 	\t\t<body class='picbdy' onload='count_checks();'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
-	\t\t\t<div id='header' style='position: absolute; top: -8px;'>
+	<!-- \t\t\t<div id='header' style='position: absolute; top: -8px;'> -->
+	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
 	\t\t\t\t\t$albumnav
 	\t\t\t\t</ul>
@@ -294,8 +292,9 @@ function showPage($thumbnails, $dir) {
 			if (document.readyState !== 'complete') {
 				aLoader('hidden');
 			}
-
-			let headerN = document.getElementById('header');
+			
+			let headerN = document.querySelector('#header .breadcrumb');
+			
 			headerN.lastElementChild.addEventListener('click', function(e){
 				if(headerN.childElementCount > 1) {
 					e.preventDefault();

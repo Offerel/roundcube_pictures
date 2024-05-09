@@ -57,7 +57,6 @@ $labels['exif_geo'] = "Auf Karte anzeigen";
 
 $labels['ptheme'] = "Theme";
 $labels['pthemedark'] = "Dunkel";
-$labels['pthemelight'] = "Hell";
 $labels['pthemedynamic'] = "Dynamisch";
 $labels['thumbs_pr_page'] = "Anzahl Thumbnails";
 ?>

@@ -1,15 +1,9 @@
 body {
     background-color: #212529;
 }
-.breadcrumbs__item {
+ul.breadcrumb {
     color: white;
 }
-.breadcrumbs__item:before {
-    background: #cbd2d9;
-}
-.breadcrumbs__item:after, .breadcrumbs__item:before {
-    background: #212529;
-}
-.breadcrumbs__item:hover:not(:last-child), .breadcrumbs__item:hover:not(:last-child):after {
-    background: #374549;
+ul.breadcrumb a {
+    color: white;
 }
