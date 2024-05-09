@@ -5,6 +5,9 @@ html {
 #galdiv a {
 	border: 1px solid #0000001a;
 }
+#images {
+    padding: 0 0 10px 0;
+}
 .mmn-drop {
 	opacity: .7;
 	border: 1px dashed #00386f;
@@ -307,7 +310,7 @@ body {
 	color: #333;
 	margin: 7px;
 	overflow-y: scroll;
-	padding-top: 48px;
+/*	padding-top: 48px; */
 	height: calc(100% - 64px);
 	background-color: white;
 }
@@ -533,6 +536,20 @@ footer a {
     display: inline-flex;
     overflow: hidden;
 }
+ul.breadcrumb {
+    padding: 10px 16px;
+    list-style: none;
+    background-color: #eee;
+}
+ul.breadcrumb li {
+    display: inline;
+    font-size: 18px;
+}
+ul.breadcrumb li+li:before {
+    content: '/\00a0';
+    padding: 8px;
+}
+/*
 .breadcrumbs__item {
 	color: #333;
 	outline: none;
@@ -569,6 +586,7 @@ footer a {
 .breadcrumbs__item:last-child:hover:not(:first-child) {
 	color: cornflowerblue;
 }
+*/
 .glightbox:hover::before {
     content: ' ';
     background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 50%);

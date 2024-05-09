@@ -40,7 +40,7 @@ if (!empty($rcmail->user->ID)) {
 }
 
 $page_navigation = "";
-$breadcrumb_navigation = "";
+//$breadcrumb_navigation = "";
 $thumbnails = "";
 $new = "";
 $images = "";
@@ -246,6 +246,8 @@ function rsfolderjpg($filename) {
 }
 
 function showPage($thumbnails, $dir) {
+	$rcmail = rcmail::get_instance();
+	$theme = $rcmail->config->get('ptheme');
 	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
 	$maxfiles = ini_get("max_file_uploads");
@@ -255,6 +257,7 @@ function showPage($thumbnails, $dir) {
 			<title>$gal</title>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
+			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
@@ -264,16 +267,20 @@ function showPage($thumbnails, $dir) {
 			";
 	$aarr = explode('/',$dir);
 	$path = "";
-	$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
+	//$albumnav = "<a class='breadcrumbs__item' href='?p='>Start</a>";
+	$albumnav = "<li><a href='?p='>Start</a></li>";
 	foreach ($aarr as $folder) {
 		$path = $path.'/'.$folder;
-		if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
+		//if(strlen($folder) > 0) $albumnav.= "<a class='breadcrumbs__item' href='?p=$path'>$folder</a>";
+		if(strlen($folder) > 0) $albumnav.= "<li><a href='?p=$path'>$folder</a></li>";
 	}
 	$page.= "</head>
 	\t\t<body class='picbdy' onload='count_checks();'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
 	\t\t\t<div id='header' style='position: absolute; top: -8px;'>
-	\t\t\t\t$albumnav
+	\t\t\t\t<ul class='breadcrumb'>
+	\t\t\t\t\t$albumnav
+	\t\t\t\t</ul>
 	\t\t\t</div>
 	\t\t\t<div id=\"galdiv\">";
 	$page.= $thumbnails;
@@ -315,7 +322,7 @@ function showPage($thumbnails, $dir) {
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			maxRowHeight: 220,
-			margins: 3,
+			margins: 9,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',

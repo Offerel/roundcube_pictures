@@ -3,8 +3,6 @@ $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to th
 $config['webp_path'] = '/path/to/thmbs/%u/webp/'; // Absolute path to webp version of image. Use %u for the username
 $config['thumb_path'] = '/path/to/thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
 $config['swidth'] = 1920; // width for webp version
-$config['date_format'] = "d.m.Y"; // please see https://secure.php.net/manual/de/function.date.php
-$config['time_format'] = "H:i"; // please see https://secure.php.net/manual/de/function.date.php 
 $config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!
@@ -16,4 +14,5 @@ $config['dummy_files'] = false; // If set to true, deleted and moved images are 
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file will be automatically removed
 $config['debug'] = false; // If set true, debug messages are displayed
+$config['ptheme'] = "light";
 ?>

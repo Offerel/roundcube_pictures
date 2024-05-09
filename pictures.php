@@ -4,7 +4,7 @@
  *
  * @version 1.4.16
  * @author Offerel
- * @copyright Copyright (c) 2023, Offerel
+ * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
  */
 class pictures extends rcube_plugin {
@@ -99,7 +99,55 @@ class pictures extends rcube_plugin {
 			$rcmail->output->set_env('refresh_interval', 0);
 		}
 
+		if($rcmail->task == 'settings') {
+			$this->add_hook('preferences_sections_list', array($this, 'preferences_sections_list'));
+			$this->add_hook('preferences_list', array($this, 'preferences_list'));
+			$this->add_hook('preferences_save', array($this, 'preferences_save'));
+		//	$this->include_script('addon.js');
+		}
+
 		$this->add_hook('render_page', [$this, 'checkbroken']);
+	}
+
+	function preferences_sections_list($p) {		
+		$p['list']['pictures'] = array('id' => 'pictures', 'section' => $this->gettext('pictures'));
+		return($p);
+	}
+
+	function preferences_list($p) {
+		if ($p['section'] != 'pictures') {
+            return $p;
+		}
+
+		$rcmail = rcmail::get_instance();
+		$p['blocks']['main']['name']=$this->gettext('pictures');
+
+		$field_id='ptheme';
+		$select   = new html_select(array('name' => 'ptheme', 'id' => $field_id));
+		foreach (array("light", "dark", "dynamic") as $m) {$select->add($this->gettext('ptheme'.$m), $m);}
+		$p['blocks']['main']['options']['ptheme'] = array(
+														'title'=> html::label($field_id, $this->gettext('ptheme')),
+														'content'=> $select->show($rcmail->config->get('ptheme')));
+
+		$field_id='thumbs_pr_page';
+		$input = new html_inputfield(array('name' => 'thumbs_pr_page', 'id' => $field_id));
+		$p['blocks']['main']['options']['thumbs_pr_page'] = array(
+														'title'=> html::label($field_id, $this->gettext('thumbs_pr_page')),
+														'content'=> $input->show($rcmail->config->get('thumbs_pr_page')));
+
+		return $p;
+	}
+
+	function preferences_save($p) {
+		if ($p['section'] == 'pictures') {
+
+            $p['prefs'] = array(
+                'ptheme'		=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
+				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST))
+            );
+		}
+
+        return $p;
 	}
 	
 	function change_requestdir() {

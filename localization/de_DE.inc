@@ -54,4 +54,10 @@ $labels['exif_flash'] = "Blitz";
 $labels['exif_meter'] = "Belichtungsmessung";
 $labels['exif_whiteb'] = "Weißabgleich";
 $labels['exif_geo'] = "Auf Karte anzeigen";
+
+$labels['ptheme'] = "Theme";
+$labels['pthemedark'] = "Dunkel";
+$labels['pthemelight'] = "Hell";
+$labels['pthemedynamic'] = "Dynamisch";
+$labels['thumbs_pr_page'] = "Anzahl Thumbnails";
 ?>
