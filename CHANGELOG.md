@@ -1,3 +1,7 @@
+### v1.4.16
+- Add settings page
+- Fix navigation
+  
 ### v1.4.15
 - Fix 0 byte thumbnails
 - Fix CSS
