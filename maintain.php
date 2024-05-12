@@ -15,6 +15,7 @@ $rcmail = rcube::get_instance();
 $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
+$broken = array();
 $thumbsize = $rcmail->config->get('thumb_size', false);
 $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
@@ -37,7 +38,6 @@ foreach($users as $user) {
 	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
 	$webp_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)), '/');
 	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
-	$broken = array();
 	switch($mode) {
 		case "add":
 			logm("Checking $username with mode 'add'");
@@ -81,9 +81,31 @@ foreach($users as $user) {
 }
 
 $endtime = time();
-$tdiff = gmdate("H:i:s", $endtime - $starttime);
-logm("Maintenance finished after $tdiff.");
-die();
+$sdiff = $endtime - $starttime;
+$tdiff = gmdate("H:i:s", $sdiff);
+$message = "Pictures maintenance finished after $tdiff. ".count($broken)." broken media found.";
+logm($message);
+
+$authHeader = base64_encode($rcmail->config->get('pntpntfy_usrfy') . ":" . $rcmail->config->get('pntfy_pwd'));
+$purl = $rcmail->config->get('pntfy_url');
+
+logm($sdiff."/".$rcmail->config->get('pntfy_sec'), 4);
+
+if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($authHeader) > 4 && strlen($purl) > 4) {
+	$res = file_get_contents($purl, false, stream_context_create([
+		'http' => [
+			'method' => 'POST',
+			'header' =>
+				"Content-Type: text/plain\r\n" .
+				"Authorization: Basic $authHeader\r\n".
+				"Title: Roundcube Pictures\r\n" .
+				"Priority: 3\r\n" .
+				"Tags: Roundcube,Pictures",
+			'content' => $message
+		]
+	]));
+	logm($res, 4);
+}
 
 function logm($message, $mmode = 3) {
 	global $rcmail;

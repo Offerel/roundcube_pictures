@@ -1,12 +1,11 @@
 <?php
+// Administrative settings
 $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
 $config['webp_path'] = '/path/to/thmbs/%u/webp/'; // Absolute path to webp version of image. Use %u for the username
 $config['thumb_path'] = '/path/to/thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
 $config['swidth'] = 1920; // width for webp version
-$config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!
-$config['pmargins'] = 7;
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
 $config['display_exif'] = 1; // Take care, even if not displayed EXIF are still readable for visitors. May be a good idea to erase EXIF data...
 $config['convert_hevc'] = true; // If set to true, only hevc codec videos will be converted to mp4
@@ -15,5 +14,15 @@ $config['dummy_files'] = false; // If set to true, deleted and moved images are 
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file will be automatically removed
 $config['debug'] = false; // If set true, debug messages are displayed
-$config['ptheme'] = "light";
+
+$config['pntfy'] = false;
+$config['pntfy_url'] = "https://ntfy.yourdomain.com/channel";
+$config['pntfy_usr'] = "";
+$config['pntfy_pwd'] = "";
+$config['pntfy_sec'] = 900;
+
+// User default settings
+$config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page
+$config['pmargins'] = 7; // Margin between thumbnails
+$config['ptheme'] = "dynamic";
 ?>

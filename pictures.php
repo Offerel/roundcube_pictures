@@ -24,6 +24,7 @@ class pictures extends rcube_plugin {
 		}
 
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {
+			include_once('config.inc.php.dist');
 			include_once('config.inc.php');
 			$link = filter_var($_GET['slink'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 			$dbh = $rcmail->get_dbh();
