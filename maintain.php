@@ -334,7 +334,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				$broken[] = $ppath;
 			}
 
-			exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
+			exec("$ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
 
 			if($hevc && $output[0] != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
