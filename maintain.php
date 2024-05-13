@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.16
+ * @version 1.4.17
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -38,6 +38,7 @@ foreach($users as $user) {
 	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
 	$webp_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)), '/');
 	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
+
 	switch($mode) {
 		case "add":
 			logm("Checking $username with mode 'add'");
@@ -56,7 +57,7 @@ foreach($users as $user) {
 			}
 			break;
 		default:
-			logm("Search pictures for $username");
+			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 
 			if(is_dir($thumb_basepath)) {
@@ -83,33 +84,36 @@ foreach($users as $user) {
 $endtime = time();
 $sdiff = $endtime - $starttime;
 $tdiff = gmdate("H:i:s", $sdiff);
-$message = "Pictures maintenance finished after $tdiff. ".count($broken)." broken media found.";
+$message = "Pictures maintenance finished after $tdiff. ".count($broken)." corrupt media found.";
 logm($message);
 
-$authHeader = base64_encode($rcmail->config->get('pntpntfy_usrfy') . ":" . $rcmail->config->get('pntfy_pwd'));
+$authHeader = base64_encode($rcmail->config->get('pntfy_usr'). ":".$rcmail->config->get('pntfy_pwd'));
 $purl = $rcmail->config->get('pntfy_url');
 
-logm($sdiff."/".$rcmail->config->get('pntfy_sec'), 4);
-
 if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($authHeader) > 4 && strlen($purl) > 4) {
-	$res = file_get_contents($purl, false, stream_context_create([
+
+	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 		'http' => [
 			'method' => 'POST',
 			'header' =>
-				"Content-Type: text/plain\r\n" .
+				"Content-Type: text/plain\r\n".
 				"Authorization: Basic $authHeader\r\n".
-				"Title: Roundcube Pictures\r\n" .
-				"Priority: 3\r\n" .
+				"Title: Roundcube Pictures\r\n".
+				"Priority: 3\r\n".
 				"Tags: Roundcube,Pictures",
-			'content' => $message
+			'content' => $message." For details please check maintenance.log."
 		]
-	]));
-	logm($res, 4);
+	])), true);
+
+	if(isset($rarr['id'])) 
+		logm("ntfy push succesfully send");
+	else
+		logm("ntfy push failed.", 2);
 }
 
 function logm($message, $mmode = 3) {
 	global $rcmail;
-	$dtime = date("d.m.Y H:i:s");
+	$dtime = date("Y-m-d H:i:s");
 	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
 	$debug = $rcmail->config->get('debug', false);
 	switch($mmode) {
@@ -281,7 +285,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		logm("createthumb: $org_pic is image", 4);
 		list($width, $height, $type) = getimagesize($org_pic);
 		$newwidth = ceil($width * $thumbsize / $height);
-		if($newwidth <= 0) logm("Calculating the width failed.", 2);
+		if($newwidth <= 0) logm("Calculate width failed.", 2);
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
@@ -316,15 +320,23 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		} else {
 			$ppath = str_replace($pictures_basepath, '', $org_pic);
 			$broken[] = $ppath;
-			logm("Can't create thumbnail for $ppath. Picture is broken",1);
+			logm("Can't create thumbnail $ppath. Picture seems corrupt",1);
 		}
 	} elseif ($type == "video") {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
-			exec($ffmpeg." -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1");
-			logm("Save thmb: $thumb_pic", 4);
-			$vcodec = exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
-			if($hevc && "$vcodec" != "hevc") return false;
+			exec($ffmpeg." -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1", $output, $error);
+			if($error == 0) {
+				logm("Thumbnail $thumb_pic saved", 4);
+			} else {
+				logm("Video $org_pic seems corrupt. ".$output[0], 2);
+				$ppath = str_replace($pictures_basepath, '', $org_pic);
+				$broken[] = $ppath;
+			}
+
+			exec("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
+
+			if($hevc && $output[0] != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			if(!file_exists($hidden_vid)) {

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `pic_broken` (
-  `broken_id` int(11) NOT NULL,
+  `broken_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned DEFAULT NULL,
   `pic_path` text NOT NULL,
   PRIMARY KEY (`broken_id`),
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `pic_pictures` (
 ) ENGINE=InnoDB AUTO_INCREMENT=27230 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `pic_shared_pictures` (
-  `shared_pic_id` int(11) NOT NULL,
+  `shared_pic_id` int(11) NOT NULL AUTO_INCREMENT,
   `share_id` int(11) NOT NULL,
   `user_id` int(10) unsigned DEFAULT NULL,
   `pic_id` int(11) DEFAULT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `pic_shared_pictures` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `pic_shares` (
-  `share_id` int(11) NOT NULL,
+  `share_id` int(11) NOT NULL AUTO_INCREMENT,
   `share_name` text NOT NULL,
   `share_link` text NOT NULL,
   `expire_date` int(11) DEFAULT NULL,

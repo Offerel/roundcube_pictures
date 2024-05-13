@@ -1,3 +1,7 @@
+### v1.4.17
+- Add support for ntfy
+- Fix handling of corrupt video
+  
 ### v1.4.16
 - Add settings page
 - Fix navigation
