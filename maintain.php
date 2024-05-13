@@ -60,16 +60,19 @@ foreach($users as $user) {
 			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 
+			logm("read_thumbs");
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
 
+			logm("read_webp");
 			if(is_dir($webp_basepath)) {
 				$path = $webp_basepath;
 				read_webp($path, $webp_basepath, $pictures_basepath);
 			}
 			
+			logm("rmexpires");
 			rmexpires();
 			break;
 	}
@@ -255,9 +258,16 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
 
-	if(file_exists($thumb_pic)) {
-		logm("Ignoring: $thumb_pic > Thumbnail exists", 4);
-		return false;
+	$otime = filemtime($org_pic);
+	$ttime = filemtime($thumb_pic);
+
+	if(file_exists($thumb_pic) && $otime == $ttime) {
+		if($otime == $ttime) {
+			logm("Ignore $thumb_pic > Thumbnail exists", 4);
+			return false;
+		} else {
+			logm("Rescan existing $thumb_pic", 4);
+		}
 	}
 
 	$target = "";
@@ -312,8 +322,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_pic, 80);
-				logm("Save thmb: $thumb_pic", 4);
+				imagejpeg($target, $thumb_pic, 90);
+				touch($thumb_pic, filemtime($org_pic));
+				logm("Thumbnail: $thumb_pic", 4);
 			} else {
 				logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
 			}
