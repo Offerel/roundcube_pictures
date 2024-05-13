@@ -3,6 +3,7 @@
 - Add Rescan of changed media
 - Speedup maintenance
 - Fix handling of corrupt video
+- Fix remove album no feedback
   
 ### v1.4.16
 - Add settings page

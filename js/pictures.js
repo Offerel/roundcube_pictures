@@ -373,6 +373,8 @@ function move_album() {
 function delete_album() {
 	var a = document.getElementById("album_org").value;
 	if(confirm(rcmail.gettext("galdconfirm", "pictures"))) {
+		let dalb = document.getElementById('dalb');
+		dalb.classList.add("loading");
 		$.ajax({
 			type: "POST",
 			url: "plugins/pictures/photos.php",
@@ -381,6 +383,7 @@ function delete_album() {
 				src: a
 			},
 			success: function(a) {
+				dalb.classList.remove("loading");
 				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs())
 			}
 		})
