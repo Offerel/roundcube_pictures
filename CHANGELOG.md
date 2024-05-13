@@ -1,6 +1,7 @@
 ### v1.4.17
 - Add support for ntfy
 - Add Rescan of changed media
+- Speedup maintenance
 - Fix handling of corrupt video
   
 ### v1.4.16

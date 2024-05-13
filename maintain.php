@@ -60,19 +60,16 @@ foreach($users as $user) {
 			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 
-			logm("read_thumbs");
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
 				read_thumbs($path, $thumb_basepath, $pictures_basepath);
 			}
 
-			logm("read_webp");
 			if(is_dir($webp_basepath)) {
 				$path = $webp_basepath;
 				read_webp($path, $webp_basepath, $pictures_basepath);
 			}
 			
-			logm("rmexpires");
 			rmexpires();
 			break;
 	}
@@ -148,8 +145,11 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 					$pathparts = pathinfo($path."/".$file);
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
 						$exifArr = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
-						if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
-						todb($path."/".$file, $user, $pictures_basepath, $exifArr);
+						if($exifArr) {
+							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
+							todb($path."/".$file, $user, $pictures_basepath, $exifArr);
+						}
+						
 						checkorphaned($path."/".$file);
 					}
 				}
@@ -336,7 +336,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	} elseif ($type == "video") {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
-			exec($ffmpeg." -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1", $output, $error);
+			exec($ffmpeg." -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1", $output, $error);
 			if($error == 0) {
 				logm("Thumbnail $thumb_pic saved", 4);
 			} else {
@@ -344,9 +344,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				$ppath = str_replace($pictures_basepath, '', $org_pic);
 				$broken[] = $ppath;
 			}
-
-			exec("$ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
-
+			
+			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
+			
 			if($hevc && $output[0] != "hevc") return false;
 			$pathparts = pathinfo($org_pic);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
@@ -414,6 +414,7 @@ function checkorphaned($file) {
 function rmexpires() {
 	global $db;
 	$atime = time();
+	logm("Remove expired shares from DB");
 	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
 }
 
