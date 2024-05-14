@@ -92,8 +92,8 @@ if(isset($_FILES['galleryfiles'])) {
 				if($fname == 'folder.jpg') {
 					rsfolderjpg("$pictures_path$folder/$fname");
 				} else {
-					createthumb("$pictures_path$folder/$fname", $pictures_path);
-					todb("$pictures_path$folder/".$fname, $rcmail->user->ID, $pictures_path);
+					$exif = createthumb("$pictures_path$folder/$fname", $pictures_path);
+					todb("$pictures_path$folder/".$fname, $rcmail->user->ID, $pictures_path, $exif);
 				}
 				
 				$test[] = array('message' => 'Upload successful.', 'type' => 'info');
@@ -945,8 +945,9 @@ function createthumb($image) {
 	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
-	if(file_exists($thumbnailpath)) return false;
-	
+
+	if(file_exists($thumbnailpath) && filemtime($image) == filemtime($thumbnailpath)) return false;
+
 	$thumbpath = pathinfo($thumbnailpath)['dirname'];
 		
 	if (!is_dir($thumbpath)) {
@@ -955,7 +956,11 @@ function createthumb($image) {
 		}
 	}
 
-	if (preg_match("/.jpg$|.jpeg$|.png$/i", $image)) {
+	$exif = [];
+	$mimetype = mime_content_type($file);
+	$mtype = explode('/', $mimetype)[0];
+
+	if ($mtype == "image") {
 		list($width, $height, $type) = getimagesize($image);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) error_log("Pictures: Calculating the width failed.");
@@ -970,8 +975,10 @@ function createthumb($image) {
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		imagedestroy($source);
-		$exif = @exif_read_data($image, 0, true);
-		$ort = (isset($exif['IFD0']['Orientation'])) ? $ort = $exif['IFD0']['Orientation']:NULL;
+
+		$exif = readEXIF($image);
+		$ort = (isset($exifArr['16'])) ? $ort = $exifArr['16']:NULL;
+
 		switch ($ort) {
 			case 3: $degrees = 180; break;
 			case 4: $degrees = 180; break;
@@ -984,16 +991,18 @@ function createthumb($image) {
 		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
 		if(is_writable($thumbpath)) {
-			imagejpeg($target, $thumbnailpath, 85);
+			imagejpeg($target, $thumbnailpath, 90);
+			touch($thumbnailpath, filemtime($image));
 		} else {
 			error_log("Pictures: Can't write Thumbnail. Please check your directory permissions.");
 		}
-	} elseif(preg_match("/.mp4$|.mpg$|.3gp$/i", $image)) {
+	} elseif ($type == "video") {
 		$ffmpeg = exec("which ffmpeg");
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);
-			exec($ffmpeg." -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
-			$vcodec = exec_shell("ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
+			exec($ffmpeg." -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
+			touch($thumbnailpath, filemtime($image));
+			$vcodec = exec_shell("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
 			$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $out, $ccmd)));
@@ -1002,29 +1011,37 @@ function createthumb($image) {
 			error_log("Pictures: ffmpeg is not installed, so video formats are not supported.");
 		}
 	}
+
+	$exif['17'] = $mimetype;
+	return $exif;
 }
 
-function todb($file, $user, $pictures_basepath) {
+function todb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe;
 	$dbh = rcmail_utils::db();
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
-	$result = $dbh->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
-	if($dbh->fetch_array($result)[0] == 0) {
-		$mimetype = mime_content_type($file);
-		$type = explode('/',$mimetype)[0];
-		if($type == 'image') {
-			$exif = readEXIF($file);
-			$exif['17'] = $mimetype;
-			$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
-			$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
-		} else {
-			$exif['17'] = $mimetype;
-			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
-			$taken = (empty($taken)) ? filemtime($file):$taken;
-		}
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
-		$dbh->query($query);
+	$result = $dbh->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
+	$rarr = $db->fetch_array($result);
+	$count = $rarr[0];
+	$id = $rarr[1];
+
+	$type = explode('/',$exif[17])[0];
+	if($type == 'image') {
+		$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
+	} else {
+		$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
+		$taken = (empty($taken)) ? filemtime($file):$taken;
 	}
+
+	$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+
+	if($count == 0) {
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
+	} else {
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
+	}
+
+	$dbh->query($query);
 }
 
 function rmdb($file, $user) {

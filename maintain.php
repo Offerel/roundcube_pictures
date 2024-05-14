@@ -262,7 +262,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$otime = filemtime($org_pic);
 	$ttime = filemtime($thumb_pic);
 
-	if(file_exists($thumb_pic) && $otime == $ttime) {
+	if(file_exists($thumb_pic)) {
 		if($otime == $ttime) {
 			logm("Ignore $thumb_pic > Thumbnail exists", 4);
 			return false;
@@ -367,7 +367,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
-	
+	$exifArr['17'] = $mimetype;
 	return $exifArr;
 }
 
@@ -377,7 +377,6 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
 
 	$rarr = $db->fetch_array($result);
-
 	$count = $rarr[0];
 	$id = $rarr[1];
 
