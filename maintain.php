@@ -84,7 +84,8 @@ foreach($users as $user) {
 $endtime = time();
 $sdiff = $endtime - $starttime;
 $tdiff = gmdate("H:i:s", $sdiff);
-$message = "Pictures maintenance finished after $tdiff. ".count($broken)." corrupt media found.";
+$message = "Pictures maintenance finished in $tdiff";
+$message.= (count($broken) > 0) ? ". ".count($broken)." corrupt media found.":"";
 logm($message);
 
 $authHeader = base64_encode($rcmail->config->get('pntfy_usr'). ":".$rcmail->config->get('pntfy_pwd'));
@@ -101,7 +102,7 @@ if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') &
 				"Title: Roundcube Pictures\r\n".
 				"Priority: 3\r\n".
 				"Tags: Roundcube,Pictures",
-			'content' => $message." For details please check maintenance.log."
+			'content' => $message."\r\n\r\nFor details please check maintenance.log"
 		]
 	])), true);
 
@@ -214,7 +215,6 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-	//$exif = exif_read_data($ofile);
 	
 	switch($exif['16']) {
 		case 3:
