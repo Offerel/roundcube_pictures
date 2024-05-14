@@ -145,8 +145,9 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 				} else {
 					$pathparts = pathinfo($path."/".$file);
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
-						$exifArr = createthumb($path."/".$file, $thumb_basepath, $pictures_basepath);
-						if($exifArr) {
+						$exifArr = createthumb("$path/$file", $thumb_basepath, $pictures_basepath);
+						
+						if(is_array($exifArr)) {
 							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
 							todb($path."/".$file, $user, $pictures_basepath, $exifArr);
 						}
@@ -266,7 +267,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("Ignore $thumb_pic > Thumbnail exists", 4);
 			return false;
 		} else {
-			logm("Rescan existing $thumb_pic", 4);
+			logm("Re-Scan existing $thumb_pic", 4);
 		}
 	}
 
@@ -290,6 +291,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 
 	$exifArr = [];
+	$exifArr['17'] = $mimetype;
 
 	if ($type == "image") {
 		logm("createthumb: $org_pic is image", 4);
@@ -337,6 +339,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
 			exec($ffmpeg." -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1", $output, $error);
+			touch($thumb_pic, filemtime($org_pic));
 			if($error == 0) {
 				logm("Thumbnail $thumb_pic saved", 4);
 			} else {
@@ -347,7 +350,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			
 			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
 			
-			if($hevc && $output[0] != "hevc") return false;
+			if($hevc && $output[0] != "hevc") return $exifArr;
+
 			$pathparts = pathinfo($org_pic);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			if(!file_exists($hidden_vid)) {
@@ -363,38 +367,45 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
-	$exifArr['17'] = $mimetype;
+	
 	return $exifArr;
 }
 
 function todb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
-	$result = $db->query("SELECT count(*) FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
-	if($db->fetch_array($result)[0] == 0) {
-		logm("Add $file to db", 4);
-		$type = explode('/',mime_content_type($file))[0];
-		if($type == 'image') {
-			$taken = (isset($exif[5]) && is_int($exif[5])) ? $exif[5]:filemtime($file);
-		} else {
-			$taken = shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
-			$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
-		}
+	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
 
-		$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+	$rarr = $db->fetch_array($result);
 
-		$db->startTransaction();
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
-		$db->query($query);
-		if($db->is_error()) {
-			sleep(1);
-			$db->query($query);
-			$db->endTransaction();
-		} else {
-			$db->endTransaction();
-		}
+	$count = $rarr[0];
+	$id = $rarr[1];
+
+	$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+	if($type == 'image') {
+		$taken = (isset($exif[5]) && is_int($exif[5])) ? $exif[5]:filemtime($file);
 	} else {
-		logm("Ignoring: $file > Exists in db", 4);
+		$taken = shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
+		$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
+	}
+
+	if($count == 0) {
+		logm("Add $file to database", 4);
+		$type = explode('/',mime_content_type($file))[0];
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
+	} else {
+		logm("Update database for $file", 4);
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
+	}
+
+	$db->startTransaction();
+	$db->query($query);
+	if($db->is_error()) {
+		sleep(1);
+		$db->query($query);
+		$db->endTransaction();
+	} else {
+		$db->endTransaction();
 	}
 }
 
