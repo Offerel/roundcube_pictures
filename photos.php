@@ -314,7 +314,7 @@ function showPage($thumbnails, $dir) {
 			margins: $pmargins,
 			border: 0,
 			rel: 'folders',
-			lastRow: 'justify',
+			lastRow: 'nojustify',
 			captions: false,
 			randomize: false,
 		});
