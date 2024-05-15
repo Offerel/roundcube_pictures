@@ -92,7 +92,6 @@ $authHeader = base64_encode($rcmail->config->get('pntfy_usr'). ":".$rcmail->conf
 $purl = $rcmail->config->get('pntfy_url');
 
 if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($authHeader) > 4 && strlen($purl) > 4) {
-
 	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 		'http' => [
 			'method' => 'POST',
@@ -324,7 +323,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_pic, 90);
+				imagejpeg($target, $thumb_pic, 100);
 				touch($thumb_pic, filemtime($org_pic));
 				logm("Thumbnail: $thumb_pic", 4);
 			} else {
@@ -333,6 +332,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		} else {
 			$ppath = str_replace($pictures_basepath, '', $org_pic);
 			$broken[] = $ppath;
+			corrupt_thmb($thumbsize, $thumbpath);
 			logm("Can't create thumbnail $ppath. Picture seems corrupt",1);
 		}
 	} elseif ($type == "video") {
@@ -346,6 +346,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				logm("Video $org_pic seems corrupt. ".$output[0], 2);
 				$ppath = str_replace($pictures_basepath, '', $org_pic);
 				$broken[] = $ppath;
+				corrupt_thmb($thumbsize, $thumbpath);
 			}
 			
 			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
@@ -369,6 +370,28 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 	$exifArr['17'] = $mimetype;
 	return $exifArr;
+}
+
+function corrupt_thmb($thumbsize, $thumbpath) {
+	$sign = imagecreatefrompng('images/error2.png');
+	$background = imagecreatefromjpeg('images/defaultimage.jpg');
+
+	$sx = imagesx($sign);
+	$sy = imagesy($sign);
+	$ix = imagesx($background);
+	$iy = imagesy($background);
+
+	$size = 120;
+	imagecopyresampled($background, $sign, ($ix-$size)/2, ($iy-$size)/2, 0, 0, $size, $size, $sx, $sy);
+	$nw = ($thumbsize/$ix)*$iy;
+
+	$image_new = imagecreatetruecolor($nw, $thumbsize);
+	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
+
+	imagejpeg($image_new, $thumbpath, 100);
+	imagedestroy($sign);
+	imagedestroy($background);
+	imagedestroy($image_new);
 }
 
 function todb($file, $user, $pictures_basepath, $exif) {

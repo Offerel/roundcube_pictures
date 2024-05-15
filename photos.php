@@ -241,7 +241,7 @@ function rsfolderjpg($filename) {
 	$image = imagecreatefromjpeg($filename);
 	$image_p = imagecreatetruecolor($new_width, $new_height);
 	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $owidth, $oheight);
-	imagejpeg($image_p, $filename, 85);
+	imagejpeg($image_p, $filename, 100);
 }
 
 function showPage($thumbnails, $dir) {
@@ -970,7 +970,10 @@ function createthumb($image) {
 			case 1: $source = @imagecreatefromgif($image); break;
 			case 2: $source = @imagecreatefromjpeg($image); break;
 			case 3: $source = @imagecreatefrompng($image); break;
-			default: error_log("Pictures: Unsupported fileformat ($type)."); die();
+			default:
+				corrupt_thmb($thumbsize, $thumbpath);
+				error_log("Pictures: Unsupported fileformat ($type).");
+				die();
 		}
 		
 		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
@@ -991,7 +994,7 @@ function createthumb($image) {
 		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 		
 		if(is_writable($thumbpath)) {
-			imagejpeg($target, $thumbnailpath, 90);
+			imagejpeg($target, $thumbnailpath, 100);
 			touch($thumbnailpath, filemtime($image));
 		} else {
 			error_log("Pictures: Can't write Thumbnail. Please check your directory permissions.");
@@ -1000,7 +1003,11 @@ function createthumb($image) {
 		$ffmpeg = exec("which ffmpeg");
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);
-			exec($ffmpeg." -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1");
+			exec($ffmpeg." -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1", $output, $error);
+			if($error != 0) {
+				corrupt_thmb($thumbsize, $thumbnailpath);
+				return $exif;
+			}
 			touch($thumbnailpath, filemtime($image));
 			$vcodec = exec_shell("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
@@ -1014,6 +1021,28 @@ function createthumb($image) {
 
 	$exif['17'] = $mimetype;
 	return $exif;
+}
+
+function corrupt_thmb($thumbsize, $thumbpath) {
+	$sign = imagecreatefrompng('images/error2.png');
+	$background = imagecreatefromjpeg('images/defaultimage.jpg');
+
+	$sx = imagesx($sign);
+	$sy = imagesy($sign);
+	$ix = imagesx($background);
+	$iy = imagesy($background);
+
+	$size = 120;
+	imagecopyresampled($background, $sign, ($ix-$size)/2, ($iy-$size)/2, 0, 0, $size, $size, $sx, $sy);
+	$nw = ($thumbsize/$ix)*$iy;
+
+	$image_new = imagecreatetruecolor($nw, $thumbsize);
+	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
+
+	imagejpeg($image_new, $thumbpath, 100);
+	imagedestroy($sign);
+	imagedestroy($background);
+	imagedestroy($image_new);
 }
 
 function todb($file, $user, $pictures_basepath, $exif) {
