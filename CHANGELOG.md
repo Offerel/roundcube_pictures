@@ -4,6 +4,7 @@
 - Speedup maintenance
 - Fix handling of corrupt video
 - Fix action feedback
+- Update GLightbox to 3.2.0 (https://github.com/biati-digital/glightbox)
   
 ### v1.4.16
 - Add settings page
@@ -17,7 +18,7 @@
 - Add automatic resize folder.jpg
 - Add webp support
 - Add gallery fullscreen function
-- Add plyr locally
+- Add plyr 3.7.8 locally (https://github.com/sampotts/plyr)
 
 ### v1.4.14
 - Fixed create SQL
@@ -51,7 +52,8 @@
 - Fix lazyload multiple times the same
 - Fix nullvalue
 - Faster performance for dir listing
-- Added JustifiedGallery 3.8.1
+- Added JustifiedGallery 3.8.1 (https://github.com/miromannino/Justified-Gallery)
+- Added GLightbox 3.1.0 (https://github.com/biati-digital/glightbox)
 
 ### v1.4.9
 - Added lazyload instead of pagination
