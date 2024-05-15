@@ -470,7 +470,7 @@ function readEXIF($file) {
 		$exif_arr[0] = (isset($exif_data['Model'])) ? $exif_data['Model']:"-";
 		$exif_arr[1] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength']) . "mm":"-";
 		$exif_arr[2] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength'], 2) . "s":"-";
-		$exif_arr[3] = (isset($exif_data['FNumber'])) ? "f" . parse_fraction($exif_data['FNumber']):"-";
+		$exif_arr[3] = (isset($exif_data['ApertureFNumber'])) ? $exif_data['FNumber']:"-";
 		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
 
 		if(isset($exif_data['DateTimeDigitized']) && strpos($exif_data['DateTimeDigitized'], '0000') !== 0) {

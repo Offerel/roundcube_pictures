@@ -44,12 +44,12 @@ $labels['exif_other'] = "Anderer";
 
 $labels['exif_camera'] = "Kamera";
 $labels['exif_focalength'] = "Brennweite";
-$labels['exif_fstop'] = "F-Stopp";
+$labels['exif_fstop'] = "Blende";
 $labels['exif_ISO'] = "ISO";
 $labels['exif_date'] = "Datum";
 $labels['exif_desc'] = "Beschreibung";
 $labels['exif_sw'] = "Software";
-$labels['exif_expos'] = "Belichtung";
+$labels['exif_expos'] = "Modus";
 $labels['exif_flash'] = "Blitz";
 $labels['exif_meter'] = "Belichtungsmessung";
 $labels['exif_whiteb'] = "Weißabgleich";
