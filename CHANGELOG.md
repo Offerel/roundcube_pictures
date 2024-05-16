@@ -1,6 +1,7 @@
 ### v1.4.17
-- Add support for ntfy
-- Add Rescan of changed media
+- Added support for ntfy
+- Added Rescan of changed media
+- Added more EXIF fields 
 - Speedup maintenance
 - Fix handling of corrupt video
 - Fix action feedback

@@ -525,6 +525,7 @@ footer a {
     margin-inline: auto;
     padding-left: 20px;
     padding-right: 20px;
+	margin-right: auto !important;
 }
 #header {
     top: 0;
