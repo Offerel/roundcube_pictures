@@ -601,3 +601,7 @@ ul.breadcrumb li+li:before {
 		transform: rotate(360deg);
 	}
 }
+a.mapl {
+    border: 0 !important;
+    font-weight: 400;
+}

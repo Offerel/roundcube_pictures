@@ -572,6 +572,104 @@ function showPage($thumbnails, $dir) {
 	return $page;
 }
 
+function parseEXIF($jarr) {
+	global $rcmail;
+    if(array_key_exists('1', $jarr)) {
+        $osm_params = http_build_query(array(
+            'mlat' => str_replace(',','.',$jarr[14]),
+            'mlon' => str_replace(',','.',$jarr[15])
+        ),'','&amp;');
+
+        $gpslink ="<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+		$camera = (array_key_exists('0', $jarr) && strpos($jarr[0], explode(" ",$jarr[8])[0]) !== false) ? $jarr[0]:$jarr[8]." - ".$jarr[0];
+
+        $exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+        $exifInfo.= (array_key_exists('5', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr[5])."<br>":"";
+        $exifInfo.= (array_key_exists('9', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr[9]."<br>":"";
+        $exifInfo.= (array_key_exists('10', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$jarr[10]."<br>":"";
+        $exifInfo.= (array_key_exists('12', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$jarr[12]."<br>":"";
+        $exifInfo.= (array_key_exists('4', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr[4]."<br>":"";
+        $exifInfo.= (array_key_exists('1', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr[1]."<br>":"";
+        $exifInfo.= (array_key_exists('13', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr[13]),'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('3', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr[3]."<br>":"";
+        $exifInfo.= (array_key_exists('11', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr[11]),'pictures')."<br>":"";
+        $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+        $exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
+    } else {
+        $osm_params = http_build_query(array(
+            'mlat' => str_replace(',','.',$jarr['gpslat']),
+            'mlon' => str_replace(',','.',$jarr['gpslong'])
+        ),'','&amp;');
+
+        $gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+		if(array_key_exists('make', $jarr) && array_key_exists('camera', $jarr)) 
+			$camera = (strpos($jarr['camera'], explode(" ",$jarr['make'])[0]) !== false) ? $jarr['camera']:$jarr['make']." - ".$jarr['camera'];			
+		elseif(array_key_exists('camera', $jarr))
+			$camera = $jarr['camera'];
+
+        $exifInfo = (array_key_exists('camera', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+        $exifInfo.= (array_key_exists('lens', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['lens']."<br>":"";
+        $exifInfo.= (array_key_exists('taken', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['taken'])."<br>":"";
+        $exifInfo.= (array_key_exists('sw', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['sw']."<br>":"";
+        $exifInfo.= (array_key_exists('expmode', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext($jarr['expmode'],'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('metmode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext($jarr['metmode'],'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('exptime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['exptime']."<br>":"";
+        $exifInfo.= (array_key_exists('iso', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['iso']."<br>":"";
+        $exifInfo.= (array_key_exists('flength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['flength']."<br>":"";
+        $exifInfo.= (array_key_exists('wb', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext($jarr['wb'],'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('fnumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr['fnumber']."<br>":"";
+        $exifInfo.= (array_key_exists('flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext($jarr['flash'],'pictures')."<br>":"";
+        $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+        $exifInfo.= (array_key_exists('descrip', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['descrip']."<br>":"";
+    }
+
+    return $exifInfo;
+}
+
+function wb($val) {
+	switch($val) {
+		case 0: $str = "wb_auto"; break;
+		case 1: $str = "wb_daylight"; break;
+		case 2: $str = "wb_fluorescent"; break;
+		case 3: $str = "wb_incandescent"; break;
+		case 4: $str = "wb_flash"; break;
+		case 9: $str = "wb_fineWeather"; break;
+		case 10: $str = "wb_cloudy"; break;
+		case 11: $str = "wb_shade"; break;
+		default: $str = false;
+	}
+	return $str;
+}
+
+function flash($val) {
+	switch($val) {
+		case 0: $str = 'NotFired'; break;
+		case 1: $str = 'Fired'; break;
+		case 5: $str = 'StrobeReturnLightNotDetected'; break;
+		case 7: $str = 'StrobeReturnLightDetected'; break;
+		case 9: $str = 'Fired-CompulsoryMode'; break;
+		case 13: $str = 'Fired-CompulsoryMode-NoReturnLightDetected'; break;
+		case 15: $str = 'Fired-CompulsoryMode-ReturnLightDetected'; break;
+		case 16: $str = 'NotFired-CompulsoryMode'; break;
+		case 24: $str = 'NotFired-AutoMode'; break;
+		case 25: $str = 'Fired-AutoMode'; break;
+		case 29: $str = 'Fired-AutoMode-NoReturnLightDetected'; break;
+		case 31: $str = 'Fired-AutoMode-ReturnLightDetected'; break;
+		case 32: $str = 'Noflashfunction'; break;
+		case 65: $str = 'Fired-RedEyeMode'; break;
+		case 69: $str = 'Fired-RedEyeMode-NoReturnLightDetected'; break;
+		case 71: $str = 'Fired-RedEyeMode-ReturnLightDetected'; break;
+		case 73: $str = 'Fired-CompulsoryMode-RedEyeMode'; break;
+		case 77: $str = 'Fired-CompulsoryMode-RedEyeMode-NoReturnLightDetected'; break;
+		case 79: $str = 'Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'; break;
+		case 89: $str = 'Fired-AutoMode-RedEyeMode'; break;
+		case 93: $str = 'Fired-AutoMode-NoReturnLightDetected-RedEyeMode'; break;
+		case 95: $str = 'Fired-AutoMode-ReturnLightDetected-RedEyeMode'; break;
+		default: $str = 'NotFired';
+	}
+	return $str;
+}
+
 function showGallery($requestedDir, $offset = 0) {
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
@@ -637,14 +735,14 @@ function showGallery($requestedDir, $offset = 0) {
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
-				$exifReaden = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? json_decode($pdata[$key]['pic_EXIF']):NULL;
+				$exifInfo = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
 				$taken = $pdata[$key]['pic_taken'];
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
 					checkpermissions($current_dir."/".$file);
 					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 					$imgUrl = "simg.php?$imgParams";
-
+					/*
 					$exifInfo = "";
 					if(is_array($exifReaden)) {
 						if($exifReaden[0] != "-" && $exifReaden[8] != "-") $exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
@@ -671,6 +769,9 @@ function showGallery($requestedDir, $offset = 0) {
 					} else {
 						$caption = "";
 					}
+					*/
+
+					$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
 					
 					$files[] = array(
 						"name" => $file,
