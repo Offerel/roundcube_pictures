@@ -597,33 +597,65 @@ function parseEXIF($jarr) {
         $exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
     } else {
         $osm_params = http_build_query(array(
-            'mlat' => str_replace(',','.',$jarr['gpslat']),
-            'mlon' => str_replace(',','.',$jarr['gpslong'])
+            'mlat' => str_replace(',','.',$jarr['GPSLatitude']),
+            'mlon' => str_replace(',','.',$jarr['GPSLongitude'])
         ),'','&amp;');
 
         $gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
-		if(array_key_exists('make', $jarr) && array_key_exists('camera', $jarr)) 
-			$camera = (strpos($jarr['camera'], explode(" ",$jarr['make'])[0]) !== false) ? $jarr['camera']:$jarr['make']." - ".$jarr['camera'];			
-		elseif(array_key_exists('camera', $jarr))
-			$camera = $jarr['camera'];
+		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
+			$camera = (strpos($jarr['Model'], explode(" ",$jarr['Make'])[0]) !== false) ? $jarr['Model']:$jarr['Make']." - ".$jarr['Model'];			
+		elseif(array_key_exists('Model', $jarr))
+			$camera = $jarr['Model'];
 
-        $exifInfo = (array_key_exists('camera', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
-        $exifInfo.= (array_key_exists('lens', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['lens']."<br>":"";
-        $exifInfo.= (array_key_exists('taken', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['taken'])."<br>":"";
-        $exifInfo.= (array_key_exists('sw', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['sw']."<br>":"";
-        $exifInfo.= (array_key_exists('expmode', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext($jarr['expmode'],'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('metmode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext($jarr['metmode'],'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('exptime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['exptime']."<br>":"";
-        $exifInfo.= (array_key_exists('iso', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['iso']."<br>":"";
-        $exifInfo.= (array_key_exists('flength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['flength']."<br>":"";
-        $exifInfo.= (array_key_exists('wb', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext($jarr['wb'],'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('fnumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr['fnumber']."<br>":"";
-        $exifInfo.= (array_key_exists('flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext($jarr['flash'],'pictures')."<br>":"";
+        $exifInfo = (array_key_exists('Model', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+        $exifInfo.= (array_key_exists('LensID', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['LensID']."<br>":"";
+        $exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
+        $exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
+        $exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."<br>":"";
+        $exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
+        $exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
+        $exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
+        $exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
+        $exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
         $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
-        $exifInfo.= (array_key_exists('descrip', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['descrip']."<br>":"";
+        $exifInfo.= (array_key_exists('ImageDescription', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
     }
 
     return $exifInfo;
+}
+
+function ep($val) {
+	switch ($val) {
+		case 0: $str = "em_undefined"; break;
+		case 1: $str = "em_manual"; break;
+		case 2: $str = "em_auto"; break;
+		case 3: $str = "em_time_auto"; break;
+		case 4: $str = "em_shutter_auto"; break;
+		case 5: $str = "em_creative_auto"; break;
+		case 6: $str = "em_action_auto"; break;
+		case 7: $str = "em_portrait_auto"; break;
+		case 8: $str = "em_landscape_auto"; break;
+		case 9: $str = "em_bulb"; break;
+	}
+	return $str;
+}
+
+
+function mm($val) {
+	switch ($val) {
+		case 0: $str = "mm_unkown"; break;
+		case 1: $str = "mm_average"; break;
+		case 2: $str = "mm_middle"; break;
+		case 3: $str = "mm_spot"; break;
+		case 4: $str = "mm_multi-spot"; break;
+		case 5: $str = "mm_multi"; break;
+		case 6: $str = "mm_partial"; break;
+		case 255: $str = "mm_other"; break;
+		default: $str = "mm_unkown";
+	}
+	return $str;
 }
 
 function wb($val) {

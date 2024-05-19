@@ -21,9 +21,11 @@ $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $ccmd = $rcmail->config->get('convert_cmd', false);
+$exiftool = $rcmail->config->get('exiftool', false);
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
+$images = array();
 
 for ($x = 0; $x < $rcount; $x++) {
 	array_push($users, $db->fetch_assoc($result));
@@ -59,6 +61,11 @@ foreach($users as $user) {
 		default:
 			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
+		
+			if($exiftool && count($images) > 0) {
+				atodb($images, $uid);
+				$images = [];
+			}
 
 			if(is_dir($thumb_basepath)) {
 				$path = $thumb_basepath;
@@ -88,16 +95,17 @@ $message = "Pictures maintenance finished in $tdiff";
 $message.= (count($broken) > 0) ? ". ".count($broken)." corrupt media found.":"";
 logm($message);
 
-$authHeader = base64_encode($rcmail->config->get('pntfy_usr'). ":".$rcmail->config->get('pntfy_pwd'));
+$authHeader = base64_encode($rcmail->config->get('pntfy_usr').":".$rcmail->config->get('pntfy_pwd'));
+$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
 $purl = $rcmail->config->get('pntfy_url');
 
-if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($authHeader) > 4 && strlen($purl) > 4) {
+if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($purl) > 4) {
 	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 		'http' => [
 			'method' => 'POST',
 			'header' =>
 				"Content-Type: text/plain\r\n".
-				"Authorization: Basic $authHeader\r\n".
+				$authHeader.
 				"Title: Roundcube Pictures\r\n".
 				"Priority: 3\r\n".
 				"Tags: Roundcube,Pictures",
@@ -133,6 +141,7 @@ function logm($message, $mmode = 3) {
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_basepath) {
+	global $exiftool;
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
@@ -148,7 +157,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 						
 						if(is_array($exifArr)) {
 							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
-							todb($path."/".$file, $user, $pictures_basepath, $exifArr);
+							if(!$exiftool) ptodb($path."/".$file, $user, $pictures_basepath, $exifArr);
 						}
 						
 						checkorphaned($path."/".$file);
@@ -253,7 +262,7 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd;
+	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd, $images;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -269,13 +278,14 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("Re-Scan existing $thumb_pic", 4);
 		}
 	}
-
+	
+	$mimetype = mime_content_type($org_pic);
+	$images[] = array($org_pic);
 	$target = "";
 	$degrees = 0;
 	$ppath = "";
-	$mimetype = mime_content_type($org_pic);
-	$type = explode('/',$mimetype)[0];
-
+	$type = explode('/', $mimetype)[0];
+	
 	if(!in_array($type, ['image','video'])) {
 		logm("Unsupported: $org_pic", 4);
 		return false;
@@ -290,15 +300,16 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 
 	$exifArr = [];
-	$exifArr['mimetype'] = $mimetype;
+	$exifArr['MIMEType'] = $mimetype;
 
 	if ($type == "image") {
 		logm("createthumb: $org_pic is image", 4);
-		list($width, $height, $type) = getimagesize($org_pic);
+		list($width, $height, $itype) = getimagesize($org_pic);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculate width failed.", 2);
 		$target = imagecreatetruecolor($newwidth, $thumbsize);
-		switch ($type) {
+
+		switch ($itype) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
 			case 2: $source = @imagecreatefromjpeg($org_pic); break;
 			case 3: $source = @imagecreatefrompng($org_pic); break;
@@ -310,8 +321,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		if ($source) {
 			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 			imagedestroy($source);
-			$exifArr = readEXIF($org_pic);
-			$ort = (isset($exifArr['ort'])) ? $ort = $exifArr['ort']:NULL;
+			if(!$exiftool) $exifArr = readEXIF($org_pic);
+			$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 			switch ($ort) {
 				case 3: $degrees = 180; break;
 				case 4: $degrees = 180; break;
@@ -350,7 +361,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			}
 			
 			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
-			
 			if($hevc && $output[0] != "hevc") return $exifArr;
 
 			$pathparts = pathinfo($org_pic);
@@ -368,7 +378,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("ffmpeg is not installed, so video formats are not supported.", 1);
 		}
 	}
-	$exifArr['mimetype'] = $mimetype;
+	$exifArr['MIMEType'] = $mimetype;
 	return $exifArr;
 }
 
@@ -394,7 +404,26 @@ function corrupt_thmb($thumbsize, $thumbpath) {
 	imagedestroy($image_new);
 }
 
-function todb($file, $user, $pictures_basepath, $exif) {
+function atodb($images, $uid) {
+	global $pictures_basepath;
+	if (`which exiftool`) {
+		$files = implode("' '", $images);
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLatitudeRef# -GPSLongitude# -GPSLongitudeRef# -Orientation# -ExposureTime -LensID -MIMEType -CreateDate";
+		$options = "-q -j -d '%s'";
+		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
+		$joutput = implode("", $output);
+		$mdarr = json_decode($joutput, true);
+
+		foreach ($mdarr as &$element) {
+			ptodb($element['SourceFile'], $uid, $pictures_basepath, $element);
+		}
+	} else {
+		logm("exiftool not installed. please install. database cant be updated.", 1);
+	}
+
+}
+
+function ptodb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
@@ -402,20 +431,22 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
-
+	
+//	if(array_key_exists('SourceFile'), $exif)
+	unset($exif['SourceFile']);
+	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
-	$type = explode("/", $exif['mimetype'])[0];
+	$type = explode("/", $exif['MIMEType'])[0];
 
 	if($type == 'image') {
-		$taken = (isset($exif['taken']) && is_int($exif['taken'])) ? $exif['taken']:filemtime($file);
+		$taken = (isset($exif['DateTimeOriginal']) && is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
-		$taken = shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
+		$taken = isset($exif['CreateDate']) ? $exif['CreateDate']:shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
 		$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
 	}
 
 	if($count == 0) {
 		logm("Add $file to database", 4);
-		$type = explode('/',mime_content_type($file))[0];
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exifj,$user)";
 	} else {
 		logm("Update database for $file", 4);
@@ -468,101 +499,37 @@ function readEXIF($file) {
 	$exif_data = @exif_read_data($file);
 
 	if($exif_data && count($exif_data) > 0) {
-		(isset($exif_data['Model'])) ? $exif_arr['camera'] = $exif_data['Model']:null;
-		(isset($exif_data['FocalLength'])) ? $exif_arr['flength'] = parse_fraction($exif_data['FocalLength'])."mm":null;
-		(isset($exif_data['FNumber'])) ? $exif_arr['fnumber'] = "f".parse_fraction($exif_data['FNumber'],2):null;
-		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['iso'] = $exif_data['ISOSpeedRatings']:null;
-		$exif_arr['taken'] = (isset($exif_data['DateTimeDigitized'])) ? strtotime($exif_data['DateTimeDigitized']):filemtime($file);
-		(isset($exif_data['ImageDescription'])) ? $exif_arr['descrip'] = $exif_data['ImageDescription']:null;
-		(isset($exif_data['Make'])) ? $exif_arr['make'] = $exif_data['Make']:null;
-		(isset($exif_data['Software'])) ? $exif_arr['sw'] = $exif_data['Software']:null;
-		(isset($exif_data['Flash'])) ? $exif_arr['flash'] = flash($exif_data['Flash']):null;
-		(isset($exif_data['ExposureProgram'])) ? $exif_arr['expmode'] = ep($exif_data['ExposureProgram']):null;
-		(isset($exif_data['MeteringMode'])) ? $exif_arr['metmode'] = mm($exif_data['MeteringMode']):null;
-		(isset($exif_data['WhiteBalance'])) ? $exif_arr['wb'] = wb($exif_data['WhiteBalance']):null;
-		$exif_arr['gpslat'] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"";
-		$exif_arr['gpslong'] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"";
-		(isset($exif_data['Orientation'])) ? $exif_arr['ort'] = $exif_data['Orientation']:null;
-        (isset($exif_data['ExposureTime'])) ? $exif_arr['exptime'] = $exif_data['ExposureTime']:null;
-        (isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['lens'] = $exif_data['UndefinedTag:0xA434']:null;
+		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
+		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
+		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
+		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
+		$exif_arr['DateTimeOriginal'] = (isset($exif_data['DateTimeOriginal'])) ? strtotime($exif_data['DateTimeOriginal']):filemtime($file);
+		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
+		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
+		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
+		(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:null;
+		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
+		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
+		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
+		$exif_arr['GPSLatitude'] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"";
+		$exif_arr['GPSLongitude'] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"";
+		(isset($exif_data['Orientation'])) ? $exif_arr['GPSLongitude'] = $exif_data['Orientation']:null;
+        (isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
+		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
         
 	}
 	return $exif_arr;
 }
 
-function wb($val) {
-	switch($val) {
-		case 0: $str = "wb_auto"; break;
-		case 1: $str = "wb_daylight"; break;
-		case 2: $str = "wb_fluorescent"; break;
-		case 3: $str = "wb_incandescent"; break;
-		case 4: $str = "wb_flash"; break;
-		case 9: $str = "wb_fineWeather"; break;
-		case 10: $str = "wb_cloudy"; break;
-		case 11: $str = "wb_shade"; break;
-		default: $str = false;
+function etlens($file, $tag) {
+	if (`which exiftool`) {
+		exec("exiftool -s3 -lensid '$file'", $output, $error);
+		$output = ($error == 0) ? $output[0]:null;
+	} else {
+		$output = $tag;
 	}
-	return $str;
-}
 
-function mm($val) {
-	switch ($val) {
-		case 0: $str = "mm_unkown"; break;
-		case 1: $str = "mm_average"; break;
-		case 2: $str = "mm_middle"; break;
-		case 3: $str = "mm_spot"; break;
-		case 4: $str = "mm_multi-spot"; break;
-		case 5: $str = "mm_multi"; break;
-		case 6: $str = "mm_partial"; break;
-		case 255: $str = "mm_other"; break;
-		default: $str = "mm_unkown";
-	}
-	return $str;
-}
-
-function ep($val) {
-	switch ($val) {
-		case 0: $str = "em_undefined"; break;
-		case 1: $str = "em_manual"; break;
-		case 2: $str = "em_auto"; break;
-		case 3: $str = "em_time_auto"; break;
-		case 4: $str = "em_shutter_auto"; break;
-		case 5: $str = "em_creative_auto"; break;
-		case 6: $str = "em_action_auto"; break;
-		case 7: $str = "em_portrait_auto"; break;
-		case 8: $str = "em_landscape_auto"; break;
-		case 9: $str = "em_bulb"; break;
-	}
-	return $str;
-}
-
-function flash($val) {
-	switch($val) {
-		case 0: $str = 'NotFired'; break;
-		case 1: $str = 'Fired'; break;
-		case 5: $str = 'StrobeReturnLightNotDetected'; break;
-		case 7: $str = 'StrobeReturnLightDetected'; break;
-		case 9: $str = 'Fired-CompulsoryMode'; break;
-		case 13: $str = 'Fired-CompulsoryMode-NoReturnLightDetected'; break;
-		case 15: $str = 'Fired-CompulsoryMode-ReturnLightDetected'; break;
-		case 16: $str = 'NotFired-CompulsoryMode'; break;
-		case 24: $str = 'NotFired-AutoMode'; break;
-		case 25: $str = 'Fired-AutoMode'; break;
-		case 29: $str = 'Fired-AutoMode-NoReturnLightDetected'; break;
-		case 31: $str = 'Fired-AutoMode-ReturnLightDetected'; break;
-		case 32: $str = 'Noflashfunction'; break;
-		case 65: $str = 'Fired-RedEyeMode'; break;
-		case 69: $str = 'Fired-RedEyeMode-NoReturnLightDetected'; break;
-		case 71: $str = 'Fired-RedEyeMode-ReturnLightDetected'; break;
-		case 73: $str = 'Fired-CompulsoryMode-RedEyeMode'; break;
-		case 77: $str = 'Fired-CompulsoryMode-RedEyeMode-NoReturnLightDetected'; break;
-		case 79: $str = 'Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'; break;
-		case 89: $str = 'Fired-AutoMode-RedEyeMode'; break;
-		case 93: $str = 'Fired-AutoMode-NoReturnLightDetected-RedEyeMode'; break;
-		case 95: $str = 'Fired-AutoMode-ReturnLightDetected-RedEyeMode'; break;
-		default: $str = 'NotFired';
-	}
-	return $str;
+	return $output;
 }
 
 function parse_fraction($v, $round = 0) {

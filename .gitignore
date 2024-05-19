@@ -2,3 +2,4 @@
 env.properties
 config.inc.php
 .vscode
+test*
