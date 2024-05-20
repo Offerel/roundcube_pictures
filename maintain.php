@@ -61,7 +61,8 @@ foreach($users as $user) {
 		default:
 			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
-		
+			logm("read_photos finished after ".etime($starttime));
+			
 			if($exiftool && count($images) > 0) {
 				atodb($images, $uid);
 				$images = [];
@@ -119,6 +120,10 @@ if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') &
 		logm("ntfy push failed.", 2);
 }
 
+function etime($starttime) {
+	return gmdate("H:i:s", time() - $starttime);
+}
+
 function logm($message, $mmode = 3) {
 	global $rcmail;
 	$dtime = date("Y-m-d H:i:s");
@@ -148,7 +153,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 			while (false !== ($file = readdir($handle))) {
 				if($file === '.' || $file === '..') continue;
 				if(is_dir($path."/".$file."/")) {
-					logm("Parse directory $path/$file/", 4);
+					logm("Check directory $path/$file/", 4);
 					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user, $webp_basepath);
 				} else {
 					$pathparts = pathinfo($path."/".$file);
@@ -219,13 +224,14 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	$swidth = $rcmail->config->get('swidth', false);
 	
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
+	$otime = filemtime($ofile);
 
-	if(file_exists($webp_file)) return false;
-
+	if($otime == filemtime($webp_file)) return false;
+	
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-	
-	switch($exif['16']) {
+	/*
+	switch($exif['Orientation']) {
 		case 3:
 			$degrees = 180;
 			$rotate = true;
@@ -242,10 +248,9 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 			$degrees = 0;
 			$rotate = false;
 	}
-
-	
 	
 	if($rotate) $image = imagerotate($image, $degrees, 0);
+	*/
 	
 	if($owidth > $swidth) {
 		$mult = $owidth/$swidth;
@@ -254,11 +259,13 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 		$img = $image;
 	}
 
-	
 	$directory = dirname($webp_file);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
-	imagewebp($img, $webp_file, 80);
-	logm("Save webp: $webp_file", 4);
+	imagewebp($img, $webp_file, 70);
+	imagedestroy($img);
+	imagedestroy($image);
+	touch($webp_file, $otime);
+	logm("Save webp $webp_file",4);
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
@@ -272,10 +279,10 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 
 	if(file_exists($thumb_pic)) {
 		if($otime == $ttime) {
-			logm("Ignore $thumb_pic > Thumbnail exists", 4);
+			logm("Ignore $org_pic", 4);
 			return false;
 		} else {
-			logm("Re-Scan existing $thumb_pic", 4);
+			logm("ReParse $org_pic", 4);
 		}
 	}
 	
@@ -303,7 +310,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$exifArr['MIMEType'] = $mimetype;
 
 	if ($type == "image") {
-		logm("createthumb: $org_pic is image", 4);
 		list($width, $height, $itype) = getimagesize($org_pic);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculate width failed.", 2);
@@ -313,15 +319,19 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
 			case 2: $source = @imagecreatefromjpeg($org_pic); break;
 			case 3: $source = @imagecreatefrompng($org_pic); break;
-			default: logm("Unsupported fileformat ($org_pic $type).", 1); die();
+			default: logm("Unsupported file $org_pic", 1);
 		}
 
-		logm("Create thumbnail: $thumb_pic", 4);
+		logm("Create image thumbnail $thumb_pic", 4);
 
 		if ($source) {
-			imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		//	imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		//	imagecopyresized($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+			$target = imagescale($source, $newwidth, $thumbsize);
+
 			imagedestroy($source);
 			if(!$exiftool) $exifArr = readEXIF($org_pic);
+			/*
 			$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 			switch ($ort) {
 				case 3: $degrees = 180; break;
@@ -330,16 +340,17 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				case 6: $degrees = 270; break;
 				case 7: $degrees = 90; break;
 				case 8: $degrees = 90; break;
+				default: $degrees = 0;
 			}
-
+			
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
+			*/
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_pic, 100);
+				imagejpeg($target, $thumb_pic, 90);
 				imagedestroy($target);
-				touch($thumb_pic, filemtime($org_pic));
-				logm("Thumbnail: $thumb_pic", 4);
+				touch($thumb_pic, $otime);
 			} else {
-				logm("Can't write Thumbnail ($thumbpath). Please check your directory permissions.", 1);
+				logm("Can't write Thumbnail $thumbpath, please check directory permissions", 1);
 			}
 		} else {
 			$ppath = str_replace($pictures_basepath, '', $org_pic);
@@ -348,12 +359,11 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			logm("Can't create thumbnail $ppath. Picture seems corrupt",1);
 		}
 	} elseif ($type == "video") {
-		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
 			exec("$ffmpeg -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_pic\" 2>&1", $output, $error);
 			if($error == 0) {
-				logm("Thumbnail $thumb_pic saved", 4);
-				touch($thumb_pic, filemtime($org_pic));
+				logm("Created video thumbnail $thumb_pic", 4);
+				touch($thumb_pic, $otime);
 			} else {
 				logm("Video $org_pic seems corrupt. ".$output[0], 2);
 				$ppath = str_replace($pictures_basepath, '', $org_pic);
