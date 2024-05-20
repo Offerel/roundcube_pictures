@@ -613,7 +613,8 @@ function parseEXIF($jarr) {
         $exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
         $exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
         $exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."<br>":"";
+        $exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
+		$exifInfo.= (array_key_exists('TargetExposureTime', $jarr)) ? $rcmail->gettext('exif_texptime','pictures').": ".$jarr['TargetExposureTime']."s<br>":"";
         $exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
         $exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
         $exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
@@ -774,37 +775,7 @@ function showGallery($requestedDir, $offset = 0) {
 					checkpermissions($current_dir."/".$file);
 					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 					$imgUrl = "simg.php?$imgParams";
-					/*
-					$exifInfo = "";
-					if(is_array($exifReaden)) {
-						if($exifReaden[0] != "-" && $exifReaden[8] != "-") $exifInfo.= $rcmail->gettext('exif_camera','pictures').": ".$exifReaden[8]." - ".$exifReaden[0]."<br>";
-						if($exifReaden[5] != "-") $exifInfo.= $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $exifReaden[5])."<br>";
-						if($exifReaden[9] != "-") $exifInfo.= $rcmail->gettext('exif_sw','pictures').": ".$exifReaden[9]."<br>";
-						if($exifReaden[10] != "-") $exifInfo.= $rcmail->gettext('exif_expos','pictures').": ".$exifReaden[10]."<br>";
-						if($exifReaden[12] != "-") $exifInfo.= $rcmail->gettext('exif_meter','pictures').": ".$exifReaden[12]."<br>";
-						if($exifReaden[4] != "-") $exifInfo.= $rcmail->gettext('exif_ISO','pictures').": ".$exifReaden[4]."<br>";
-						if($exifReaden[1] != "-") $exifInfo.= $rcmail->gettext('exif_focalength','pictures').": ".$exifReaden[1]."<br>";
-						if($exifReaden[13] != "-") $exifInfo.= $rcmail->gettext('exif_whiteb','pictures').": ".$exifReaden[13]."<br>";
-						if($exifReaden[3] != "-") $exifInfo.= $rcmail->gettext('exif_fstop','pictures').": ".$exifReaden[3]."<br>";
-						if($exifReaden[11] != "-") $exifInfo.= $rcmail->gettext('exif_flash','pictures').": ".$exifReaden[11]."<br>";				
-						if($exifReaden[14] != "-" && $exifReaden[15] != "-") {
-							$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifReaden[14]),
-																	'mlon' => str_replace(',','.',$exifReaden[15])
-																),'','&amp;');
-							$exifInfo.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
-						}
-						if($exifReaden[6] != "-") $exifInfo.= $rcmail->gettext('exif_desc','pictures').": ".$exifReaden[6]."<br>";
-					}
-					
-					if(is_array($exifReaden) && count($exifReaden) > 0) {
-						$caption = "<div id='$file' class='exinfo'>$exifInfo</div>";
-					} else {
-						$caption = "";
-					}
-					*/
-
 					$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
-					
 					$files[] = array(
 						"name" => $file,
 						"date" => $taken,

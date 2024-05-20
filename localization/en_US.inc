@@ -57,6 +57,7 @@ $labels['exif_whiteb'] = "Whitebalance";
 $labels['exif_geo'] = "Show on map";
 $labels['exif_lens'] = "Lens";
 $labels['exif_exptime'] = "Exposure time";
+$labels['exif_texptime'] = "Shutter speed";
 
 $labels['ptheme'] = "Theme";
 $labels['theme_dark'] = "Dark";

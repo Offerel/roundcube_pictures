@@ -280,7 +280,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 	
 	$mimetype = mime_content_type($org_pic);
-	$images[] = array($org_pic);
+	$images[] = $org_pic;
 	$target = "";
 	$degrees = 0;
 	$ppath = "";
@@ -335,6 +335,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 100);
+				imagedestroy($target);
 				touch($thumb_pic, filemtime($org_pic));
 				logm("Thumbnail: $thumb_pic", 4);
 			} else {
@@ -349,10 +350,10 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	} elseif ($type == "video") {
 		logm("createthumb: $org_pic is video", 4);
 		if(!empty($ffmpeg)) {
-			exec($ffmpeg." -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumb_pic."\" 2>&1", $output, $error);
-			touch($thumb_pic, filemtime($org_pic));
+			exec("$ffmpeg -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_pic\" 2>&1", $output, $error);
 			if($error == 0) {
 				logm("Thumbnail $thumb_pic saved", 4);
+				touch($thumb_pic, filemtime($org_pic));
 			} else {
 				logm("Video $org_pic seems corrupt. ".$output[0], 2);
 				$ppath = str_replace($pictures_basepath, '', $org_pic);
@@ -360,7 +361,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 				corrupt_thmb($thumbsize, $thumbpath);
 			}
 			
-			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
+			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 $org_pic 2>&1", $output, $error);
 			if($hevc && $output[0] != "hevc") return $exifArr;
 
 			$pathparts = pathinfo($org_pic);
@@ -408,7 +409,7 @@ function atodb($images, $uid) {
 	global $pictures_basepath;
 	if (`which exiftool`) {
 		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLatitudeRef# -GPSLongitude# -GPSLongitudeRef# -Orientation# -ExposureTime -LensID -MIMEType -CreateDate";
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLatitudeRef# -GPSLongitude# -GPSLongitudeRef# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate";
 		$options = "-q -j -d '%s'";
 		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
 		$joutput = implode("", $output);
@@ -418,7 +419,7 @@ function atodb($images, $uid) {
 			ptodb($element['SourceFile'], $uid, $pictures_basepath, $element);
 		}
 	} else {
-		logm("exiftool not installed. please install. database cant be updated.", 1);
+		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
 	}
 
 }
@@ -427,12 +428,10 @@ function ptodb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
-
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
 	
-//	if(array_key_exists('SourceFile'), $exif)
 	unset($exif['SourceFile']);
 	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	

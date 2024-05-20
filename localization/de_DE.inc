@@ -56,7 +56,8 @@ $labels['exif_meter'] = "Belichtung";
 $labels['exif_whiteb'] = "Weißabgleich";
 $labels['exif_geo'] = "Auf Karte anzeigen";
 $labels['exif_lens'] = "Objektiv";
-$labels['exif_exptime'] = "Belichtungdauer";
+$labels['exif_exptime'] = "Belichtungszeit";
+$labels['exif_texptime'] = "Verschlusszeit";
 
 $labels['ptheme'] = "Theme";
 $labels['pthemedark'] = "Dunkel";
