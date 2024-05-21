@@ -61,7 +61,7 @@ foreach($users as $user) {
 		default:
 			logm("Search media for $username");
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
-			logm("read_photos finished after ".etime($starttime));
+			logm("read_photos finished after ".etime($starttime), 4);
 			
 			if($exiftool && count($images) > 0) {
 				atodb($images, $uid);
@@ -89,10 +89,7 @@ foreach($users as $user) {
 	}
 }
 
-$endtime = time();
-$sdiff = $endtime - $starttime;
-$tdiff = gmdate("H:i:s", $sdiff);
-$message = "Pictures maintenance finished in $tdiff";
+$message = "Pictures maintenance finished in ".etime($starttime);
 $message.= (count($broken) > 0) ? ". ".count($broken)." corrupt media found.":"";
 logm($message);
 
@@ -222,10 +219,9 @@ function delete_asset($image, $asset_basepath, $picture_basepath) {
 function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	global $rcmail;
 	$swidth = $rcmail->config->get('swidth', false);
-	
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
-	$otime = filemtime($ofile);
 
+	$otime = filemtime($ofile);
 	if($otime == filemtime($webp_file)) return false;
 	
 	list($owidth, $oheight) = getimagesize($ofile);
@@ -265,7 +261,7 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	imagedestroy($img);
 	imagedestroy($image);
 	touch($webp_file, $otime);
-	logm("Save webp $webp_file",4);
+	logm("Saved $webp_file",4);
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath) {
@@ -275,10 +271,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	if($dfiles) deldummy($org_pic);
 
 	$otime = filemtime($org_pic);
-	$ttime = filemtime($thumb_pic);
-
 	if(file_exists($thumb_pic)) {
-		if($otime == $ttime) {
+		if($otime == filemtime($thumb_pic)) {
 			logm("Ignore $org_pic", 4);
 			return false;
 		} else {
@@ -313,7 +307,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		list($width, $height, $itype) = getimagesize($org_pic);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculate width failed.", 2);
-		$target = imagecreatetruecolor($newwidth, $thumbsize);
 
 		switch ($itype) {
 			case 1: $source = @imagecreatefromgif($org_pic); break;
@@ -325,10 +318,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 		logm("Create image thumbnail $thumb_pic", 4);
 
 		if ($source) {
-		//	imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
-		//	imagecopyresized($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
-			$target = imagescale($source, $newwidth, $thumbsize);
-
+			//$target = imagescale($source, $newwidth, -1, IMG_BOX);
+			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
 			if(!$exiftool) $exifArr = readEXIF($org_pic);
 			/*

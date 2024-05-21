@@ -274,7 +274,7 @@ if(file_exists($file)) {
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 			header('Accept-Ranges: bytes');
 			header("Content-Length: ".$filesize);
-			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
+			header('Content-disposition: inline;filename="'.str_replace(".jpg","",ltrim(basename($file),'.')).'"');
 			die(readfile($file));
 			break;
 	}
