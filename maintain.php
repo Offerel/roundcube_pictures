@@ -64,7 +64,7 @@ foreach($users as $user) {
 			logm("read_photos finished after ".etime($starttime), 4);
 			
 			if($exiftool && count($images) > 0) {
-				atodb($images, $uid);
+				exiftool($images, $uid);
 				$images = [];
 			}
 
@@ -406,11 +406,11 @@ function corrupt_thmb($thumbsize, $thumbpath) {
 	imagedestroy($image_new);
 }
 
-function atodb($images, $uid) {
+function exiftool($images, $uid) {
 	global $pictures_basepath;
 	if (`which exiftool`) {
 		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLatitudeRef# -GPSLongitude# -GPSLongitudeRef# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate";
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Creator -Description -Title -Copyright";
 		$options = "-q -j -d '%s'";
 		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
 		$joutput = implode("", $output);
@@ -432,8 +432,10 @@ function ptodb($file, $user, $pictures_basepath, $exif) {
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
-	
+
 	unset($exif['SourceFile']);
+	if(strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
+	if(strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
 	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
 	$type = explode("/", $exif['MIMEType'])[0];
@@ -503,7 +505,7 @@ function readEXIF($file) {
 		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
 		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
 		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
-		$exif_arr['DateTimeOriginal'] = (isset($exif_data['DateTimeOriginal'])) ? strtotime($exif_data['DateTimeOriginal']):filemtime($file);
+		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['DateTimeOriginal'] = strtotime($exif_data['DateTimeOriginal']):filemtime($file);
 		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
 		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
 		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
@@ -511,25 +513,32 @@ function readEXIF($file) {
 		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
 		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
 		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
-		$exif_arr['GPSLatitude'] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"";
-		$exif_arr['GPSLongitude'] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"";
-		(isset($exif_data['Orientation'])) ? $exif_arr['GPSLongitude'] = $exif_data['Orientation']:null;
+		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
+		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
+		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
         (isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
+        (isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
 		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
-        
+		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
+		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
+		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
+		(isset($exif_data['Creator'])) ? $exif_arr['Creator'] = $exif_data['Creator']:null;
+		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
+		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
+		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
 	}
 	return $exif_arr;
 }
 
-function etlens($file, $tag) {
-	if (`which exiftool`) {
-		exec("exiftool -s3 -lensid '$file'", $output, $error);
-		$output = ($error == 0) ? $output[0]:null;
-	} else {
-		$output = $tag;
-	}
-
-	return $output;
+function shutter($value) {
+	$pos = strpos($value, '/');
+	$a = (float) substr($value, 0, $pos);
+	$b = (float) substr($value, $pos + 1);
+	$apex = ($b == 0) ? ($a) : ($a / $b);
+	$shutter = pow(2, -$apex);
+	if ($shutter == 0) return false;
+	if ($shutter >= 1) return round($shutter);
+	return '1/'.round(1 / $shutter);
 }
 
 function parse_fraction($v, $round = 0) {
