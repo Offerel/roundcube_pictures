@@ -59,7 +59,7 @@ $labels['exif_lens'] = "Objektiv";
 $labels['exif_exptime'] = "Belichtungszeit";
 $labels['exif_texptime'] = "Verschlusszeit";
 $labels['exif_copyright'] = "Copyright";
-$labels['exif_keywords'] = "Stichworte";
+$labels['exif_keywords'] = "Schlagworte";
 
 $labels['ptheme'] = "Theme";
 $labels['pthemedark'] = "Dunkel";
