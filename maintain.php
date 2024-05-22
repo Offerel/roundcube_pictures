@@ -410,7 +410,7 @@ function exiftool($images, $uid) {
 	global $pictures_basepath;
 	if (`which exiftool`) {
 		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Creator -Description -Title -Copyright";
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Creator -Description -Title -Copyright -Subject";
 		$options = "-q -j -d '%s'";
 		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
 		$joutput = implode("", $output);
@@ -525,6 +525,7 @@ function readEXIF($file) {
 		(isset($exif_data['Creator'])) ? $exif_arr['Creator'] = $exif_data['Creator']:null;
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
+		(isset($exif_data['Subject'])) ? $exif_arr['Subject'] = $exif_data['Subject']:null;
 		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
 	}
 	return $exif_arr;

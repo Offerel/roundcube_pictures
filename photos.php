@@ -621,6 +621,7 @@ function parseEXIF($jarr) {
         $exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
         $exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
+		$exifInfo.= (isset($jarr['Subject']) && strlen($jarr['Subject']) > 0) ? $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Subject']."<br>":"";
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".$jarr['Copyright']."<br>":"";
 
         $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
@@ -971,6 +972,7 @@ function readEXIF($file) {
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
 		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
+		(isset($exif_data['Subject'])) ? $exif_arr['Subject'] = $exif_data['Subject']:null;
 	}
 	return $exif_arr;
 }
