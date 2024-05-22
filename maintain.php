@@ -159,7 +159,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 						
 						if(is_array($exifArr)) {
 							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
-							if(!$exiftool) ptodb($path."/".$file, $user, $pictures_basepath, $exifArr);
+							if(!$exiftool) todb($path."/".$file, $user, $pictures_basepath, $exifArr);
 						}
 						
 						checkorphaned($path."/".$file);
@@ -417,7 +417,7 @@ function exiftool($images, $uid) {
 		$mdarr = json_decode($joutput, true);
 
 		foreach ($mdarr as &$element) {
-			ptodb($element['SourceFile'], $uid, $pictures_basepath, $element);
+			todb($element['SourceFile'], $uid, $pictures_basepath, $element);
 		}
 	} else {
 		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
@@ -425,7 +425,7 @@ function exiftool($images, $uid) {
 
 }
 
-function ptodb($file, $user, $pictures_basepath, $exif) {
+function todb($file, $user, $pictures_basepath, $exif) {
 	global $rcmail, $ffprobe, $db;
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");

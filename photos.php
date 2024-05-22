@@ -621,6 +621,8 @@ function parseEXIF($jarr) {
         $exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
         $exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
+		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".$jarr['Copyright']."<br>":"";
+
         $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
     }
 
@@ -639,10 +641,10 @@ function ep($val) {
 		case 7: $str = "em_portrait_auto"; break;
 		case 8: $str = "em_landscape_auto"; break;
 		case 9: $str = "em_bulb"; break;
+		default: $str = $val.'-unknown';
 	}
 	return $str;
 }
-
 
 function mm($val) {
 	switch ($val) {
@@ -654,7 +656,7 @@ function mm($val) {
 		case 5: $str = "mm_multi"; break;
 		case 6: $str = "mm_partial"; break;
 		case 255: $str = "mm_other"; break;
-		default: $str = "mm_unkown";
+		default: $str = $val.'-unknown';
 	}
 	return $str;
 }
@@ -669,7 +671,7 @@ function wb($val) {
 		case 9: $str = "wb_fineWeather"; break;
 		case 10: $str = "wb_cloudy"; break;
 		case 11: $str = "wb_shade"; break;
-		default: $str = false;
+		default: $str = $val.'-unknown';
 	}
 	return $str;
 }
@@ -698,7 +700,7 @@ function flash($val) {
 		case 89: $str = 'Fired-AutoMode-RedEyeMode'; break;
 		case 93: $str = 'Fired-AutoMode-NoReturnLightDetected-RedEyeMode'; break;
 		case 95: $str = 'Fired-AutoMode-ReturnLightDetected-RedEyeMode'; break;
-		default: $str = 'NotFired';
+		default: $str = $val.'-unknown';
 	}
 	return $str;
 }
@@ -940,60 +942,48 @@ function parse_fraction($v, $round = 0) {
 }
 
 function readEXIF($file) {
-	global $rcmail;
 	$exif_arr = array();
 	$exif_data = @exif_read_data($file);
 
 	if($exif_data && count($exif_data) > 0) {
-		$exif_arr[0] = (isset($exif_data['Model'])) ? $exif_data['Model']:"-";
-		$exif_arr[1] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength']) . "mm":"-";
-		$exif_arr[2] = (isset($exif_data['FocalLength'])) ? parse_fraction($exif_data['FocalLength'], 2) . "s":"-";
-		$exif_arr[3] = (isset($exif_data['ApertureFNumber'])) ? $exif_data['ApertureFNumber']:"-";
-		$exif_arr[4] = (isset($exif_data['ISOSpeedRatings'])) ? $exif_data['ISOSpeedRatings']:"-";
-		$exif_arr[5] = (isset($exif_data['DateTimeDigitized'])) ? strtotime($exif_data['DateTimeDigitized']):filemtime($file);
-		$exif_arr[6] = (isset($exif_data['ImageDescription'])) ? $exif_data['ImageDescription']:"-";
-		$exif_arr[7] = (isset($exif_data['CALC-GPSLATITUDE-SIG'])) ? $exif_data['CALC-GPSLATITUDE-SIG']:"-";
-		$exif_arr[8] = (isset($exif_data['Make'])) ? $exif_data['Make']:"-";
-		$exif_arr[9] = (isset($exif_data['Software'])) ? $exif_data['Software']:"-";
-		
-		if(isset($exif_data['ExposureProgram'])) {
-			switch ($exif_data['ExposureProgram']) {
-				case 0: $exif_arr[10] = $rcmail->gettext('exif_undefined','pictures'); break;
-				case 1: $exif_arr[10] = $rcmail->gettext('exif_manual','pictures'); break;
-				case 2: $exif_arr[10] = $rcmail->gettext('exif_exposure_auto','pictures'); break;
-				case 3: $exif_arr[10] = $rcmail->gettext('exif_time_auto','pictures'); break;
-				case 4: $exif_arr[10] = $rcmail->gettext('exif_shutter_auto','pictures'); break;
-				case 5: $exif_arr[10] = $rcmail->gettext('exif_creative_auto','pictures'); break;
-				case 6: $exif_arr[10] = $rcmail->gettext('exif_action_auto','pictures'); break;
-				case 7: $exif_arr[10] = $rcmail->gettext('exif_portrait_auto','pictures'); break;
-				case 8: $exif_arr[10] = $rcmail->gettext('exif_landscape_auto','pictures'); break;
-				case 9: $exif_arr[10] = $rcmail->gettext('exif_bulb','pictures'); break;
-			}
-		} else
-			$exif_arr[10] = "-";
-
-		$exif_arr[11] = (isset($exif_data['Flash'])) ? $exif_data['Flash']:"-";
-		
-		if(isset($exif_data['MeteringMode'])) {
-			switch ($exif_data['MeteringMode']) {
-				case 0: $exif_arr[12] = $rcmail->gettext('exif_unkown','pictures'); break;
-				case 1: $exif_arr[12] = $rcmail->gettext('exif_average','pictures'); break;
-				case 2: $exif_arr[12] = $rcmail->gettext('exif_middle','pictures'); break;
-				case 3: $exif_arr[12] = $rcmail->gettext('exif_spot','pictures'); break;
-				case 4: $exif_arr[12] = $rcmail->gettext('exif_multi-spot','pictures'); break;
-				case 5: $exif_arr[12] = $rcmail->gettext('exif_multi','pictures'); break;
-				case 6: $exif_arr[12] = $rcmail->gettext('exif_partial','pictures'); break;
-				case 255: $exif_arr[12] = $rcmail->gettext('exif_other','pictures'); break;
-			}
-		} else
-			$exif_arr[12] = "-";
-		
-		$exif_arr[13] = (isset($exif_data['WhiteBalance'])) ? $exif_data['WhiteBalance']:"-";
-		$exif_arr[14] = (isset($exif_data["GPSLatitude"])) ? gps($exif_data["GPSLatitude"], $exif_data['GPSLatitudeRef']):"-";
-		$exif_arr[15] = (isset($exif_data["GPSLongitude"])) ? gps($exif_data["GPSLongitude"], $exif_data['GPSLongitudeRef']):"-";
-		$exif_arr[16] = (isset($exif_data['Orientation'])) ? $exif_data['Orientation']:"-";
+		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
+		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
+		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
+		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
+		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['DateTimeOriginal'] = strtotime($exif_data['DateTimeOriginal']):filemtime($file);
+		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
+		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
+		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
+		(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:null;
+		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
+		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
+		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
+		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
+		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
+		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
+        (isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
+        (isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
+		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
+		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
+		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
+		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
+		(isset($exif_data['Creator'])) ? $exif_arr['Creator'] = $exif_data['Creator']:null;
+		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
+		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
+		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
 	}
 	return $exif_arr;
+}
+
+function shutter($value) {
+	$pos = strpos($value, '/');
+	$a = (float) substr($value, 0, $pos);
+	$b = (float) substr($value, $pos + 1);
+	$apex = ($b == 0) ? ($a) : ($a / $b);
+	$shutter = pow(2, -$apex);
+	if ($shutter == 0) return false;
+	if ($shutter >= 1) return round($shutter);
+	return '1/'.round(1 / $shutter);
 }
 	
 function gps($exifCoord, $hemi) {
@@ -1047,15 +1037,25 @@ function createthumb($image) {
 		}
 	}
 
+	$otime = filemtime($image);
+	if(file_exists($thumbnailpath)) {
+		if($otime == filemtime($thumbnailpath)) {
+			logm("Ignore $image", 4);
+			return false;
+		} else {
+			logm("ReParse $image", 4);
+		}
+	}
+
 	$exif = [];
-	$mimetype = mime_content_type($file);
+	$mimetype = mime_content_type($image);
 	$mtype = explode('/', $mimetype)[0];
 
 	if ($mtype == "image") {
 		list($width, $height, $type) = getimagesize($image);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) error_log("Pictures: Calculating the width failed.");
-		$target = imagecreatetruecolor($newwidth, $thumbsize);
+		//$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($image); break;
@@ -1064,15 +1064,16 @@ function createthumb($image) {
 			default:
 				corrupt_thmb($thumbsize, $thumbpath);
 				error_log("Pictures: Unsupported fileformat ($type).");
-				die();
+				//die();
 		}
 		
-		imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		//imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
+		$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 		imagedestroy($source);
 
 		$exif = readEXIF($image);
-		$ort = (isset($exifArr['16'])) ? $ort = $exifArr['16']:NULL;
-
+		/*
+		$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 		switch ($ort) {
 			case 3: $degrees = 180; break;
 			case 4: $degrees = 180; break;
@@ -1083,6 +1084,7 @@ function createthumb($image) {
 			default: $degrees = 0;
 		}
 		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
+		*/
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumbnailpath, 100);
@@ -1110,11 +1112,11 @@ function createthumb($image) {
 		}
 	}
 
-	$exif['17'] = $mimetype;
+	$exif['MIMEType'] = $mimetype;
 	return $exif;
 }
 
-function corrupt_thmb($thumbsize, $thumbpath) {
+function corrupt_thmb($thumbsize, $thumbnailpath) {
 	$sign = imagecreatefrompng('images/error2.png');
 	$background = imagecreatefromjpeg('images/defaultimage.jpg');
 
@@ -1130,7 +1132,7 @@ function corrupt_thmb($thumbsize, $thumbpath) {
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
 
-	imagejpeg($image_new, $thumbpath, 100);
+	imagejpeg($image_new, $thumbnailpath, 100);
 	imagedestroy($sign);
 	imagedestroy($background);
 	imagedestroy($image_new);
@@ -1145,20 +1147,20 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	$count = $rarr[0];
 	$id = $rarr[1];
 
-	$type = explode('/',$exif[17])[0];
+	$type = explode('/',$exif['MIMEType'])[0];
 	if($type == 'image') {
-		$taken = (is_int($exif[5])) ? $exif[5]:filemtime($file);
+		$taken = (is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
 		$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
 		$taken = (empty($taken)) ? filemtime($file):$taken;
 	}
 
-	$exif = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 
 	if($count == 0) {
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
 	} else {
-		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
 	}
 
 	$dbh->query($query);
