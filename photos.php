@@ -596,10 +596,14 @@ function parseEXIF($jarr) {
         $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
         $exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
     } else {
-        $osm_params = http_build_query(array(
-            'mlat' => str_replace(',','.',$jarr['GPSLatitude']),
-            'mlon' => str_replace(',','.',$jarr['GPSLongitude'])
-        ),'','&amp;');
+		if(array_key_exists('GPSLatitude', $jarr) && array_key_exists('GPSLongitude', $jarr)) {
+			$osm_params = http_build_query(array(
+				'mlat' => str_replace(',','.',$jarr['GPSLatitude']),
+				'mlon' => str_replace(',','.',$jarr['GPSLongitude'])
+			),'','&amp;');
+		} else {
+			$osm_params = "";
+		}    
 
         $gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
 		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
@@ -973,7 +977,7 @@ function readEXIF($file) {
 		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
 		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
-		(isset($exif_data['Creator'])) ? $exif_arr['Creator'] = $exif_data['Creator']:null;
+		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
 		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;

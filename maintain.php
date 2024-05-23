@@ -410,7 +410,7 @@ function exiftool($images, $uid) {
 	global $pictures_basepath;
 	if (`which exiftool`) {
 		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Creator -Description -Title -Copyright -Subject";
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Artist -Description -Title -Copyright -Subject";
 		$options = "-q -j -d '%s'";
 		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
 		$joutput = implode("", $output);
@@ -436,6 +436,11 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	unset($exif['SourceFile']);
 	if(strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
 	if(strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
+
+	//$path = "/mnt/stick/webdav/sebastian@pfohlnet.de/";
+	//file_put_contents($path."tool.json",json_encode($exif,JSON_HEX_APOS|JSON_PRETTY_PRINT));
+	//file_put_contents($path."php.json",json_encode(readEXIF($file),JSON_HEX_APOS|JSON_PRETTY_PRINT));
+	//file_put_contents($path."exif.txt",var_export(@exif_read_data($file), true));
 	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
 	$type = explode("/", $exif['MIMEType'])[0];
@@ -522,7 +527,7 @@ function readEXIF($file) {
 		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
 		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
-		(isset($exif_data['Creator'])) ? $exif_arr['Creator'] = $exif_data['Creator']:null;
+		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
 		(isset($exif_data['Subject'])) ? $exif_arr['Subject'] = $exif_data['Subject']:null;
