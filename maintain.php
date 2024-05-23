@@ -304,7 +304,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	$exifArr['MIMEType'] = $mimetype;
 
 	if ($type == "image") {
-		list($width, $height, $itype) = getimagesize($org_pic);
+		list($width, $height, $itype) = getimagesize($org_pic, $info);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) logm("Calculate width failed.", 2);
 
@@ -321,7 +321,11 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 			//$target = imagescale($source, $newwidth, -1, IMG_BOX);
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
-			if(!$exiftool) $exifArr = readEXIF($org_pic);
+
+			if(!$exiftool) {
+				$exifArr = readEXIF($org_pic);
+		//		if(isset($info['APP13'])) $exif_arr['Subject'] = iptcparse($info['APP13'])["2#025"];
+			}
 			/*
 			$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 			switch ($ort) {
@@ -410,7 +414,7 @@ function exiftool($images, $uid) {
 	global $pictures_basepath;
 	if (`which exiftool`) {
 		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Keywords -Artist -Description -Title -Copyright -Subject";
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
 		$options = "-q -j -d '%s'";
 		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
 		$joutput = implode("", $output);
@@ -437,10 +441,9 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	if(strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
 	if(strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
 
-	//$path = "/mnt/stick/webdav/sebastian@pfohlnet.de/";
-	//file_put_contents($path."tool.json",json_encode($exif,JSON_HEX_APOS|JSON_PRETTY_PRINT));
-	//file_put_contents($path."php.json",json_encode(readEXIF($file),JSON_HEX_APOS|JSON_PRETTY_PRINT));
-	//file_put_contents($path."exif.txt",var_export(@exif_read_data($file), true));
+	$path = "/mnt/stick/webdav/sebastian@pfohlnet.de/";
+	file_put_contents($path."tool.json",json_encode($exif,JSON_HEX_APOS|JSON_PRETTY_PRINT));
+	file_put_contents($path."php.json",json_encode(readEXIF($file),JSON_HEX_APOS|JSON_PRETTY_PRINT));
 	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
 	$type = explode("/", $exif['MIMEType'])[0];
@@ -505,6 +508,8 @@ function readEXIF($file) {
 	$exif_arr = array();
 	$exif_data = @exif_read_data($file);
 
+	$res = getimagesize($file, $info);
+
 	if($exif_data && count($exif_data) > 0) {
 		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
 		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
@@ -528,10 +533,10 @@ function readEXIF($file) {
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
 		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
 		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
+		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
+		$exif_arr['Subject'] = (isset($info['APP13'])) ? iptcparse($info['APP13'])["2#025"]:null;
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
-		(isset($exif_data['Subject'])) ? $exif_arr['Subject'] = $exif_data['Subject']:null;
-		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
 	}
 	return $exif_arr;
 }
