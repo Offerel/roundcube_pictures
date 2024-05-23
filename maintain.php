@@ -440,10 +440,6 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	unset($exif['SourceFile']);
 	if(strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
 	if(strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
-
-	$path = "/mnt/stick/webdav/sebastian@pfohlnet.de/";
-	file_put_contents($path."tool.json",json_encode($exif,JSON_HEX_APOS|JSON_PRETTY_PRINT));
-	file_put_contents($path."php.json",json_encode(readEXIF($file),JSON_HEX_APOS|JSON_PRETTY_PRINT));
 	
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
 	$type = explode("/", $exif['MIMEType'])[0];
