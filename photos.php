@@ -621,9 +621,14 @@ function parseEXIF($jarr) {
         $exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
         $exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
-		$exifInfo.= (isset($jarr['Subject']) && strlen($jarr['Subject']) > 0) ? $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Subject']."<br>":"";
-		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".$jarr['Copyright']."<br>":"";
-
+		
+		if(isset($jarr['Subject']) && is_array($jarr['Subject'])) {
+			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".implode(", ", $jarr['Subject'])."<br>";
+		} elseif (isset($jarr['Subject']) && !is_array($jarr['Subject'])) {
+			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Subject']."<br>";
+		}
+		
+		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
         $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
     }
 
