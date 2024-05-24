@@ -26,6 +26,8 @@ $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
 $images = array();
+$tempstore = array();
+$basepath = rtrim($rcmail->config->get('work_path', false), '/');
 
 for ($x = 0; $x < $rcount; $x++) {
 	array_push($users, $db->fetch_assoc($result));
@@ -37,8 +39,8 @@ foreach($users as $user) {
 	$username = $user["username"];
 	$uid = $user["user_id"];
 	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
-	$thumb_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)), '/');
-	$webp_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)), '/');
+	$thumb_basepath = $basepath."/".$username."/photos";
+	$webp_basepath =  $basepath."/".$username."/webp";
 	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
 
 	switch($mode) {
@@ -60,12 +62,24 @@ foreach($users as $user) {
 			break;
 		default:
 			logm("Search media for $username");
+			$tempstore = (file_exists($basepath."/tempstore.json")) ? json_decode(file_get_contents($basepath."/tempstore.json"),true):array();
+
+			foreach($tempstore as $element) {
+				if($uid == $element[1]) {
+					$images[] = $element[0];
+				}
+			}
+
+			if(count($images) > 0) logm("The last maintenance was not completed properly. ".count($images)." images found in temporary store", 2);
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 			logm("read_photos finished after ".etime($starttime), 4);
 			
 			if($exiftool && count($images) > 0) {
 				exiftool($images, $uid);
 				$images = [];
+				$tempstore = [];
+				unlink($basepath."/tempstore.json");
+				logm("Temporary list store removed", 4);
 			}
 
 			if(is_dir($thumb_basepath)) {
@@ -155,7 +169,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 				} else {
 					$pathparts = pathinfo($path."/".$file);
 					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
-						$exifArr = createthumb("$path/$file", $thumb_basepath, $pictures_basepath);
+						$exifArr = createthumb("$path/$file", $thumb_basepath, $pictures_basepath, $user);
 						
 						if(is_array($exifArr)) {
 							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
@@ -264,8 +278,15 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	logm("Saved $webp_file",4);
 }
 
-function createthumb($image, $thumb_basepath, $pictures_basepath) {
-	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd, $images;
+function images($image, $uid) {
+	global $basepath, $images, $tempstore;
+	$tempstore[] = array($image, $uid);
+	$images[] = $image;
+	file_put_contents($basepath."/tempstore.json", json_encode($tempstore, true));
+}
+
+function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
+	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -281,7 +302,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 	}
 	
 	$mimetype = mime_content_type($org_pic);
-	$images[] = $org_pic;
+	images($org_pic, $uid);
 	$target = "";
 	$degrees = 0;
 	$ppath = "";
@@ -324,7 +345,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath) {
 
 			if(!$exiftool) {
 				$exifArr = readEXIF($org_pic);
-		//		if(isset($info['APP13'])) $exif_arr['Subject'] = iptcparse($info['APP13'])["2#025"];
 			}
 			/*
 			$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;

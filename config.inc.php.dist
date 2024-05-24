@@ -1,8 +1,7 @@
 <?php
 // Administrative settings
 $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
-$config['webp_path'] = '/path/to/thmbs/%u/webp/'; // Absolute path to webp version of image. Use %u for the username
-$config['thumb_path'] = '/path/to/thmbs/%u/photos/'; // Absolute path to the generated thumbnails of user photos. Use %u for the username. This must not be a subdirectory of $config['pictures_path']
+$config['work_path'] = '/mnt/stick/gal_thmbs'; // Path where for every user a sperate folder will be created. Thumbnails and WebP Files are saved in subdirectories
 $config['swidth'] = 1920; // width for webp version
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!

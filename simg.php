@@ -35,7 +35,7 @@ if(isset($file) && !empty($file)) {
 		$username = $rcmail->user->get_username();
 		switch($mode) {
 			case 1:
-				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('thumb_path', false)),'/').'/';
+				$pictures_basepath = $rcmail->config->get('work_path', false)."/$username/photos/";
 				$ext = ".jpg";
 				break;
 			case 2:

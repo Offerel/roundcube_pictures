@@ -14,19 +14,10 @@ $rcmail = rcmail::get_instance();
 if (!empty($rcmail->user->ID)) {
 	$username = $rcmail->user->get_username();
 	$pictures_path = str_replace("%u", $username, $rcmail->config->get('pictures_path', false));
-	$thumb_path = str_replace("%u", $username, $rcmail->config->get('thumb_path', false));
-	$webp_path = str_replace("%u", $username, $rcmail->config->get('webp_path', false));
+	$basepath = rtrim($rcmail->config->get('work_path', false), '/');
+	$thumb_path = $basepath."/".$username."/photos/";
+	$webp_path = $basepath."/".$username."/webp/";
 	$thumbsize = $rcmail->config->get('thumb_size', false);
-	
-	if(substr($pictures_path, -1) != '/') {
-		error_log('Pictures: check $config[\'pictures_path\'], the path must end with a backslash.');
-		die();
-	}
-	
-	if(substr($thumb_path, -1) != '/') {
-		error_log('Picturesv check $config[\'thumb_path\'], the path must end with a backslash.');
-		die();
-	}
 	
 	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
@@ -52,6 +43,7 @@ $skip_objects = $rcmail->config->get('skip_objects', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $ccmd = $rcmail->config->get('convert_cmd', false);
 $ffprobe = exec("which ffprobe");
+$exiftool = $rcmail->config->get('exiftool', false);
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
@@ -986,6 +978,20 @@ function readEXIF($file) {
 	return $exif_arr;
 }
 
+function exiftool($image) {
+	global $pictures_basepath;
+	if (`which exiftool`) {
+		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
+		$options = "-q -j -d '%s'";
+		exec("exiftool $options $tags '$image' 2>&1", $output, $error);
+		$joutput = implode("", $output);
+		$mdarr = json_decode($joutput, true);
+	} else {
+		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
+	}
+    return $mdarr[0];
+}
+
 function shutter($value) {
 	$pos = strpos($value, '/');
 	$a = (float) substr($value, 0, $pos);
@@ -1034,7 +1040,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd;
+	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exiftool;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
 
@@ -1075,14 +1081,17 @@ function createthumb($image) {
 			default:
 				corrupt_thmb($thumbsize, $thumbpath);
 				error_log("Pictures: Unsupported fileformat ($type).");
-				//die();
 		}
 		
 		//imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 		imagedestroy($source);
 
-		$exif = readEXIF($image);
+		$exif = (!$exiftool) ? readEXIF($image):exiftool($image);
+		unset($arr['SourceFile']);
+		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
+		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
+		//$exif = readEXIF($image);
 		/*
 		$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 		switch ($ort) {
