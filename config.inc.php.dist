@@ -13,11 +13,10 @@ $config['dummy_files'] = false; // If set to true, deleted and moved images are 
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file will be automatically removed
 $config['debug'] = false; // If set true, debug messages are displayed
-$config['pntfy'] = false; // Set to true, if you want to use ntfy
+$config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via ntfy, or set to false
 $config['pntfy_url'] = "https://ntfy.yourdomain.com/channel"; // the url to your ntfy instance
 $config['pntfy_usr'] = ""; // ntfy username, if needed
 $config['pntfy_pwd'] = ""; // ntfy password
-$config['pntfy_sec'] = 60; // be notified only after a runtime of x seconds
 $config['exiftool'] = false; // Set to if you want to use exiftool, instead of exif_read_data()
 
 // User default settings

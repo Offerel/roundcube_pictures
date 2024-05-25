@@ -28,6 +28,7 @@ $rcount = $db->num_rows($result);
 $images = array();
 $tempstore = array();
 $basepath = rtrim($rcmail->config->get('work_path', false), '/');
+$pntfy = $rcmail->config->get('pntfy_sec');
 
 for ($x = 0; $x < $rcount; $x++) {
 	array_push($users, $db->fetch_assoc($result));
@@ -111,7 +112,7 @@ $authHeader = base64_encode($rcmail->config->get('pntfy_usr').":".$rcmail->confi
 $authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
 $purl = $rcmail->config->get('pntfy_url');
 
-if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') && strlen($purl) > 4) {
+if($pntfy && etime($starttime,true) > $pntfy && strlen($purl) > 4) {
 	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 		'http' => [
 			'method' => 'POST',
@@ -126,12 +127,13 @@ if($sdiff > $rcmail->config->get('pntfy_sec') && $rcmail->config->get('pntfy') &
 	])), true);
 
 	if(isset($rarr['id'])) 
-		logm("ntfy push succesfully send");
+		logm("ntfy push succesfully send", 4);
 	else
 		logm("ntfy push failed.", 2);
 }
 
-function etime($starttime) {
+function etime($starttime, $s = false) {
+	if($s) return time() - $starttime;
 	return gmdate("H:i:s", time() - $starttime);
 }
 
