@@ -467,8 +467,13 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	if($type == 'image') {
 		$taken = (isset($exif['DateTimeOriginal']) && is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
-		$taken = isset($exif['CreateDate']) ? $exif['CreateDate']:shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\"");
-		$taken = (empty($taken)) ? filemtime($file):strtotime($taken);
+		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0) {
+			$taken = $exif['DateTimeOriginal'];
+		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0) {
+			$taken = $exif['CreateDate'];
+		} else {
+			$taken = filemtime($file);
+		}
 	}
 
 	if($count == 0) {
