@@ -467,9 +467,9 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	if($type == 'image') {
 		$taken = (isset($exif['DateTimeOriginal']) && is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
-		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0) {
+		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0 && is_int($exif['DateTimeOriginal'])) {
 			$taken = $exif['DateTimeOriginal'];
-		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0) {
+		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['DateTimeOriginal'])) {
 			$taken = $exif['CreateDate'];
 		} else {
 			$taken = filemtime($file);
@@ -483,6 +483,9 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		logm("Update database for $file", 4);
 		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
 	}
+
+
+	die();
 
 	$db->startTransaction();
 	$db->query($query);
