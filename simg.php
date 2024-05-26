@@ -258,23 +258,47 @@ if(file_exists($file)) {
 			header('Content-disposition: inline;filename="'.ltrim(basename($file),'.').'"');
 			die($ImageData);
 			break;
+		case 9:
+			list($width, $height) = getimagesize($file);
+			$width = ($width > $height) ? $swidth:$width / ($height / $swidth);
+			$source = @imagecreatefromjpeg($file);
+			//$target = imagescale($source, $nwidth, -1, IMG_GENERALIZED_CUBIC);
+			$target = imagescale($source, $width, -1);
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+			header('Accept-Ranges: bytes');
+			header('Content-disposition: inline;filename="$file"');
+			ob_start();
+
+			header("Content-Type: image/jpeg");
+			imagejpeg($target, null, 50);
+			//header("Content-Type: image/webp");
+			//imagewebp($target, null, 50);
+			
+			$size = ob_get_length();
+			header("Content-length: " . $size);
+			ob_flush();
+
+			imagedestroy($target);
+			imagedestroy($source);
+			die();
+			break;
 		default:
 			$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
 			$webp_path = rtrim(str_replace("%u", $username, $rcmail->config->get('webp_path', false)),'/').'/';
 			$webp_file = str_replace($pictures_basepath, $webp_path, $file).".webp";
-
-			if(file_exists($webp_file)) {
-				$file = $webp_file;
-				header("Content-Type: image/webp");
-			} else {
-				header("Content-Type: imag/jpeg");
-			}
 			
 			$filesize = filesize($file);
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 			header('Accept-Ranges: bytes');
 			header("Content-Length: ".$filesize);
 			header('Content-disposition: inline;filename="'.str_replace(".jpg","",ltrim(basename($file),'.')).'"');
+			
+			if(file_exists($webp_file)) {
+				$file = $webp_file;
+				header("Content-Type: image/webp");
+			} else {
+				header("Content-Type: imag/jpeg");
+			}
 			die(readfile($file));
 			break;
 	}

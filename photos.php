@@ -1178,7 +1178,7 @@ function todb($file, $user, $pictures_basepath, $exif) {
 			$taken = $exif['CreateDate'];
 		} else {
 			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
-			$taken = (empty($taken)) ? filemtime($file);
+			$taken = (empty($taken)) ? filemtime($file):$taken;
 		}
 	}
 
