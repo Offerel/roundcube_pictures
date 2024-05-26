@@ -1091,6 +1091,7 @@ function createthumb($image) {
 		unset($arr['SourceFile']);
 		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
+
 		//$exif = readEXIF($image);
 		/*
 		$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
@@ -1171,8 +1172,14 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	if($type == 'image') {
 		$taken = (is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
-		$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
-		$taken = (empty($taken)) ? filemtime($file):$taken;
+		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0 && is_int($exif['DateTimeOriginal'])) {
+			$taken = $exif['DateTimeOriginal'];
+		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['CreateDate'])) {
+			$taken = $exif['CreateDate'];
+		} else {
+			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
+			$taken = (empty($taken)) ? filemtime($file);
+		}
 	}
 
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";

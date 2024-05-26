@@ -471,7 +471,7 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	} else {
 		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0 && is_int($exif['DateTimeOriginal'])) {
 			$taken = $exif['DateTimeOriginal'];
-		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['DateTimeOriginal'])) {
+		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['CreateDate'])) {
 			$taken = $exif['CreateDate'];
 		} else {
 			$taken = filemtime($file);
