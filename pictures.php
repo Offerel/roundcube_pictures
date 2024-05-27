@@ -227,40 +227,123 @@ function getIType($path) {
 }
 
 function getEXIFSpan($json, $imgid) {
-	$exifArray = json_decode($json);
+	$exifArray = json_decode($json, true);
 	$exifHTML = "";
-	if($exifArray[0] != "-" && $exifArray[8] != "-")
-		$exifHTML.= "Camera: ".$exifArray[8]." - ".$exifArray[0]."<br>";
-	if($exifArray[1] != "-")
-		$exifHTML.= "FocalLength: ".$exifArray[1]."<br>";
-	if($exifArray[3] != "-")
-		$exifHTML.= "F-stop: ".$exifArray[3]."<br>";
-	if($exifArray[4] != "-")
-		$exifHTML.= "ISO: ".$exifArray[4]."<br>";
-	if($exifArray[5] != "-")
-		$exifHTML.= "Date: ".date("d.m.Y H:i", $exifArray[5])."<br>";
-	if($exifArray[6] != "-")
-		$exifHTML.= "Description: ".$exifArray[6]."<br>";
-	if($exifArray[9] != "-")
-		$exifHTML.= "Software: ".$exifArray[9]."<br>";
-	if($exifArray[10] != "-")
-		$exifHTML.= "Exposure: ".$exifArray[10]."<br>";
-	if($exifArray[11] != "-")
-		$exifHTML.= "Flash: ".$exifArray[11]."<br>";
-	if($exifArray[12] != "-")
-		$exifHTML.= "Metering Mode: ".$exifArray[12]."<br>";
-	if($exifArray[13] != "-")
-		$exifHTML.= "Whitebalance: ".$exifArray[13]."<br>";
-	if($exifArray[14] != "-" && $exifArray[15] != "-") {
-		$osm_params = http_build_query(array(	'mlat' => str_replace(',','.',$exifArray[14]),
-												'mlon' => str_replace(',','.',$exifArray[15])
-											),'','&amp;');
-		$exifHTML.= "<a href='https://www.openstreetmap.org/?".$osm_params."' target='_blank'>Show on map</a>";
+
+	if (array_key_exists('1', $exifArray)) {
+		if($exifArray[0] != "-" && $exifArray[8] != "-") $exifHTML.= "Camera: ".$exifArray[8]." - ".$exifArray[0]."<br>";
+		if($exifArray[1] != "-") $exifHTML.= "FocalLength: ".$exifArray[1]."<br>";
+		if($exifArray[3] != "-") $exifHTML.= "F-stop: ".$exifArray[3]."<br>";
+		if($exifArray[4] != "-") $exifHTML.= "ISO: ".$exifArray[4]."<br>";
+		if($exifArray[10] != "-") $exifHTML.= "Exposure: ".$exifArray[10]."<br>";
+		if($exifArray[11] != "-") $exifHTML.= "Flash: ".flash2($exifArray[11])."<br>";
+		if($exifArray[12] != "-") $exifHTML.= "Metering Mode: ".$exifArray[12]."<br>";
+		if($exifArray[13] != "-") $exifHTML.= "Whitebalance: ".wb2($exifArray[13])."<br>";
+	} elseif (array_key_exists('Model', $exifArray)) {
+		if(array_key_exists('Make', $exifArray) && array_key_exists('Model', $exifArray)) 
+			$camera = (strpos($exifArray['Model'], explode(" ",$exifArray['Make'])[0]) !== false) ? $exifArray['Model']:$exifArray['Make']." - ".$exifArray['Model'];			
+		elseif(array_key_exists('Model', $exifArray))
+			$camera = $exifArray['Model'];
+
+		$exifHTML = (array_key_exists('Model', $exifArray)) ? "Camera: $camera<br>":"";
+		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? "Lens: ".$exifArray['LensID']."<br>":"";
+		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? "Mode: ".ep2($exifArray['ExposureProgram'])."<br>":"";
+		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? "Metering Mode: ".mm2($exifArray['MeteringMode'])."<br>":"";
+		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? "Exposure time: ".$exifArray['ExposureTime']."s<br>":"";
+		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? "Shutter speed: ".$exifArray['TargetExposureTime']."s<br>":"";
+		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? "ISO: ".$exifArray['ISO']."<br>":"";
+		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? "Focal Length: ".$exifArray['FocalLength']."mm<br>":"";
+		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? "Whitebalance: ".wb2($exifArray['WhiteBalance'])."<br>":"";
+		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? "Aperture: f".$exifArray['FNumber']."<br>":"";
+		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? "Flash: ".flash2($exifArray['Flash'])."<br>":"";
+
+		if(isset($exifArray['Subject']) && is_array($exifArray['Subject'])) {
+			$exifHTML.= "Keywords: ".implode(", ", $exifArray['Subject'])."<br>";
+		} elseif (isset($exifArray['Subject']) && !is_array($exifArray['Subject'])) {
+			$exifHTML.= "Keywords: ".$exifArray['Subject']."<br>";
+		}
+		
+		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? "Copyright: ".str_replace("u00a9","&copy;",$exifArray['Copyright'])."<br>":"";
+		
 	}
-
-	$exifSpan = (count($exifArray) > 1) ? "<span id='exif_$imgid' class='exinfo'>$exifHTML</span>":"";
-
+	$exifSpan = (strlen($exifHTML > 0)) ? "<span id='exif_$imgid' class='exinfo'>$exifHTML</span>":"";
 	return $exifSpan;
+}
+
+function flash2($val) {
+	switch($val) {
+		case 0: $str = 'No Flash'; break;
+		case 1: $str = 'Fired'; break;
+		case 5: $str = 'Fired, Return not detected'; break;
+		case 7: $str = 'Fired, Return detected'; break;
+		case 9: $str = 'Flash, Compulsory'; break;
+		case 13: $str = 'Flash, Compulsory, No Strobe Return'; break;
+		case 15: $str = 'Flash, Compulsory, Strobe Return'; break;
+		case 16: $str = 'No Flash, Compulsory'; break;
+		case 24: $str = 'No Flash, Auto'; break;
+		case 25: $str = 'Flash, Auto'; break;
+		case 29: $str = 'Flash, Auto, No Strobe Return'; break;
+		case 31: $str = 'Flash, Auto, Strobe Return'; break;
+		case 32: $str = 'No Flash Function'; break;
+		case 65: $str = 'Flash, Red-eyes'; break;
+		case 69: $str = 'Flash, Red-eye, No Strobe Return'; break;
+		case 71: $str = 'Flash, Red-eye, Strobe Return'; break;
+		case 73: $str = 'Flash, Compulsory, Red-eye'; break;
+		case 77: $str = 'Flash, Compulsory, Red-eye, No Strobe Return'; break;
+		case 79: $str = 'Flash, Compulsory, Red-eye, Strobe Return'; break;
+		case 89: $str = 'Flash, Auto, Red-eye'; break;
+		case 93: $str = 'Flash, Auto, No Strobe Return, Red-eye'; break;
+		case 95: $str = 'Flash, Auto, Strobe Return, Red-eye'; break;
+		default: $str = $val.'-unknown';
+	}
+	return $str;
+}
+
+function wb2($val) {
+	switch($val) {
+		case 0: $str = "Auto"; break;
+		case 1: $str = "Daylight"; break;
+		case 2: $str = "Fluorescent"; break;
+		case 3: $str = "Incandescent"; break;
+		case 4: $str = "Flash"; break;
+		case 9: $str = "Fine Weather"; break;
+		case 10: $str = "Cloudy"; break;
+		case 11: $str = "Shade"; break;
+		default: $str = $val.'-unknown';
+	}
+	return $str;
+}
+
+function mm2($val) {
+	switch ($val) {
+		case 0: $str = "Unknown"; break;
+		case 1: $str = "Average"; break;
+		case 2: $str = "Center"; break;
+		case 3: $str = "Spot"; break;
+		case 4: $str = "Multi-Spot"; break;
+		case 5: $str = "Multi-field"; break;
+		case 6: $str = "Partial"; break;
+		case 255: $str = "Other"; break;
+		default: $str = $val.'-unknown';
+	}
+	return $str;
+}
+
+function ep2($val) {
+	switch ($val) {
+		case 0: $str = "Undefined"; break;
+		case 1: $str = "Manual"; break;
+		case 2: $str = "Auto"; break;
+		case 3: $str = "Auto Time"; break;
+		case 4: $str = "Auto Shutter"; break;
+		case 5: $str = "Creative (Slow)"; break;
+		case 6: $str = "Action (High speed)"; break;
+		case 7: $str = "Portrait"; break;
+		case 8: $str = "Landscape"; break;
+		case 9: $str = "Bulb"; break;
+		default: $str = $val.'-unknown';
+	}
+	return $str;
 }
 
 function showShare($thumbnails, $share) {

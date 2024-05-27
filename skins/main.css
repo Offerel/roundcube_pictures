@@ -480,6 +480,16 @@ footer a {
 		padding-bottom: 100%;
 	}
 }
+#dlbtn {
+    position: absolute;
+    top: 15px;
+    right: 145px;
+    background-color: rgba(0,0,0,.32);
+    opacity: .7;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
 #fbtn {
     position: absolute;
     top: 15px;

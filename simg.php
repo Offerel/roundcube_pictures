@@ -26,10 +26,10 @@ $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 $type = isset($_GET['w']) ? filter_var($_GET['w'], FILTER_SANITIZE_NUMBER_INT):0;
-$swidth = $rcmail->config->get('swidth', false);
-$theight = $rcmail->config->get('thumb_size', false);
-$workpath = $rcmail->config->get('work_path', false);
-$pictures_path = $rcmail->config->get('pictures_path', false);
+$swidth = $config['swidth'];
+$theight = $config['thumb_size'];
+$workpath = $config['work_path'];
+$pictures_path = $config['pictures_path'];
 
 $m = ($mode == 1) ? "Thumbnail":"Picture";
 
@@ -54,7 +54,7 @@ if(isset($file) && !empty($file)) {
 		error_log('Pictures: Login failed. User is not logged in.');
 		die();
 	}
-
+	
 	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
 } else {
 	$dbh = $rcmail->get_dbh();
@@ -63,7 +63,7 @@ if(isset($file) && !empty($file)) {
 	
 	$username = $data['username'];
 	$image_basepath = rtrim(str_replace("%u", $username, $config['pictures_path']), '/');
-	$thumb_basepath = rtrim(str_replace("%u", $username, $config['thumb_path']), '/');
+	$thumb_basepath = "$workpath/$username/photos";
 
 	$imagepath = $image_basepath."/".$data['pic_path'];
 	$thumbpath = $thumb_basepath."/".$data['pic_path'].".jpg";
@@ -98,7 +98,12 @@ if(file_exists($file)) {
 
 	if($m == "Thumbnail") $type = 1;
 
-	//todo: if exists > view generated webp (5), if not > actual default 
+	$webpfile = realpath(str_replace(str_replace('%u', $username, $pictures_path), "$workpath/$username/webp/", $file).".webp");
+	
+	if((!$type && file_exists($webpfile)) || $type == 5) {
+		$type = 5;
+		$file = $webpfile;
+	}
 	
 	switch($type) {
 		case 1:	// Load generated Thumbnail
@@ -135,8 +140,6 @@ if(file_exists($file)) {
 			imagedestroy($source);
 			break;
 		case 5:	// view generated webp
-			$pictures_path = str_replace('%u',$username,$pictures_path);
-			$file = str_replace($pictures_path,"$workpath/$username/webp/",$file).".webp";
 			$filesize = filesize($file);
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
 			header("Cache-Control: private");

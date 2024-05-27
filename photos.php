@@ -343,13 +343,17 @@ function showPage($thumbnails, $dir) {
 			if(document.getElementById(file)) {
 				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 				if(document.getElementById('fbtn')) document.getElementById('fbtn').remove();
+				if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
 				let closebtn = document.querySelector('.gclose');
 				let infobtn = document.createElement('button');
 				let fbtn = document.createElement('button');
+				let dlbtn = document.createElement('button');
 				infobtn.id = 'infbtn';
 				fbtn.id = 'fbtn';
+				dlbtn.id = 'dlbtn';
 				fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
-				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';				
+				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
+				dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"27\" height=\"27\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
 				infobtn.addEventListener('mouseover', function() {
 					document.getElementById(file).classList.add('eshow');
 					document.getElementById(file).addEventListener('mouseover', function() {document.getElementById(file).classList.add('eshow')})
@@ -365,7 +369,11 @@ function showPage($thumbnails, $dir) {
 						document.getElementById('glightbox-body').requestFullscreen();
 					}
 				});
-
+				dlbtn.addEventListener('click', e => {
+					const { slideIndex, slideNode, slideConfig, player, trigger } = current;
+					console.log(slideIndex);
+				});
+				closebtn.before(dlbtn);
 				closebtn.before(infobtn);
 				closebtn.before(fbtn);
 			}
@@ -566,28 +574,31 @@ function showPage($thumbnails, $dir) {
 
 function parseEXIF($jarr) {
 	global $rcmail;
-    if(array_key_exists('1', $jarr)) {
-        $osm_params = http_build_query(array(
-            'mlat' => str_replace(',','.',$jarr[14]),
-            'mlon' => str_replace(',','.',$jarr[15])
-        ),'','&amp;');
 
-        $gpslink ="<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+	if (!is_array($jarr)) return false;
+
+	if(array_key_exists('1', $jarr)) {
+		$osm_params = http_build_query(array(
+			'mlat' => str_replace(',','.',$jarr[14]),
+			'mlon' => str_replace(',','.',$jarr[15])
+		),'','&amp;');
+
+		$gpslink ="<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
 		$camera = (array_key_exists('0', $jarr) && strpos($jarr[0], explode(" ",$jarr[8])[0]) !== false) ? $jarr[0]:$jarr[8]." - ".$jarr[0];
 
-        $exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
-        $exifInfo.= (array_key_exists('5', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr[5])."<br>":"";
-        $exifInfo.= (array_key_exists('9', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr[9]."<br>":"";
-        $exifInfo.= (array_key_exists('10', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$jarr[10]."<br>":"";
-        $exifInfo.= (array_key_exists('12', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$jarr[12]."<br>":"";
-        $exifInfo.= (array_key_exists('4', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr[4]."<br>":"";
-        $exifInfo.= (array_key_exists('1', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr[1]."<br>":"";
-        $exifInfo.= (array_key_exists('13', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr[13]),'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('3', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr[3]."<br>":"";
-        $exifInfo.= (array_key_exists('11', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr[11]),'pictures')."<br>":"";
-        $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
-        $exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
-    } else {
+		$exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+		$exifInfo.= (array_key_exists('5', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr[5])."<br>":"";
+		$exifInfo.= (array_key_exists('9', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr[9]."<br>":"";
+		$exifInfo.= (array_key_exists('10', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$jarr[10]."<br>":"";
+		$exifInfo.= (array_key_exists('12', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$jarr[12]."<br>":"";
+		$exifInfo.= (array_key_exists('4', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr[4]."<br>":"";
+		$exifInfo.= (array_key_exists('1', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr[1]."<br>":"";
+		$exifInfo.= (array_key_exists('13', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr[13]),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('3', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr[3]."<br>":"";
+		$exifInfo.= (array_key_exists('11', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr[11]),'pictures')."<br>":"";
+		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+		$exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
+	} else {
 		if(array_key_exists('GPSLatitude', $jarr) && array_key_exists('GPSLongitude', $jarr)) {
 			$osm_params = http_build_query(array(
 				'mlat' => str_replace(',','.',$jarr['GPSLatitude']),
@@ -597,25 +608,25 @@ function parseEXIF($jarr) {
 			$osm_params = "";
 		}    
 
-        $gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+		$gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
 		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
 			$camera = (strpos($jarr['Model'], explode(" ",$jarr['Make'])[0]) !== false) ? $jarr['Model']:$jarr['Make']." - ".$jarr['Model'];			
 		elseif(array_key_exists('Model', $jarr))
 			$camera = $jarr['Model'];
 
-        $exifInfo = (array_key_exists('Model', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
-        $exifInfo.= (array_key_exists('LensID', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['LensID']."<br>":"";
-        $exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
-        $exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
-        $exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
+		$exifInfo = (array_key_exists('Model', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+		$exifInfo.= (array_key_exists('LensID', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['LensID']."<br>":"";
+		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
+		$exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
+		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
 		$exifInfo.= (array_key_exists('TargetExposureTime', $jarr)) ? $rcmail->gettext('exif_texptime','pictures').": ".$jarr['TargetExposureTime']."s<br>":"";
-        $exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
-        $exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
-        $exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
-        $exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
-        $exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
+		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
+		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
+		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
 		
 		if(isset($jarr['Subject']) && is_array($jarr['Subject'])) {
@@ -625,10 +636,10 @@ function parseEXIF($jarr) {
 		}
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
-        $exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
-    }
+		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+	}
 
-    return $exifInfo;
+	return $exifInfo;
 }
 
 function ep($val) {
@@ -769,7 +780,7 @@ function showGallery($requestedDir, $offset = 0) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
-				$linkUrl = "simg.php?w=5&file=".rawurlencode("$requestedDir/$file");
+				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
 				$exifInfo = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
@@ -963,8 +974,8 @@ function readEXIF($file) {
 		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
 		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
 		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
-        (isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
-        (isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
+		(isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
+		(isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
 		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
 		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
@@ -989,7 +1000,7 @@ function exiftool($image) {
 	} else {
 		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
 	}
-    return $mdarr[0];
+	return $mdarr[0];
 }
 
 function shutter($value) {
@@ -1016,10 +1027,10 @@ function gps2Num($coordPart) {
 	if (count($parts) <= 0) return 0;
 	if (count($parts) == 1) return $parts[0];
 
-    $f = floatval($parts[0]);
-    $s = floatval($parts[1]);
+	$f = floatval($parts[0]);
+	$s = floatval($parts[1]);
 
-    $e = ($s == 0) ? 0:$f/$s;
+	$e = ($s == 0) ? 0:$f/$s;
 	return $e;
 }
 
