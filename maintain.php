@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.17
+ * @version 1.4.18
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -341,7 +341,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 		logm("Create image thumbnail $thumb_pic", 4);
 
 		if ($source) {
-			//$target = imagescale($source, $newwidth, -1, IMG_BOX);
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
 

@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.17
+ * @version 1.4.18
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -267,7 +267,6 @@ function showPage($thumbnails, $dir) {
 	$page.= "</head>
 	\t\t<body class='picbdy' onload='count_checks();'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
-	<!-- \t\t\t<div id='header' style='position: absolute; top: -8px;'> -->
 	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
 	\t\t\t\t\t$albumnav
@@ -341,9 +340,6 @@ function showPage($thumbnails, $dir) {
 		lightbox.on('slide_changed', (data) => {
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			if(document.getElementById(file)) {
-				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-				if(document.getElementById('fbtn')) document.getElementById('fbtn').remove();
-				if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
 				let closebtn = document.querySelector('.gclose');
 				let infobtn = document.createElement('button');
 				let fbtn = document.createElement('button');
@@ -353,7 +349,7 @@ function showPage($thumbnails, $dir) {
 				dlbtn.id = 'dlbtn';
 				fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
 				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-				dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"27\" height=\"27\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
+				dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
 				infobtn.addEventListener('mouseover', function() {
 					document.getElementById(file).classList.add('eshow');
 					document.getElementById(file).addEventListener('mouseover', function() {document.getElementById(file).classList.add('eshow')})
@@ -370,8 +366,7 @@ function showPage($thumbnails, $dir) {
 					}
 				});
 				dlbtn.addEventListener('click', e => {
-					const { slideIndex, slideNode, slideConfig, player, trigger } = current;
-					console.log(slideIndex);
+					window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
 				});
 				closebtn.before(dlbtn);
 				closebtn.before(infobtn);
@@ -1083,7 +1078,6 @@ function createthumb($image) {
 		list($width, $height, $type) = getimagesize($image);
 		$newwidth = ceil($width * $thumbsize / $height);
 		if($newwidth <= 0) error_log("Pictures: Calculating the width failed.");
-		//$target = imagecreatetruecolor($newwidth, $thumbsize);
 		
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($image); break;
@@ -1094,7 +1088,6 @@ function createthumb($image) {
 				error_log("Pictures: Unsupported fileformat ($type).");
 		}
 		
-		//imagecopyresampled($target, $source, 0, 0, 0, 0, $newwidth, $thumbsize, $width, $height);
 		$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 		imagedestroy($source);
 
@@ -1103,8 +1096,8 @@ function createthumb($image) {
 		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
 
-		//$exif = readEXIF($image);
 		/*
+		$exif = readEXIF($image);
 		$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
 		switch ($ort) {
 			case 3: $degrees = 180; break;

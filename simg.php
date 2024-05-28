@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.17
+ * @version 1.4.18
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -107,46 +107,21 @@ if(file_exists($file)) {
 	
 	switch($type) {
 		case 1:	// Load generated Thumbnail
-			$filesize = filesize($file);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Cache-Control: private");
-			header("Pragma: private");
-			header("Content-Type: $mimeType");
-			header('Content-Disposition: inline; filename="'.$pathparts['filename'].'"');
-			header("Content-length: $filesize");
+			sendHeaders($file, $mimeType, $pathparts['filename'], 'inline');
 			readfile($file);
 			break;
 		case 3:	// Download in Album
-			$filesize = filesize($file);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Cache-Control: private");
-			header("Pragma: private");
-			header("Content-Type: $mimeType");
-			header('Content-Disposition: attachment; filename="'.$pathparts['basename'].'"');
-			header("Content-length: $filesize");
+			sendHeaders($file, 'application/octet-stream', $pathparts['basename'], 'attachment');
 			readfile($file);
 			break;
 		case 4:	// Download in Share
 			$source = @imagecreatefromjpeg($file);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Cache-Control: private");
-			header("Pragma: private");
-			header("Content-Type: image/jpeg");
-			header('Content-Disposition: attachment; filename="'.$pathparts['filename'].'.jpg"');
-			ob_start();
+			sendHeaders($file, 'application/octet-stream', $pathparts['filename'].'.jpg', 'attachment');
 			imagejpeg($source, null, 100);
-			header("Content-length: ".ob_get_length());
-			ob_flush();
 			imagedestroy($source);
 			break;
 		case 5:	// view generated webp
-			$filesize = filesize($file);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Cache-Control: private");
-			header("Pragma: private");
-			header("Content-Type: image/webp");
-			header('Content-Disposition: inline; filename="'.$pathparts['filename'].'.webp"');
-			header("Content-length: $filesize");
+			sendHeaders($file, 'image/webp', $pathparts['filename'].'.webp', 'inline');
 			readfile($file);
 			break;
 		default: // View scaled
@@ -155,20 +130,21 @@ if(file_exists($file)) {
 			$source = @imagecreatefromjpeg($file);
 			$target = imagescale($source, ceil($nwidth), -1);
 			imagedestroy($source);
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-			header("Cache-Control: private");
-			header("Pragma: private");
-			header("Content-Type: image/jpeg");
-			header('Content-Disposition: inline; filename="'.$pathparts['filename'].'.jpg"');
-			ob_start();
+			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.jpg', 'inline');
 			imagejpeg($target, null, 50);
-			header("Content-length: ".ob_get_length());
-			ob_flush();
 			imagedestroy($target);
 			break;
 	}
 } else {
 	error_log("Pictures: $m not found: $file");
 	die('Not found '."$file");
+}
+
+function sendHeaders($file, $mimeType, $filename, $disposition) {
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
+	header("Cache-Control: private");
+	header("Pragma: private");
+	header("Content-Type: $mimeType");
+	header("Content-Disposition: $disposition; filename=\"$filename\"");
 }
 ?>

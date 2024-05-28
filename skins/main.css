@@ -489,6 +489,7 @@ footer a {
     border-radius: 4px;
     cursor: pointer;
     border: none;
+    height: 35px;
 }
 #fbtn {
     position: absolute;
@@ -515,7 +516,7 @@ footer a {
 	border: none;
 	fill: #fff;
 }
-#infbtn:hover, #fbtn:hover {
+#fbtn:hover, #infbtn:hover, #dlbtn:hover {
 	background-color: rgba(0,0,0,.7);
 	opacity: 1;
 }

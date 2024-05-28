@@ -1,3 +1,9 @@
+### v1.4.18
+- Added Download option in album image
+- Added Clipboard access for Shares
+- Removed some Exif infos from Shares
+- Fixed issue in gallery with empty value
+  
 ### v1.4.17
 - Added support for ntfy
 - Added Rescan of changed media

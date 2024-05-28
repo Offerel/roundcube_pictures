@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.17
+ * @version 1.4.18
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -415,12 +415,29 @@ function sharepicture() {
 			const url = new URL(location.href);
 			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
 			$("#link").contents().get(0).nodeValue = nurl;
+			let clpbtn = document.getElementById('btnclp');
+			clpbtn.addEventListener('click', e => {
+				e.preventDefault();
+				copyPageUrl(nurl);
+				document.getElementById('share_edit').style.display='none';
+				window.parent.document.getElementById('info').style.display = 'none';
+				return false;
+			});
+			clpbtn.style.visibility = "visible";
 			link.style.visibility = "visible";
 			dloader('#share_edit', sbtn, 'remove');
 			sbtn.style.visibility = "hidden";
 		}
 	});
 }
+
+async function copyPageUrl(text) {
+	try {
+	  await navigator.clipboard.writeText(text);
+	} catch (err) {
+	  console.error('Failed to copy: ', err);
+	}
+  }
 
 function dloader(dialogid, button, mode) {
 	if(document.getElementById('mdark')) document.getElementById('mdark').remove();
