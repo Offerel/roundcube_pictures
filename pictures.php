@@ -55,7 +55,8 @@ class pictures extends rcube_plugin {
 				if(file_exists($fullpath)) {
 					$type = getIType($fullpath);
 					$id = $pictures[$x][2];
-					$exifSpan = getEXIFSpan($pictures[$x][1], $id);
+					$lang = $rcmail->config->get('language', false);
+					$exifSpan = getEXIFSpan($pictures[$x][1], $id, $lang);
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
@@ -226,123 +227,128 @@ function getIType($path) {
 	return explode('/',mime_content_type($path))[0];
 }
 
-function getEXIFSpan($json, $imgid) {
+function getEXIFSpan($json, $imgid, $lang) {
+	$lngfile = dirname(__FILE__)."/localization/$lang.inc";
+	include (file_exists($lngfile)) ? $lngfile:dirname(__FILE__)."/localization/en_US.inc";
+
 	$exifArray = json_decode($json, true);
 	$exifHTML = "";
 
 	if (array_key_exists('1', $exifArray)) {
-		if($exifArray[0] != "-" && $exifArray[8] != "-") $exifHTML.= "Camera: ".$exifArray[8]." - ".$exifArray[0]."<br>";
-		if($exifArray[1] != "-") $exifHTML.= "FocalLength: ".$exifArray[1]."<br>";
-		if($exifArray[3] != "-") $exifHTML.= "F-stop: ".$exifArray[3]."<br>";
-		if($exifArray[4] != "-") $exifHTML.= "ISO: ".$exifArray[4]."<br>";
-		if($exifArray[10] != "-") $exifHTML.= "Exposure: ".$exifArray[10]."<br>";
-		if($exifArray[11] != "-") $exifHTML.= "Flash: ".flash2($exifArray[11])."<br>";
-		if($exifArray[12] != "-") $exifHTML.= "Metering Mode: ".$exifArray[12]."<br>";
-		if($exifArray[13] != "-") $exifHTML.= "Whitebalance: ".wb2($exifArray[13])."<br>";
+		if($exifArray[0] != "-" && $exifArray[8] != "-") $exifHTML.= $labels['exif_camera'].": ".$exifArray[8]." - ".$exifArray[0]."<br>";
+		if($exifArray[10] != "-") $exifHTML.= $labels['exif_expos'].": ".$exifArray[10]."<br>";
+		if($exifArray[12] != "-") $exifHTML.= $labels['exif_meter'].": ".$exifArray[12]."<br>";
+		if($exifArray[4] != "-") $exifHTML.= $labels['exif_ISO'].": ".$exifArray[4]."<br>";
+		if($exifArray[1] != "-") $exifHTML.= $labels['exif_focalength'].": ".$exifArray[1]."<br>";
+		if($exifArray[13] != "-") $exifHTML.= $labels['exif_whiteb'].": ".gv($exifArray[13], 'wb', $lang)."<br>";
+		if($exifArray[3] != "-") $exifHTML.= $labels['exif_fstop'].": ".$exifArray[3]."<br>";
+		if($exifArray[11] != "-") $exifHTML.= $labels['exif_flash'].": ".gv($exifArray[11], 'fl', $lang)."<br>";
 	} elseif (array_key_exists('Model', $exifArray)) {
 		if(array_key_exists('Make', $exifArray) && array_key_exists('Model', $exifArray)) 
 			$camera = (strpos($exifArray['Model'], explode(" ",$exifArray['Make'])[0]) !== false) ? $exifArray['Model']:$exifArray['Make']." - ".$exifArray['Model'];			
 		elseif(array_key_exists('Model', $exifArray))
 			$camera = $exifArray['Model'];
 
-		$exifHTML = (array_key_exists('Model', $exifArray)) ? "Camera: $camera<br>":"";
-		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? "Lens: ".$exifArray['LensID']."<br>":"";
-		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? "Mode: ".ep2($exifArray['ExposureProgram'])."<br>":"";
-		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? "Metering Mode: ".mm2($exifArray['MeteringMode'])."<br>":"";
-		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? "Exposure time: ".$exifArray['ExposureTime']."s<br>":"";
-		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? "Shutter speed: ".$exifArray['TargetExposureTime']."s<br>":"";
-		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? "ISO: ".$exifArray['ISO']."<br>":"";
-		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? "Focal Length: ".$exifArray['FocalLength']."mm<br>":"";
-		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? "Whitebalance: ".wb2($exifArray['WhiteBalance'])."<br>":"";
-		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? "Aperture: f".$exifArray['FNumber']."<br>":"";
-		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? "Flash: ".flash2($exifArray['Flash'])."<br>":"";
+		$exifHTML = (array_key_exists('Model', $exifArray)) ? $labels['exif_camera'].": $camera<br>":"";
+		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? $labels['exif_lens'].": ".$exifArray['LensID']."<br>":"";
+		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? $labels['exif_expos'].": ".gv($exifArray['ExposureProgram'], 'ep', $lang)."<br>":"";
+		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? $labels['exif_meter'].": ".gv($exifArray['MeteringMode'], 'mm', $lang)."<br>":"";
+		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? $labels['exif_exptime'].": ".$exifArray['ExposureTime']."s<br>":"";
+		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? $labels['exif_texptime'].": ".$exifArray['TargetExposureTime']."s<br>":"";
+		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? $labels['exif_ISO'].": ".$exifArray['ISO']."<br>":"";
+		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? $labels['exif_focalength'].": ".$exifArray['FocalLength']."mm<br>":"";
+		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? $labels['exif_whiteb'].": ".gv($exifArray['WhiteBalance'], 'wb', $lang)."<br>":"";
+		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? $labels['exif_fstop'].": f".$exifArray['FNumber']."<br>":"";
+		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? $labels['exif_flash'].": ".gv($exifArray['Flash'], 'fl', $lang)."<br>":"";
 
 		if(isset($exifArray['Subject']) && is_array($exifArray['Subject'])) {
-			$exifHTML.= "Keywords: ".implode(", ", $exifArray['Subject'])."<br>";
+			$exifHTML.= $labels['exif_keywords'].": ".implode(", ", $exifArray['Subject'])."<br>";
 		} elseif (isset($exifArray['Subject']) && !is_array($exifArray['Subject'])) {
-			$exifHTML.= "Keywords: ".$exifArray['Subject']."<br>";
+			$exifHTML.= $labels['exif_keywords'].": ".$exifArray['Subject']."<br>";
 		}
 		
-		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? "Copyright: ".str_replace("u00a9","&copy;",$exifArray['Copyright'])."<br>":"";
+		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? $labels['exif_copyright'].": ".str_replace("u00a9","&copy;",$exifArray['Copyright'])."<br>":"";
 		
 	}
 	$exifSpan = (strlen($exifHTML > 0)) ? "<span id='exif_$imgid' class='exinfo'>$exifHTML</span>":"";
 	return $exifSpan;
 }
 
-function flash2($val) {
-	switch($val) {
-		case 0: $str = 'No Flash'; break;
-		case 1: $str = 'Fired'; break;
-		case 5: $str = 'Fired, Return not detected'; break;
-		case 7: $str = 'Fired, Return detected'; break;
-		case 9: $str = 'Flash, Compulsory'; break;
-		case 13: $str = 'Flash, Compulsory, No Strobe Return'; break;
-		case 15: $str = 'Flash, Compulsory, Strobe Return'; break;
-		case 16: $str = 'No Flash, Compulsory'; break;
-		case 24: $str = 'No Flash, Auto'; break;
-		case 25: $str = 'Flash, Auto'; break;
-		case 29: $str = 'Flash, Auto, No Strobe Return'; break;
-		case 31: $str = 'Flash, Auto, Strobe Return'; break;
-		case 32: $str = 'No Flash Function'; break;
-		case 65: $str = 'Flash, Red-eyes'; break;
-		case 69: $str = 'Flash, Red-eye, No Strobe Return'; break;
-		case 71: $str = 'Flash, Red-eye, Strobe Return'; break;
-		case 73: $str = 'Flash, Compulsory, Red-eye'; break;
-		case 77: $str = 'Flash, Compulsory, Red-eye, No Strobe Return'; break;
-		case 79: $str = 'Flash, Compulsory, Red-eye, Strobe Return'; break;
-		case 89: $str = 'Flash, Auto, Red-eye'; break;
-		case 93: $str = 'Flash, Auto, No Strobe Return, Red-eye'; break;
-		case 95: $str = 'Flash, Auto, Strobe Return, Red-eye'; break;
-		default: $str = $val.'-unknown';
-	}
-	return $str;
-}
+function gv($val, $type, $lang) {
+	$lngfile = dirname(__FILE__)."/localization/$lang.inc";
+	include (file_exists($lngfile)) ? $lngfile:dirname(__FILE__)."/localization/en_US.inc";
 
-function wb2($val) {
-	switch($val) {
-		case 0: $str = "Auto"; break;
-		case 1: $str = "Daylight"; break;
-		case 2: $str = "Fluorescent"; break;
-		case 3: $str = "Incandescent"; break;
-		case 4: $str = "Flash"; break;
-		case 9: $str = "Fine Weather"; break;
-		case 10: $str = "Cloudy"; break;
-		case 11: $str = "Shade"; break;
-		default: $str = $val.'-unknown';
+	switch($type) {
+		case 'ep':
+			switch ($val) {
+				case 0: $str = $labels['em_undefined']; break;
+				case 1: $str = $labels['em_manual']; break;
+				case 2: $str = $labels['em_auto']; break;
+				case 3: $str = $labels['em_time_auto']; break;
+				case 4: $str = $labels['em_shutter_auto']; break;
+				case 5: $str = $labels['em_creative_auto']; break;
+				case 6: $str = $labels['em_action_auto']; break;
+				case 7: $str = $labels['em_portrait_auto']; break;
+				case 8: $str = $labels['em_landscape_auto']; break;
+				case 9: $str = $labels['em_bulb']; break;
+				default: $str = $val.'-unknown';
+			}
+			break;
+		case 'mm':
+			switch ($val) {
+				case 0: $str = $labels['mm_unkown']; break;
+				case 1: $str = $labels['mm_average']; break;
+				case 2: $str = $labels['mm_middle']; break;
+				case 3: $str = $labels['mm_spot']; break;
+				case 4: $str = $labels['mm_multi-spot']; break;
+				case 5: $str = $labels['mm_multi']; break;
+				case 6: $str = $labels['mm_partial']; break;
+				case 255: $str = $labels['mm_other']; break;
+				default: $str = $val.'-unknown';
+			}
+			break;
+		case 'wb':
+			switch($val) {
+				case 0: $str = $labels['wb_auto']; break;
+				case 1: $str = $labels['wb_daylight']; break;
+				case 2: $str = $labels['wb_fluorescent']; break;
+				case 3: $str = $labels['wb_incandescent']; break;
+				case 4: $str = $labels['wb_flash']; break;
+				case 9: $str = $labels['wb_fineWeather']; break;
+				case 10: $str = $labels['wb_cloudy']; break;
+				case 11: $str = $labels['wb_shade']; break;
+				default: $str = $val.'-unknown';
+			}
+			break;
+		case 'fl':
+			switch($val) {
+				case 0: $str = $labels['NotFired']; break;
+				case 1: $str = $labels['Fired']; break;
+				case 5: $str = $labels['StrobeReturnLightNotDetected']; break;
+				case 7: $str = $labels['StrobeReturnLightDetected']; break;
+				case 9: $str = $labels['Fired-CompulsoryMode']; break;
+				case 13: $str = $labels['Fired-CompulsoryMode-NoReturnLightDetected']; break;
+				case 15: $str = $labels['Fired-CompulsoryMode-ReturnLightDetected']; break;
+				case 16: $str = $labels['NotFired-CompulsoryMode']; break;
+				case 24: $str = $labels['NotFired-AutoMode']; break;
+				case 25: $str = $labels['Fired-AutoMode']; break;
+				case 29: $str = $labels['Fired-AutoMode-NoReturnLightDetected']; break;
+				case 31: $str = $labels['Fired-AutoMode-ReturnLightDetected']; break;
+				case 32: $str = $labels['Noflashfunction']; break;
+				case 65: $str = $labels['Fired-RedEyeMode']; break;
+				case 69: $str = $labels['Fired-RedEyeMode-NoReturnLightDetected']; break;
+				case 71: $str = $labels['Fired-RedEyeMode-ReturnLightDetected']; break;
+				case 73: $str = $labels['Fired-CompulsoryMode-RedEyeMode']; break;
+				case 77: $str = $labels['Fired-CompulsoryMode-RedEyeMode-NoReturnLightDetected']; break;
+				case 79: $str = $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected']; break;
+				case 89: $str = $labels['Fired-AutoMode-RedEyeMode']; break;
+				case 93: $str = $labels['Fired-AutoMode-NoReturnLightDetected-RedEyeMode']; break;
+				case 95: $str = $labels['Fired-AutoMode-ReturnLightDetected-RedEyeMode']; break;
+				default: $str = $val.'-unknown';
+			}
+			break;
 	}
-	return $str;
-}
-
-function mm2($val) {
-	switch ($val) {
-		case 0: $str = "Unknown"; break;
-		case 1: $str = "Average"; break;
-		case 2: $str = "Center"; break;
-		case 3: $str = "Spot"; break;
-		case 4: $str = "Multi-Spot"; break;
-		case 5: $str = "Multi-field"; break;
-		case 6: $str = "Partial"; break;
-		case 255: $str = "Other"; break;
-		default: $str = $val.'-unknown';
-	}
-	return $str;
-}
-
-function ep2($val) {
-	switch ($val) {
-		case 0: $str = "Undefined"; break;
-		case 1: $str = "Manual"; break;
-		case 2: $str = "Auto"; break;
-		case 3: $str = "Auto Time"; break;
-		case 4: $str = "Auto Shutter"; break;
-		case 5: $str = "Creative (Slow)"; break;
-		case 6: $str = "Action (High speed)"; break;
-		case 7: $str = "Portrait"; break;
-		case 8: $str = "Landscape"; break;
-		case 9: $str = "Bulb"; break;
-		default: $str = $val.'-unknown';
-	}
+	
 	return $str;
 }
 
