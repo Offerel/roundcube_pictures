@@ -3,6 +3,7 @@
 - Added Clipboard access for Shares
 - Removed some Exif infos from Shares
 - Fixed issue in gallery with empty value
+- Fixed issue with exif data
   
 ### v1.4.17
 - Added support for ntfy

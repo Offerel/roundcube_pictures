@@ -43,7 +43,7 @@ $skip_objects = $rcmail->config->get('skip_objects', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $ccmd = $rcmail->config->get('convert_cmd', false);
 $ffprobe = exec("which ffprobe");
-$exiftool = $rcmail->config->get('exiftool', false);
+$exif_mode = $rcmail->config->get('exif');
 
 if(isset($_POST['getsubs'])) {
 	$subdirs = getAllSubDirectories($pictures_path);
@@ -569,7 +569,6 @@ function showPage($thumbnails, $dir) {
 
 function parseEXIF($jarr) {
 	global $rcmail;
-
 	if (!is_array($jarr)) return false;
 
 	if(array_key_exists('1', $jarr)) {
@@ -583,14 +582,14 @@ function parseEXIF($jarr) {
 
 		$exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
 		$exifInfo.= (array_key_exists('5', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr[5])."<br>":"";
-		$exifInfo.= (array_key_exists('9', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr[9]."<br>":"";
-		$exifInfo.= (array_key_exists('10', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$jarr[10]."<br>":"";
-		$exifInfo.= (array_key_exists('12', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$jarr[12]."<br>":"";
-		$exifInfo.= (array_key_exists('4', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr[4]."<br>":"";
-		$exifInfo.= (array_key_exists('1', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr[1]."<br>":"";
-		$exifInfo.= (array_key_exists('13', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr[13]),'pictures')."<br>":"";
-		$exifInfo.= (array_key_exists('3', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr[3]."<br>":"";
-		$exifInfo.= (array_key_exists('11', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr[11]),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('9', $jarr) && $jarr[9] != "-") ? $rcmail->gettext('exif_sw','pictures').": ".$jarr[9]."<br>":"";
+		$exifInfo.= (array_key_exists('10', $jarr) && $jarr[10] != "-") ? $rcmail->gettext('exif_expos','pictures').": ".$jarr[10]."<br>":"";
+		$exifInfo.= (array_key_exists('12', $jarr) && $jarr[12] != "-") ? $rcmail->gettext('exif_meter','pictures').": ".$jarr[12]."<br>":"";
+		$exifInfo.= (array_key_exists('4', $jarr) && $jarr[4] != "-") ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr[4]."<br>":"";
+		$exifInfo.= (array_key_exists('1', $jarr) && $jarr[1] != "-") ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr[1]."<br>":"";
+		$exifInfo.= (array_key_exists('13', $jarr) && $jarr[13] != "-") ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr[13]),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('3', $jarr) && $jarr[3] != "-") ? $rcmail->gettext('exif_fstop','pictures').": ".$jarr[3]."<br>":"";
+		$exifInfo.= (array_key_exists('11', $jarr) && $jarr[11] != "-") ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr[11]),'pictures')."<br>":"";
 		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
 		$exifInfo.= (array_key_exists('6', $jarr)) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr[6]."<br>":"";
 	} else {
@@ -714,6 +713,7 @@ function flash($val) {
 }
 
 function showGallery($requestedDir, $offset = 0) {
+	global $exif_mode;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
 	$hidden_vid = "";
@@ -778,7 +778,7 @@ function showGallery($requestedDir, $offset = 0) {
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
-				$exifInfo = ($rcmail->config->get('display_exif', false) == 1 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
+				$exifInfo = ($exif_mode != 0 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
 				$taken = $pdata[$key]['pic_taken'];
 
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
@@ -895,8 +895,8 @@ function getExistingShares() {
 	return $shares;
 }
 
-if (!function_exists('exif_read_data') && $rcmail->config->get('display_exif', false) == 1) {
-	error_log('Pictures: PHP EXIF is not available. Set display_exif = 0; in config to remove this message');
+if (!function_exists('exif_read_data') && $exif_mode != 0) {
+	error_log('EXIF functions are not available');
 }
 
 function strposa($haystack, $needle, $offset=0) {
@@ -1046,7 +1046,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exiftool;
+	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exif_mode;
 	$idir = str_replace($pictures_path, '', $image);
 	$thumbnailpath = $thumb_path.$idir.".jpg";
 
@@ -1056,7 +1056,7 @@ function createthumb($image) {
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {
-			error_log("Pictures: Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.");
+			error_log("Thumbnail subfolder creation failed ($thumbpath). Please check directory permissions.");
 		}
 	}
 
@@ -1077,7 +1077,7 @@ function createthumb($image) {
 	if ($mtype == "image") {
 		list($width, $height, $type) = getimagesize($image);
 		$newwidth = ceil($width * $thumbsize / $height);
-		if($newwidth <= 0) error_log("Pictures: Calculating the width failed.");
+		if($newwidth <= 0) error_log("Calculating image width failed.");
 		
 		switch ($type) {
 			case 1: $source = @imagecreatefromgif($image); break;
@@ -1085,37 +1085,27 @@ function createthumb($image) {
 			case 3: $source = @imagecreatefrompng($image); break;
 			default:
 				corrupt_thmb($thumbsize, $thumbpath);
-				error_log("Pictures: Unsupported fileformat ($type).");
+				error_log("Unsupported media format ($type).");
 		}
 		
 		$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 		imagedestroy($source);
 
-		$exif = (!$exiftool) ? readEXIF($image):exiftool($image);
+		switch($exif_mode) {
+			case 1: $exif = readEXIF($image); break;
+			case 2: $exif = exiftool($image); break;
+		}
+
+
 		unset($arr['SourceFile']);
 		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
-
-		/*
-		$exif = readEXIF($image);
-		$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
-		switch ($ort) {
-			case 3: $degrees = 180; break;
-			case 4: $degrees = 180; break;
-			case 5: $degrees = 270; break;
-			case 6: $degrees = 270; break;
-			case 7: $degrees = 90; break;
-			case 8: $degrees = 90; break;
-			default: $degrees = 0;
-		}
-		if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
-		*/
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumbnailpath, 100);
 			touch($thumbnailpath, filemtime($image));
 		} else {
-			error_log("Pictures: Can't write Thumbnail. Please check your directory permissions.");
+			error_log("Can't write Thumbnail. Please check your directory permissions.");
 		}
 	} elseif ($type == "video") {
 		$ffmpeg = exec("which ffmpeg");
@@ -1133,7 +1123,7 @@ function createthumb($image) {
 			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $out, $ccmd)));
 			exec($ccmd);
 		} else {
-			error_log("Pictures: ffmpeg is not installed, so video formats are not supported.");
+			error_log("ffmpeg is not available, video formats are not supported.");
 		}
 	}
 

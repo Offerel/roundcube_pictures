@@ -56,7 +56,7 @@ class pictures extends rcube_plugin {
 					$type = getIType($fullpath);
 					$id = $pictures[$x][2];
 					$lang = $rcmail->config->get('language', false);
-					$exifSpan = getEXIFSpan($pictures[$x][1], $id, $lang);
+					$exifSpan = ($config['exif'] != 0) ? getEXIFSpan($pictures[$x][1], $id, $lang):"";
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";

@@ -21,7 +21,7 @@ $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $ccmd = $rcmail->config->get('convert_cmd', false);
-$exiftool = $rcmail->config->get('exiftool', false);
+$exif_mode = $rcmail->config->get('exif');
 $db = $rcmail->get_dbh();
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
@@ -75,7 +75,7 @@ foreach($users as $user) {
 			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
 			logm("read_photos finished after ".etime($starttime), 4);
 			
-			if($exiftool && count($images) > 0) {
+			if($exif_mode == 2 && count($images) > 0) {
 				exiftool($images, $uid);
 				$images = [];
 				$tempstore = [];
@@ -159,7 +159,7 @@ function logm($message, $mmode = 3) {
 }
 
 function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_basepath) {
-	global $exiftool;
+	global $exif_mode;
 	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
 	if(file_exists($path)) {
 		if($handle = opendir($path)) {
@@ -175,7 +175,7 @@ function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_ba
 						
 						if(is_array($exifArr)) {
 							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
-							if(!$exiftool) todb($path."/".$file, $user, $pictures_basepath, $exifArr);
+							if($exif_mode != 2) todb($path."/".$file, $user, $pictures_basepath, $exifArr);
 						}
 						
 						checkorphaned($path."/".$file);
@@ -242,34 +242,7 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-	/*
-	switch($exif['Orientation']) {
-		case 3:
-			$degrees = 180;
-			$rotate = true;
-			break;
-		case 6:
-			$degrees = 270;
-			$rotate = true;
-			break;
-		case 8:
-			$degrees = 90;
-			$rotate = true;
-			break;
-		default:
-			$degrees = 0;
-			$rotate = false;
-	}
-	
-	if($rotate) $image = imagerotate($image, $degrees, 0);
-	*/
-	
-	if($owidth > $swidth) {
-		$mult = $owidth/$swidth;
-		$img = (!$rotate) ? imagescale($image, $swidth):imagescale($image, round($oheight/$mult));
-	} else {
-		$img = $image;
-	}
+	$img = ($owidth > $swidth) ? imagescale($image, round($oheight/($owidth/$swidth))):$image;
 
 	$directory = dirname($webp_file);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
@@ -288,7 +261,7 @@ function images($image, $uid) {
 }
 
 function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
-	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd;
+	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd, $exif_mode, $ffprobe;
 	$org_pic = str_replace('//','/',$image);
 	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
 	if($dfiles) deldummy($org_pic);
@@ -344,23 +317,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
 
-			if(!$exiftool) {
-				$exifArr = readEXIF($org_pic);
-			}
-			/*
-			$ort = (isset($exifArr['Orientation'])) ? $ort = $exifArr['Orientation']:NULL;
-			switch ($ort) {
-				case 3: $degrees = 180; break;
-				case 4: $degrees = 180; break;
-				case 5: $degrees = 270; break;
-				case 6: $degrees = 270; break;
-				case 7: $degrees = 90; break;
-				case 8: $degrees = 90; break;
-				default: $degrees = 0;
-			}
-			
-			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);
-			*/
+			if($exif_mode == 1) $exifArr = readEXIF($org_pic);
+
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 90);
 				imagedestroy($target);
@@ -484,9 +442,6 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		logm("Update database for $file", 4);
 		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
 	}
-
-
-	die();
 
 	$db->startTransaction();
 	$db->query($query);
