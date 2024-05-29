@@ -51,7 +51,7 @@ if(isset($file) && !empty($file)) {
 				break;
 		}
 	} else {
-		error_log('Pictures: Login failed. User is not logged in.');
+		error_log('Login failed. User is not logged in.');
 		die();
 	}
 	
@@ -143,7 +143,7 @@ if(file_exists($file)) {
 			break;
 	}
 } else {
-	error_log("Pictures: $m not found: $file");
+	error_log("$m not found: $file");
 	die('Not found '."$file");
 }
 

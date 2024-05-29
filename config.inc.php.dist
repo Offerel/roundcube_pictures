@@ -1,7 +1,7 @@
 <?php
 // Administrative settings
 $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
-$config['work_path'] = '/mnt/stick/gal_thmbs'; // Path where for every user a sperate folder will be created. Thumbnails and WebP Files are saved in subdirectories
+$config['work_path'] = '/mnt/stick/gal_thmbs'; // Path where for every user a separate folder will be created. Thumbnails and WebP Files are saved in subdirectories
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
 $config['exif'] = 2; // 0 = disable EXIF, 1 = Use PHP, 2 = Use exiftool
@@ -14,7 +14,7 @@ $config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via
 $config['pntfy_url'] = "https://ntfy.yourdomain.com/channel"; // the url to your ntfy instance
 $config['pntfy_usr'] = ""; // ntfy username, if needed
 $config['pntfy_pwd'] = ""; // ntfy password
-$config['debug'] = false; // If set true, debug messages are displayed
+$config['debug'] = false; // If set true, debug messages are logged
 
 // User default settings
 $config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page

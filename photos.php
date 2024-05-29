@@ -21,7 +21,7 @@ if (!empty($rcmail->user->ID)) {
 	
 	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
-			error_log('Pictures: Creating subfolders for $config[\'pictures_path\'] failed. Please check your directory permissions.');
+			error_log('Creating subfolders for $config[\'pictures_path\'] failed. Please check directory permissions.');
 			die();
 		}
 	}
@@ -90,11 +90,11 @@ if(isset($_FILES['galleryfiles'])) {
 				
 				$test[] = array('message' => 'Upload successful.', 'type' => 'info');
 			} else {
-				error_log("Pictures: Uploaded picture could not moved into target folder");
+				error_log("Uploaded picture could not moved into target folder");
 				$test[] = array('message' => 'Upload failed. Permission error', 'type' => 'error');
 			}
 		} else {
-			error_log("Pictures: Uploaded picture internal error (size, mimetype, already existing");
+			error_log("Uploaded picture internal error (size, mimetype, already existing");
 			$test[] = array('message' => 'Upload failed. Internal Error', 'type' => 'error');
 		}
 	}
@@ -117,7 +117,7 @@ if(isset($_POST['alb_action'])) {
 		case 'create':
 			if (!@mkdir($target, 0755, true)) {
 				$error = error_get_last();
-				error_log("Pictures: ".$error['message'].$target);
+				error_log($error['message'].$target);
 				die($error['message']);
 			} else {
 				die(1);
@@ -811,7 +811,7 @@ function showGallery($requestedDir, $offset = 0) {
 		}
 		closedir($handle);
 	} else {
-		error_log('Pictures: Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
+		error_log('Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		die("ERROR: Please check server error log");
 	}
 
@@ -1031,7 +1031,7 @@ function gps2Num($coordPart) {
 
 function checkpermissions($file) {
 	if (!is_readable($file)) {
-		error_log('Pictures: Can\'t read image $file, check your permissions.');
+		error_log('Can\'t read image $file, check your permissions.');
 	}
 }
 
@@ -1040,7 +1040,7 @@ function guardAgainstDirectoryTraversal($path) {
 	$directory_traversal = preg_match($pattern, $path);
 
 	if ($directory_traversal === 1) {
-		error_log('Pictures: Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
+		error_log('Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
 		die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
 	}
 }
