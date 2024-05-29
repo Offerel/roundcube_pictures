@@ -26,8 +26,8 @@ $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 $type = isset($_GET['w']) ? filter_var($_GET['w'], FILTER_SANITIZE_NUMBER_INT):0;
-$swidth = $config['swidth'];
-$theight = $config['thumb_size'];
+$swidth = 1920;
+$theight = 220;
 $workpath = $config['work_path'];
 $pictures_path = $config['pictures_path'];
 
@@ -106,33 +106,40 @@ if(file_exists($file)) {
 	}
 	
 	switch($type) {
-		case 1:	// Load generated Thumbnail
+		case 1:
 			sendHeaders($file, $mimeType, $pathparts['filename'], 'inline');
 			readfile($file);
 			break;
-		case 3:	// Download in Album
+		case 3:
 			sendHeaders($file, 'application/octet-stream', $pathparts['basename'], 'attachment');
 			readfile($file);
 			break;
-		case 4:	// Download in Share
+		case 4:
 			$source = @imagecreatefromjpeg($file);
 			sendHeaders($file, 'application/octet-stream', $pathparts['filename'].'.jpg', 'attachment');
 			imagejpeg($source, null, 100);
 			imagedestroy($source);
 			break;
-		case 5:	// view generated webp
+		case 5:
 			sendHeaders($file, 'image/webp', $pathparts['filename'].'.webp', 'inline');
 			readfile($file);
 			break;
-		default: // View scaled
-			list($width, $height) = getimagesize($file);
-			$nwidth = ($width > $height) ? $swidth:$width / ($height / $swidth);
-			$source = @imagecreatefromjpeg($file);
-			$target = imagescale($source, ceil($nwidth), -1);
-			imagedestroy($source);
+		default:
+			list($owidth, $oheight) = getimagesize($file);
+			$image = @imagecreatefromjpeg($file);
+			$webp_res = array(1920,1080);
+
+			if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
+				$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
+				$img = imagescale($image, $nwidth);
+			} else {
+				$img = $image;
+			}
+			
+			imagedestroy($image);
 			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.jpg', 'inline');
-			imagejpeg($target, null, 50);
-			imagedestroy($target);
+			imagejpeg($img, null, 50);
+			imagedestroy($img);
 			break;
 	}
 } else {

@@ -16,7 +16,7 @@ $ffprobe = exec("which ffprobe");
 $ffmpeg = exec("which ffmpeg");
 $users = array();
 $broken = array();
-$thumbsize = $rcmail->config->get('thumb_size', false);
+$thumbsize = 220;
 $dfiles = $rcmail->config->get('dummy_files', false);
 $mtime = $rcmail->config->get('dummy_time', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
@@ -234,15 +234,20 @@ function delete_asset($image, $asset_basepath, $picture_basepath) {
 
 function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	global $rcmail;
-	$swidth = $rcmail->config->get('swidth', false);
+	$webp_res = array(1920,1080);
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
-
+	logm("Create webp $webp_file", 4);
 	$otime = filemtime($ofile);
 	if($otime == filemtime($webp_file)) return false;
-	
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-	$img = ($owidth > $swidth) ? imagescale($image, round($oheight/($owidth/$swidth))):$image;
+
+	if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
+		$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
+		$img = imagescale($image, $nwidth);
+	} else {
+		$img = $image;
+	}
 
 	$directory = dirname($webp_file);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
@@ -250,7 +255,6 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	imagedestroy($img);
 	imagedestroy($image);
 	touch($webp_file, $otime);
-	logm("Saved $webp_file",4);
 }
 
 function images($image, $uid) {
@@ -298,6 +302,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 
 	$exifArr = [];
 	$exifArr['MIMEType'] = $mimetype;
+	logm("Create thumbnail $thumb_pic", 4);
 
 	if ($type == "image") {
 		list($width, $height, $itype) = getimagesize($org_pic, $info);
@@ -310,8 +315,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 			case 3: $source = @imagecreatefrompng($org_pic); break;
 			default: logm("Unsupported file $org_pic", 1);
 		}
-
-		logm("Create image thumbnail $thumb_pic", 4);
 
 		if ($source) {
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
@@ -336,7 +339,6 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 		if(!empty($ffmpeg)) {
 			exec("$ffmpeg -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_pic\" 2>&1", $output, $error);
 			if($error == 0) {
-				logm("Created video thumbnail $thumb_pic", 4);
 				touch($thumb_pic, $otime);
 			} else {
 				logm("Video $org_pic seems corrupt. ".$output[0], 2);

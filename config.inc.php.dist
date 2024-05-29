@@ -2,9 +2,7 @@
 // Administrative settings
 $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to the photos of the logged in user. Use %u for the username
 $config['work_path'] = '/mnt/stick/gal_thmbs'; // Path where for every user a sperate folder will be created. Thumbnails and WebP Files are saved in subdirectories
-$config['swidth'] = 1920; // width for webp version
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
-$config['thumb_size'] = 220; // Thumbnail height/width (square thumbs). Changing this will most likely require manual altering of the template file to make it look properly!
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
 $config['exif'] = 2; // 0 = disable EXIF, 1 = Use PHP, 2 = Use exiftool
 $config['convert_hevc'] = true; // If set to true, only hevc codec videos will be converted to mp4
@@ -12,11 +10,11 @@ $config['convert_cmd'] = "%f -y -loglevel quiet -i \"%i\" -c:v h264_v4l2m2m -b:v
 $config['dummy_files'] = false; // If set to true, deleted and moved images are re-created as 0 byte files to prevent re-syncing images
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file will be automatically removed
-$config['debug'] = false; // If set true, debug messages are displayed
 $config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via ntfy, or set to false
 $config['pntfy_url'] = "https://ntfy.yourdomain.com/channel"; // the url to your ntfy instance
 $config['pntfy_usr'] = ""; // ntfy username, if needed
 $config['pntfy_pwd'] = ""; // ntfy password
+$config['debug'] = false; // If set true, debug messages are displayed
 
 // User default settings
 $config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page

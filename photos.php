@@ -17,7 +17,7 @@ if (!empty($rcmail->user->ID)) {
 	$basepath = rtrim($rcmail->config->get('work_path', false), '/');
 	$thumb_path = $basepath."/".$username."/photos/";
 	$webp_path = $basepath."/".$username."/webp/";
-	$thumbsize = $rcmail->config->get('thumb_size', false);
+	$thumbsize = 220;
 	
 	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
