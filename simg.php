@@ -39,9 +39,12 @@ if(isset($file) && !empty($file)) {
 		switch($mode) {
 			case 1:
 				$pictures_basepath = "$workpath/$username/photos/";
+				$path_parts = pathinfo($pictures_basepath.$file);
+				$file = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
 				break;
 			default:
 				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
+				$file = $pictures_basepath.$file;
 				break;
 		}
 	} else {
@@ -49,7 +52,7 @@ if(isset($file) && !empty($file)) {
 		die();
 	}
 	
-	$file = html_entity_decode($pictures_basepath.$file, ENT_QUOTES);
+	$file = html_entity_decode($file, ENT_QUOTES);
 } else {
 	$dbh = $rcmail->get_dbh();
 	$res = $dbh->query("SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture");
@@ -78,7 +81,6 @@ if(isset($file) && !empty($file)) {
 }
 
 if(file_exists($file)) {
-	$file = realpath($file);
 	$mimeType = mime_content_type($file);
 	$pathparts = pathinfo($file);
 	if(strpos($mimeType, 'video') !== false) {
