@@ -1086,7 +1086,7 @@ function createthumb($image) {
 			case 2: $source = @imagecreatefromjpeg($image); break;
 			case 3: $source = @imagecreatefrompng($image); break;
 			default:
-				corrupt_thmb($thumbsize, $thumbpath);
+				corrupt_thmb($thumbsize, $thumbnailpath);
 				error_log("Unsupported media format ($type).");
 		}
 		
@@ -1148,7 +1148,7 @@ function corrupt_thmb($thumbsize, $thumbnailpath) {
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
 
-	imagejpeg($image_new, $thumbnailpath, 100);
+	imagejpeg($image_new, $thumbnailpath, 95);
 	imagedestroy($sign);
 	imagedestroy($background);
 	imagedestroy($image_new);

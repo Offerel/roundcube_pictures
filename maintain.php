@@ -333,12 +333,12 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 				imagedestroy($target);
 				touch($thumb_pic, $otime);
 			} else {
-				logm("Can't write Thumbnail $thumbpath, please check directory permissions", 1);
+				logm("Can't write Thumbnail to $thumbpath, please check directory permissions", 1);
 			}
 		} else {
 			$ppath = str_replace($pictures_basepath, '', $org_pic);
 			$broken[] = $ppath;
-			corrupt_thmb($thumbsize, $thumbpath);
+			corrupt_thmb($thumbsize, $thumb_pic);
 			logm("Can't create thumbnail $ppath. Picture seems corrupt",1);
 		}
 	} elseif ($type == "video") {
@@ -350,7 +350,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 				logm("Video $org_pic seems corrupt. ".$output[0], 2);
 				$ppath = str_replace($pictures_basepath, '', $org_pic);
 				$broken[] = $ppath;
-				corrupt_thmb($thumbsize, $thumbpath);
+				corrupt_thmb($thumbsize, $thumb_pic);
 			}
 			
 			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 $org_pic 2>&1", $output, $error);
@@ -375,7 +375,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 	return $exifArr;
 }
 
-function corrupt_thmb($thumbsize, $thumbpath) {
+function corrupt_thmb($thumbsize, $thumb_pic) {
 	$cdir = dirname(__FILE__);
 	$sign = imagecreatefrompng($cdir.'/images/error2.png');
 	$background = imagecreatefromjpeg($cdir.'/images/defaultimage.jpg');
@@ -392,7 +392,7 @@ function corrupt_thmb($thumbsize, $thumbpath) {
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
 
-	imagejpeg($image_new, $thumbpath, 100);
+	imagejpeg($image_new, $thumb_pic, 95);
 	imagedestroy($sign);
 	imagedestroy($background);
 	imagedestroy($image_new);
