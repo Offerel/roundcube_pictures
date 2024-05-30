@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.18
+ * @version 1.4.19
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -266,8 +266,12 @@ function images($image, $uid) {
 
 function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd, $exif_mode, $ffprobe;
-	$org_pic = str_replace('//','/',$image);
-	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic).".jpg";
+	$org_pic = realpath($image);
+
+	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic);
+	$thumb_parts = pathinfo($thumb_pic);
+	$thumb_pic = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+
 	if($dfiles) deldummy($org_pic);
 
 	$otime = filemtime($org_pic);
@@ -292,7 +296,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 		return false;
 	}
 	
-	$thumbpath = pathinfo($thumb_pic)['dirname'];
+	$thumbpath = $thumb_parts['dirname'];
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {

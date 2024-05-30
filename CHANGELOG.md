@@ -1,3 +1,7 @@
+### v1.4.19
+- Fix wrong naming for videos
+- Fix naming scheme
+  
 ### v1.4.18
 - Added Download option in album image
 - Added Clipboard access for Shares

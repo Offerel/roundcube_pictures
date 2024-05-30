@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.18
+ * @version 1.4.19
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -39,15 +39,9 @@ if(isset($file) && !empty($file)) {
 		switch($mode) {
 			case 1:
 				$pictures_basepath = "$workpath/$username/photos/";
-				$ext = ".jpg";
-				break;
-			case 2:
-				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
-				$ext = "";
 				break;
 			default:
 				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
-				$ext = "";
 				break;
 		}
 	} else {
@@ -55,7 +49,7 @@ if(isset($file) && !empty($file)) {
 		die();
 	}
 	
-	$file = html_entity_decode($pictures_basepath.$file.$ext, ENT_QUOTES);
+	$file = html_entity_decode($pictures_basepath.$file, ENT_QUOTES);
 } else {
 	$dbh = $rcmail->get_dbh();
 	$res = $dbh->query("SELECT a.`shared_pic_id`, d.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_shares` b ON a.`share_id` = b.`share_id` INNER JOIN `users` c ON b.`user_id` = c.`user_id` INNER JOIN `pic_pictures` d ON a.`pic_id` = d.`pic_id` WHERE a.`shared_pic_id` = $picture");
@@ -66,7 +60,9 @@ if(isset($file) && !empty($file)) {
 	$thumb_basepath = "$workpath/$username/photos";
 
 	$imagepath = $image_basepath."/".$data['pic_path'];
-	$thumbpath = $thumb_basepath."/".$data['pic_path'].".jpg";
+	$thumbpath = $thumb_basepath."/".$data['pic_path'];
+	$thumb_parts = pathinfo($thumb_pic);
+	$thumbpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
 
 	switch($mode) {
 		case 1:
@@ -82,6 +78,7 @@ if(isset($file) && !empty($file)) {
 }
 
 if(file_exists($file)) {
+	$file = realpath($file);
 	$mimeType = mime_content_type($file);
 	$pathparts = pathinfo($file);
 	if(strpos($mimeType, 'video') !== false) {
@@ -91,14 +88,14 @@ if(file_exists($file)) {
 			$file = $hvpath;
 		}
 	}
-	
-	if(strpos($mimeType, 'image/jpeg') === false){
-		$type = 0;
+
+	if (strpos($mimeType, 'video/') !== false){
+		$type = 1;
 	}
 
 	if($m == "Thumbnail") $type = 1;
 
-	$webpfile = realpath(str_replace(str_replace('%u', $username, $pictures_path), "$workpath/$username/webp/", $file).".webp");
+	$webpfile = str_replace(str_replace('%u', $username, $pictures_path), "$workpath/$username/webp/", $file).".webp";
 	
 	if((!$type && file_exists($webpfile)) || $type == 5) {
 		$type = 5;
@@ -107,7 +104,7 @@ if(file_exists($file)) {
 	
 	switch($type) {
 		case 1:
-			sendHeaders($file, $mimeType, $pathparts['filename'], 'inline');
+			sendHeaders($file, $mimeType, $pathparts['basename'], 'inline');
 			readfile($file);
 			break;
 		case 3:

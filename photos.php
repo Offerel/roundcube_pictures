@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.18
+ * @version 1.4.19
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -1048,11 +1048,14 @@ function guardAgainstDirectoryTraversal($path) {
 function createthumb($image) {
 	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exif_mode;
 	$idir = str_replace($pictures_path, '', $image);
-	$thumbnailpath = $thumb_path.$idir.".jpg";
+	$otime = filemtime($image);
+	$thumb_parts = pathinfo($idir);
+	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$ttime = filemtime($thumbnailpath);
 
-	if(file_exists($thumbnailpath) && filemtime($image) == filemtime($thumbnailpath)) return false;
+	if(file_exists($thumbnailpath) && $otime == $ttime) return false;
 
-	$thumbpath = pathinfo($thumbnailpath)['dirname'];
+	$thumbpath = $thumb_parts['dirname'];
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {
@@ -1060,9 +1063,8 @@ function createthumb($image) {
 		}
 	}
 
-	$otime = filemtime($image);
 	if(file_exists($thumbnailpath)) {
-		if($otime == filemtime($thumbnailpath)) {
+		if($otime == $ttime) {
 			logm("Ignore $image", 4);
 			return false;
 		} else {
@@ -1096,14 +1098,13 @@ function createthumb($image) {
 			case 2: $exif = exiftool($image); break;
 		}
 
-
 		unset($arr['SourceFile']);
 		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
 		
 		if(is_writable($thumbpath)) {
 			imagejpeg($target, $thumbnailpath, 100);
-			touch($thumbnailpath, filemtime($image));
+			touch($thumbnailpath, $otime);
 		} else {
 			error_log("Can't write Thumbnail. Please check your directory permissions.");
 		}
@@ -1116,7 +1117,7 @@ function createthumb($image) {
 				corrupt_thmb($thumbsize, $thumbnailpath);
 				return $exif;
 			}
-			touch($thumbnailpath, filemtime($image));
+			touch($thumbnailpath, $otime);
 			$vcodec = exec_shell("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
 			$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
@@ -1228,8 +1229,18 @@ function mvimg($oldpath, $newPath) {
 		rename($oldpath, $newPath);
 	}
 
-	$thumbnailpath = $thumb_path.str_replace($pictures_path, '', $oldpath).".jpg";
-	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
+	$th_old = str_replace($pictures_path, $thumb_path, $oldpath);
+	$thumb_parts = pathinfo($th_old);
+	$th_old = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$th_new = str_replace($pictures_path, $thumb_path, $newPath);
+	$thumb_parts = pathinfo($th_old);
+	$th_new = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+
+	if(file_exists($th_old)) {
+		rename($th_old, $th_new);
+		touch($th_new, $ftime);
+	}
+
 }
 
 function delimg($file) {
@@ -1248,7 +1259,10 @@ function delimg($file) {
 	$hiddenvid = $pathparts['dirname'].'/.'.$pathparts['filename'].'mp4';
 	if(file_exists($hiddenvid)) unlink($hiddenvid);
 
-	$thumbnailpath = $thumb_path.str_replace($pictures_path, '', $file).".jpg";
+	$thumbnailpath = str_replace($pictures_path, $thumb_path, $file);
+	$thumb_parts = pathinfo($thumbnailpath);
+	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+
 	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
 
 	$webp = str_replace($pictures_path, $webp_path, $file).".webp";
