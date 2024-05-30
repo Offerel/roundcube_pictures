@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.19
+ * @version 1.4.20
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -282,6 +282,8 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 		} else {
 			logm("ReParse $org_pic", 4);
 		}
+	} else {
+		logm("$thumb_pic does not exists", 4);
 	}
 	
 	$mimetype = mime_content_type($org_pic);
@@ -374,8 +376,9 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 }
 
 function corrupt_thmb($thumbsize, $thumbpath) {
-	$sign = imagecreatefrompng('images/error2.png');
-	$background = imagecreatefromjpeg('images/defaultimage.jpg');
+	$cdir = dirname(__FILE__);
+	$sign = imagecreatefrompng($cdir.'/images/error2.png');
+	$background = imagecreatefromjpeg($cdir.'/images/defaultimage.jpg');
 
 	$sx = imagesx($sign);
 	$sy = imagesy($sign);
@@ -384,8 +387,8 @@ function corrupt_thmb($thumbsize, $thumbpath) {
 
 	$size = 120;
 	imagecopyresampled($background, $sign, ($ix-$size)/2, ($iy-$size)/2, 0, 0, $size, $size, $sx, $sy);
-	$nw = ($thumbsize/$ix)*$iy;
-
+	$nw = ceil(($thumbsize/$ix)*$iy);
+	$thumbsize = ceil($thumbsize);
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
 
@@ -411,7 +414,6 @@ function exiftool($images, $uid) {
 	} else {
 		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
 	}
-
 }
 
 function todb($file, $user, $pictures_basepath, $exif) {
