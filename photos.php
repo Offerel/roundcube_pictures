@@ -579,12 +579,11 @@ function parseEXIF($jarr) {
 
 		$gm_params = http_build_query(array(
 			'api' => 1,
-			'query' => str_replace(',','.',$jarr[14]) . ',' . str_replace(',','.',$jarr[15])
+			'query' => str_replace(',','.',$jarr[14]) . ',' . str_replace(',','.',$jarr[15]),
+			'z' => 13
 		),'','&amp;');
 
-		$gpslink ="<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
-		//$gpslink ="<a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
-
+		$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr[14]."/".$jarr[15]."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
 		$camera = (array_key_exists('0', $jarr) && strpos($jarr[0], explode(" ",$jarr[8])[0]) !== false) ? $jarr[0]:$jarr[8]." - ".$jarr[0];
 
 		$exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
@@ -605,11 +604,17 @@ function parseEXIF($jarr) {
 				'mlat' => str_replace(',','.',$jarr['GPSLatitude']),
 				'mlon' => str_replace(',','.',$jarr['GPSLongitude'])
 			),'','&amp;');
+			$gm_params = http_build_query(array(
+				'api' => 1,
+				'query' => str_replace(',','.',$jarr[14]) . ',' . str_replace(',','.',$jarr[15]),
+				'z' => 13
+			),'','&amp;');
 		} else {
 			$osm_params = "";
 		}    
 
-		$gpslink = "<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+		$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr[14]."/".$jarr[15]."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
+
 		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
 			$camera = (strpos($jarr['Model'], explode(" ",$jarr['Make'])[0]) !== false) ? $jarr['Model']:$jarr['Make']." - ".$jarr['Model'];			
 		elseif(array_key_exists('Model', $jarr))

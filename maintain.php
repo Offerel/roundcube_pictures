@@ -238,7 +238,7 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
 	logm("Create webp $webp_file", 4);
 	$otime = filemtime($ofile);
-	if($otime == filemtime($webp_file)) return false;
+	if($otime == @filemtime($webp_file)) return false;
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
 
