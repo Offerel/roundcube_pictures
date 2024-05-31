@@ -20,7 +20,7 @@ $labels['picdconfirm'] = "Sollen die markierten Bilder (%c) gelöscht werden?";
 $labels['galdconfirm'] = "Soll das markierte Album gelöscht werden?";
 $labels['selalb'] = "Album auswählen";
 $labels['selshr'] = "Neues Share";
-$labels['corpics'] = "Es gab einen Fehler beim Verarbeiten von neuen Bilder. Die folgenden Bilder scheinen defekt zu sein. Bitte diese Bilder reparieren oder löschen:";
+$labels['corpics'] = "Fehler beim Verarbeiten neuer Bilder. Die folgenden Bilder scheinen defekt zu sein. Bitte diese Bilder reparieren oder entfernen:";
 
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";

@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.19
+ * @version 1.4.20
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -577,7 +577,14 @@ function parseEXIF($jarr) {
 			'mlon' => str_replace(',','.',$jarr[15])
 		),'','&amp;');
 
+		$gm_params = http_build_query(array(
+			'api' => 1,
+			'query' => str_replace(',','.',$jarr[14]) . ',' . str_replace(',','.',$jarr[15])
+		),'','&amp;');
+
 		$gpslink ="<a class='mapl' href='https://www.openstreetmap.org/?$osm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+		//$gpslink ="<a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'><img src='images/marker.png'>".$rcmail->gettext('exif_geo','pictures')."</a>";
+
 		$camera = (array_key_exists('0', $jarr) && strpos($jarr[0], explode(" ",$jarr[8])[0]) !== false) ? $jarr[0]:$jarr[8]." - ".$jarr[0];
 
 		$exifInfo = (array_key_exists('0', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
@@ -748,9 +755,8 @@ function showGallery($requestedDir, $offset = 0) {
 					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
 						$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
 					} else {
-						unset($firstimage);					
+						unset($firstimage);
 						$firstimage = getfirstImage("$current_dir/".$file);
-						
 						if ($firstimage != "") {
 							$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
 							$imgParams = http_build_query($params);
@@ -908,31 +914,23 @@ function strposa($haystack, $needle, $offset=0) {
 }
 
 function getfirstImage($dirname) {
-	$imageName = false;
 	$extensions = array("jpg", "png", "jpeg", "gif");
+	$images = array();
 	if ($handle = opendir($dirname)) {
-		while (false !== ($file = readdir($handle))) {
-			if ($file[0] == '.') {
-				continue;
-			}
-			$pathinfo = pathinfo($file);
-			if (empty($pathinfo['extension'])) {
-				continue;
-			}
-			$ext = strtolower($pathinfo['extension']);
-
-			if(filesize("$dirname/$file") <= 0) {
-				continue;
-			}
-
-			if (in_array($ext, $extensions)) {
-				$imageName = $file;
-				break;
-			}
-		}
+		while (false !== ($files[] = readdir($handle)));
 		closedir($handle);
+		foreach ($files as $key => $file) {
+			$pathparts = pathinfo("$dirname/$file");
+			if (isset($pathparts['extension']) && in_array($pathparts['extension'], $extensions)) $images[] = $file;
+		}
 	}
-	return $imageName;
+
+	if (is_array($images)) {
+		asort($images);
+		return reset($images);
+	} else {
+		return null;
+	}
 }
 
 function parse_fraction($v, $round = 0) {

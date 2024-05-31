@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.19
+ * @version 1.4.20
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -99,6 +99,8 @@ class pictures extends rcube_plugin {
 			$this->register_action('index', array($this, 'action'));
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
+		} else {
+			$this->add_hook('render_page', [$this, 'checkbroken']);
 		}
 
 		if($rcmail->task == 'settings') {
@@ -106,8 +108,6 @@ class pictures extends rcube_plugin {
 			$this->add_hook('preferences_list', array($this, 'preferences_list'));
 			$this->add_hook('preferences_save', array($this, 'preferences_save'));
 		}
-
-		$this->add_hook('render_page', [$this, 'checkbroken']);
 	}
 
 	function preferences_sections_list($p) {		
@@ -209,15 +209,23 @@ class pictures extends rcube_plugin {
 			));
 			
 			$title  = rcube::JQ($this->gettext('pictures.pictures'));
-			$script = "
-var picturesinfo = rcmail.show_popup_dialog($('#picturesinfo'), '$title', [], {
-	resizable: false,
-	closeOnEscape: true,
-	width: 500,
-	open: function() { $('#picturesinfo').show(); }
-});
-rcube_webmail.prototype.pictures_dialog_close = function() { picturesinfo.dialog('destroy'); };
-";
+			$script = "var buttons = [];
+					buttons.push({
+						text: 'Open',
+						click: function() {
+							var newURL = window.location.protocol + '//' + window.location.host + window.location.pathname + '?_task=pictures';
+							window.location.href = newURL;
+							picturesinfo.dialog('close');
+						}
+					});
+					var picturesinfo = rcmail.show_popup_dialog($('#picturesinfo'), '$title', buttons, {
+						resizable: false,
+						closeOnEscape: true,
+						width: 460,
+						open: function() { $('#picturesinfo').show(); }
+					});
+					rcube_webmail.prototype.pictures_dialog_close = function() { picturesinfo.dialog('destroy'); };
+					";
 			$rcmail->output->add_script($script, 'docready');
 		}
 	}

@@ -242,6 +242,22 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
 
+	switch($exif['Orientation']) {
+		case 3:
+			$degrees = 180;
+			break;
+		case 6:
+			$degrees = 270;
+			break;
+		case 8:
+			$degrees = 90;
+			break;
+		default:
+			$degrees = 0;
+	}
+
+	if($degrees > 0) $image = imagerotate($image, $degrees, 0);		
+
 	if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
 		$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
 		$img = imagescale($image, $nwidth);
@@ -326,7 +342,26 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
 
-			if($exif_mode == 1) $exifArr = readEXIF($org_pic);
+			if($exif_mode == 1) {
+				$exifArr = readEXIF($org_pic);
+				$ort = $exifArr['Orientation'];
+			} else {
+				$exif_data = @exif_read_data($org_pic);
+				$ort = $exif_data['Orientation'];
+				$exifArr['Orientation'] = $ort;
+			}
+
+			switch ($ort) {		
+				case 3: $degrees = 180; break;		
+				case 4: $degrees = 180; break;		
+				case 5: $degrees = 270; break;		
+				case 6: $degrees = 270; break;		
+				case 7: $degrees = 90; break;		
+				case 8: $degrees = 90; break;		
+				default: $degrees = 0;		
+			}		
+					
+			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);		
 
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_pic, 90);
@@ -353,7 +388,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 				corrupt_thmb($thumbsize, $thumb_pic);
 			}
 			
-			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 $org_pic 2>&1", $output, $error);
+			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
 			if($hevc && $output[0] != "hevc") return $exifArr;
 
 			$pathparts = pathinfo($org_pic);
@@ -400,16 +435,22 @@ function corrupt_thmb($thumbsize, $thumb_pic) {
 
 function exiftool($images, $uid) {
 	global $pictures_basepath;
-	if (`which exiftool`) {
-		$files = implode("' '", $images);
-		$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
-		$options = "-q -j -d '%s'";
-		exec("exiftool $options $tags '$files' 2>&1", $output, $error);
-		$joutput = implode("", $output);
-		$mdarr = json_decode($joutput, true);
 
-		foreach ($mdarr as &$element) {
-			todb($element['SourceFile'], $uid, $pictures_basepath, $element);
+	$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
+	$options = "-q -j -d '%s'";
+
+	if (`which exiftool`) {
+		$cimages = array_chunk($images, 1500, true);
+
+		foreach ($cimages as $key => $chunk) {
+			$files = implode("' '", $chunk);
+			exec("exiftool $options $tags '$files' 2>&1", $output, $error);
+			$joutput = implode("", $output);
+			$mdarr = json_decode($joutput, true);
+
+			foreach ($mdarr as &$element) {
+				todb($element['SourceFile'], $uid, $pictures_basepath, $element);
+			}
 		}
 	} else {
 		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
