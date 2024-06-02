@@ -606,14 +606,15 @@ function parseEXIF($jarr) {
 			),'','&amp;');
 			$gm_params = http_build_query(array(
 				'api' => 1,
-				'query' => str_replace(',','.',$jarr[14]) . ',' . str_replace(',','.',$jarr[15]),
+				'query' => str_replace(',','.',$jarr['GPSLatitude']) . ',' . str_replace(',','.',$jarr['GPSLongitude']),
 				'z' => 13
 			),'','&amp;');
 		} else {
 			$osm_params = "";
+			$gm_params = "";
 		}    
 
-		$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr[14]."/".$jarr[15]."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
+		$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr['GPSLatitude']."/".$jarr['GPSLongitude']."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
 
 		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
 			$camera = (strpos($jarr['Model'], explode(" ",$jarr['Make'])[0]) !== false) ? $jarr['Model']:$jarr['Make']." - ".$jarr['Model'];			
@@ -920,6 +921,9 @@ function strposa($haystack, $needle, $offset=0) {
 
 function getfirstImage($dirname) {
 	$extensions = array("jpg", "png", "jpeg", "gif");
+	$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
+	$options = "-q -j -d '%s'";
+	
 	$images = array();
 	if ($handle = opendir($dirname)) {
 		while (false !== ($files[] = readdir($handle)));

@@ -241,19 +241,19 @@ function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
 	if($otime == @filemtime($webp_file)) return false;
 	list($owidth, $oheight) = getimagesize($ofile);
 	$image = imagecreatefromjpeg($ofile);
-
-	switch($exif['Orientation']) {
-		case 3:
-			$degrees = 180;
-			break;
-		case 6:
-			$degrees = 270;
-			break;
-		case 8:
-			$degrees = 90;
-			break;
-		default:
-			$degrees = 0;
+	
+	if(isset($exif['Orientation'])) {
+		switch($exif['Orientation']) {
+			case 3: $degrees = 180; break;		
+			case 4: $degrees = 180; break;		
+			case 5: $degrees = 270; break;		
+			case 6: $degrees = 270; break;		
+			case 7: $degrees = 90; break;		
+			case 8: $degrees = 90; break;		
+			default: $degrees = 0;
+		}
+	} else {
+		$degrees = 0;
 	}
 
 	if($degrees > 0) $image = imagerotate($image, $degrees, 0);		
@@ -341,7 +341,7 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 		if ($source) {
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
-
+			/*
 			if($exif_mode == 1) {
 				$exifArr = readEXIF($org_pic);
 				$ort = $exifArr['Orientation'];
@@ -350,7 +350,10 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 				$ort = $exif_data['Orientation'];
 				$exifArr['Orientation'] = $ort;
 			}
-
+			*/
+			$exifArr = readEXIF($org_pic);
+			
+			$ort = (isset($exif['Orientation']) ? $exifArr['Orientation']:0;
 			switch ($ort) {		
 				case 3: $degrees = 180; break;		
 				case 4: $degrees = 180; break;		
@@ -504,12 +507,12 @@ function todb($file, $user, $pictures_basepath, $exif) {
 }
 
 function checkorphaned($file) {
-	$pathparts = pathinfo("$file");
+	$pathparts = pathinfo("$file");		// Gallery path
 	$filename = $pathparts['basename'];
-	if (strpos($filename, '.') === 0) {
-		$ofile = $pathparts['dirname'].'/'.ltrim($pathparts['filename'],'.').'.*';
+	if (strpos($filename, '.') === 0) {	// if hidden file 8start with dot)
+		$ofile = $pathparts['dirname'].'/'.ltrim($pathparts['filename'],'.').'.*';	// liste passende normale files
 		$flist = glob($ofile);
-		if (count($flist) == 0) {
+		if (count($flist) == 0) {	// wenn es keine passenden files gibt, lösche das hidden file
 			logm("Delete orphaned file $file");
 			unlink($file);
 		}
