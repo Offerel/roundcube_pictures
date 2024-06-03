@@ -312,7 +312,6 @@ function showPage($thumbnails, $dir) {
 	
 		$('#images').justifiedGallery({
 			rowHeight: 220,
-			maxRowHeight: 220,
 			margins: $pmargins,
 			border: 0,
 			rel: 'gallery',
@@ -727,13 +726,12 @@ function flash($val) {
 }
 
 function showGallery($requestedDir, $offset = 0) {
-	global $exif_mode;
+	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
 	$hidden_vid = "";
 	$pnavigation = "";
 	
-	global $pictures_path, $rcmail, $label_max_length;
 	$dbh = rcmail_utils::db();
 	$requestedDir = ltrim(rawurldecode($requestedDir), '/');
 	$thumbdir = $pictures_path.$requestedDir;
@@ -785,6 +783,11 @@ function showGallery($requestedDir, $offset = 0) {
 			$fullpath = $current_dir."/".$file;
 			$fs = filesize($fullpath);
 			
+			$tpath = str_replace($pictures_path, $thumb_path, $fullpath);
+			$path_parts = pathinfo($tpath);
+			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
+			$gis = (is_file($tpath)) ? getimagesize($tpath)[3]:"";
+
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
@@ -803,7 +806,7 @@ function showGallery($requestedDir, $offset = 0) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
+						"html" => "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
 					);
 				}
 				
@@ -816,7 +819,7 @@ function showGallery($requestedDir, $offset = 0) {
 						"name" => $file,
 						"date" => $taken,
 						"size" => filesize($current_dir."/".$file),
-						"html" => "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$thmbUrl\" alt=\"$file\" /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
+						"html" => "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$thmbUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
 					);
 				}
 			}
@@ -922,16 +925,13 @@ function strposa($haystack, $needle, $offset=0) {
 
 function getfirstImage($dirname) {
 	$extensions = array("jpg", "png", "jpeg", "gif");
-	$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
-	$options = "-q -j -d '%s'";
-	
 	$images = array();
 	if ($handle = opendir($dirname)) {
 		while (false !== ($files[] = readdir($handle)));
 		closedir($handle);
 		foreach ($files as $key => $file) {
 			$pathparts = pathinfo("$dirname/$file");
-			if (isset($pathparts['extension']) && in_array($pathparts['extension'], $extensions)) $images[] = $file;
+			if (isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $extensions)) $images[] = $file;
 		}
 	}
 
