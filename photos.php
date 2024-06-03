@@ -339,17 +339,30 @@ function showPage($thumbnails, $dir) {
 
 		lightbox.on('slide_changed', (data) => {
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
+			let dlbtn = document.createElement('button');
+			let fbtn = document.createElement('button');
+			dlbtn.id = 'dlbtn';
+			fbtn.id = 'fbtn';
+			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
+			fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
+			dlbtn.addEventListener('click', e => {
+				window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
+			})
+			fbtn.addEventListener('click', e => {
+				if(document.fullscreenElement){ 
+					document.exitFullscreen() 
+				} else { 
+					document.getElementById('glightbox-body').requestFullscreen();
+				}
+			});
+			let closebtn = document.querySelector('.gclose');
+			closebtn.before(dlbtn);
+			closebtn.before(fbtn);
+			
 			if(document.getElementById(file)) {
-				let closebtn = document.querySelector('.gclose');
 				let infobtn = document.createElement('button');
-				let fbtn = document.createElement('button');
-				let dlbtn = document.createElement('button');
 				infobtn.id = 'infbtn';
-				fbtn.id = 'fbtn';
-				dlbtn.id = 'dlbtn';
-				fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
 				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-				dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
 				infobtn.addEventListener('mouseover', function() {
 					document.getElementById(file).classList.add('eshow');
 					document.getElementById(file).addEventListener('mouseover', function() {document.getElementById(file).classList.add('eshow')})
@@ -358,19 +371,7 @@ function showPage($thumbnails, $dir) {
 					document.getElementById(file).classList.remove('eshow');
 					document.getElementById(file).addEventListener('mouseout', function() {document.getElementById(file).classList.remove('eshow')})
 				});
-				fbtn.addEventListener('click', e => {
-					if(document.fullscreenElement){ 
-						document.exitFullscreen() 
-					} else { 
-						document.getElementById('glightbox-body').requestFullscreen();
-					}
-				});
-				dlbtn.addEventListener('click', e => {
-					window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
-				});
-				closebtn.before(dlbtn);
 				closebtn.before(infobtn);
-				closebtn.before(fbtn);
 			}
 		});
 
