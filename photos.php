@@ -1226,11 +1226,11 @@ function mvdb($oldpath, $newPath) {
 
 function mvimg($oldpath, $newPath) {
 	global $rcmail, $pictures_path, $thumb_path;
-	$dfiles = $rcmail->config->get('dummy_files', false);
+	$dfiles = $rcmail->config->get('dummy_time', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($oldpath);
 
-	if($dfiles && substr_count($oldpath, $dfolder) > 0) {
+	if($dfiles > 0 && substr_count($oldpath, $dfolder) > 0) {
 		rename($oldpath, $newPath);
 		touch($oldpath, $ftime);
 	} else {
@@ -1253,11 +1253,11 @@ function mvimg($oldpath, $newPath) {
 
 function delimg($file) {
 	global $rcmail, $pictures_path, $thumb_path, $webp_path;
-	$dfiles = $rcmail->config->get('dummy_files', false);
+	$dfiles = $rcmail->config->get('dummy_time', false);
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($file);
 
-	if($dfiles && substr_count($file, $dfolder) > 0) {
+	if($dfiles > 0 && substr_count($file, $dfolder) > 0) {
 		if(unlink($file)) touch($file, $ftime);
 	} else {
 		unlink($file);

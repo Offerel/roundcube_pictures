@@ -1,359 +1,218 @@
 <?php
-/**
- * Roundcube Pictures Plugin
- *
- * @version 1.4.20
- * @author Offerel
- * @copyright Copyright (c) 2024, Offerel
- * @license GNU General Public License, version 3
- */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
-$mode = isset($argv[1]) ? $argv[1]:"";
 $rcmail = rcube::get_instance();
-$ffprobe = exec("which ffprobe");
-$ffmpeg = exec("which ffmpeg");
 $users = array();
-$broken = array();
 $thumbsize = 220;
-$dfiles = $rcmail->config->get('dummy_files', false);
-$mtime = $rcmail->config->get('dummy_time', false);
+$webp_res = array(1920,1080);
 $hevc = $rcmail->config->get('convert_hevc', false);
-$ccmd = $rcmail->config->get('convert_cmd', false);
+$pictures_path = $rcmail->config->get('pictures_path');
+$basepath = rtrim($rcmail->config->get('work_path'), '/');
 $exif_mode = $rcmail->config->get('exif');
+$pntfy = $rcmail->config->get('pntfy_sec');
+$mtime = $rcmail->config->get('dummy_time', false);
+$supported= array("jpg", "png", "jpeg", "gif", "tif", "mov", "wmv", "avi", "mpg", "mp4", "3gp");
+$etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject -ExifImageWidth -ExifImageHeight";
+$eoptions = "-q -j -d '%s'";
+$bc = 0;
 $db = $rcmail->get_dbh();
+
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
-$images = array();
-$tempstore = array();
-$basepath = rtrim($rcmail->config->get('work_path', false), '/');
-$pntfy = $rcmail->config->get('pntfy_sec');
-
 for ($x = 0; $x < $rcount; $x++) {
 	array_push($users, $db->fetch_assoc($result));
 }
 
-logm("Starting maintenance...");
-
 foreach($users as $user) {
+	$utime = time();
 	$username = $user["username"];
 	$uid = $user["user_id"];
-	$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/');
+	$pictures_basepath = rtrim(str_replace("%u", $username, $pictures_path), '/');
 	$thumb_basepath = $basepath."/".$username."/photos";
 	$webp_basepath =  $basepath."/".$username."/webp";
-	$db->query("DELETE FROM `pic_broken` WHERE `user_id` = $uid");
-
-	switch($mode) {
-		case "add":
-			logm("Checking $username with mode 'add'");
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
-			break;
-		case "clean":
-			logm("Checking $username with mode 'clean'");
-			if(is_dir($thumb_basepath)) {
-				$path = $thumb_basepath;
-				read_thumbs($path, $thumb_basepath, $pictures_basepath);
-			}
-
-			if(is_dir($webp_basepath)) {
-				$path = $webp_basepath;
-				read_webp($path, $webp_basepath, $pictures_basepath);
-			}
-			break;
-		default:
-			logm("Search media for $username");
-			$tempstore = (file_exists($basepath."/tempstore.json")) ? json_decode(file_get_contents($basepath."/tempstore.json"),true):array();
-
-			foreach($tempstore as $element) {
-				if($uid == $element[1]) {
-					$images[] = $element[0];
-				}
-			}
-
-			if(count($images) > 0) logm("The last maintenance was not completed properly. ".count($images)." images found in temporary store", 2);
-			read_photos($pictures_basepath, $thumb_basepath, $pictures_basepath, $user["user_id"], $webp_basepath);
-			logm("read_photos finished after ".etime($starttime), 4);
-			
-			if($exif_mode == 2 && count($images) > 0) {
-				exiftool($images, $uid);
-				$images = [];
-				$tempstore = [];
-				unlink($basepath."/tempstore.json");
-				logm("Temporary list store removed", 4);
-			}
-
-			if(is_dir($thumb_basepath)) {
-				$path = $thumb_basepath;
-				read_thumbs($path, $thumb_basepath, $pictures_basepath);
-			}
-
-			if(is_dir($webp_basepath)) {
-				$path = $webp_basepath;
-				read_webp($path, $webp_basepath, $pictures_basepath);
-			}
-			
-			rmexpires();
-			break;
-	}
-	
-	if(count($broken) > 0) {
+	$broken = array();
+	logm("Search media for $username");
+	scanGallery($pictures_basepath, $pictures_basepath, $thumb_basepath, $webp_basepath, $uid);
+	$bcount = count($broken);
+	$bc = $bc + $bcount;
+	if($bcount > 0) {
 		foreach($broken as $picture) {
 			$db->query("INSERT INTO `pic_broken` (`pic_path`, `user_id`) VALUES (\"$picture\",$uid)");
 		}
 	}
+
+	logm("Search orphaned thumbnail files");
+	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
+	logm("Search orphaned webp files");
+	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
+	expired_shares();
+
+	logm("$username finished in ".etime($utime)." with $bcount corrupt media");
 }
 
-$message = "Pictures maintenance finished in ".etime($starttime);
-$message.= (count($broken) > 0) ? ". ".count($broken)." corrupt media found.":"";
+$message = "Maintenance finished in ".etime($starttime);
+$message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 logm($message);
+if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
 
-$authHeader = base64_encode($rcmail->config->get('pntfy_usr').":".$rcmail->config->get('pntfy_pwd'));
-$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
-$purl = $rcmail->config->get('pntfy_url');
 
-if($pntfy && etime($starttime,true) > $pntfy && strlen($purl) > 4) {
-	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
-		'http' => [
-			'method' => 'POST',
-			'header' =>
-				"Content-Type: text/plain\r\n".
-				$authHeader.
-				"Title: Roundcube Pictures\r\n".
-				"Priority: 3\r\n".
-				"Tags: Roundcube,Pictures",
-			'content' => $message."\r\n\r\nFor details please check maintenance.log"
-		]
-	])), true);
+function scanGallery($dir, $base, $thumb, $webp, $user) {
+	global $supported, $etags, $eoptions, $exif_mode, $basepath, $mtime;
+	$images = array();
+    foreach (new DirectoryIterator($dir) as $fileInfo) {
+        if (!$fileInfo->isDot()) {
+            if ($fileInfo->isDir()) {
+                scanGallery($fileInfo->getPathname(), $base, $thumb, $webp, $user);
+            } else {
+            	$filename = pathinfo($fileInfo->getFilename());
+            	if(isset($filename['extension']) && in_array(strtolower($filename['extension']), $supported)) {
+					$images[] = $dir.'/'.$filename['basename'];
+				}
+			}
+        }
+    }
 
-	if(isset($rarr['id'])) 
-		logm("ntfy push succesfully send", 4);
-	else
-		logm("ntfy push failed.", 2);
-}
+    if (count($images) > 0) {
+		foreach ($images as $key => $image) {
+			$thumbp = str_replace($base, $thumb, $image);
+			$thumb_parts = pathinfo($thumbp);
+			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+			$otime = filemtime($image);
+			$ttime = @filemtime($thumbp);
+			if($otime == $ttime) unset($images[$key]);
+			if(filesize($image) < 1) {
+				if($mtime > 0) del_dummy($image, $mtime);
+				unset($images[$key]);
+			}
+			$basename = basename($image);
+			if($basename == "folder.jpg") unset($images[$key]);
+			if($basename[0] == ".") {
+				check_hidden($image);
+				unset($images[$key]);
+			}
 
-function etime($starttime, $s = false) {
-	if($s) return time() - $starttime;
-	return gmdate("H:i:s", time() - $starttime);
-}
+		}
 
-function logm($message, $mmode = 3) {
-	global $rcmail;
-	$dtime = date("Y-m-d H:i:s");
-	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
-	$debug = $rcmail->config->get('debug', false);
-	switch($mmode) {
-		case 1: $msmode = " [ERRO] "; break;
-		case 2: $msmode = " [WARN] "; break;
-		case 3: $msmode = " [INFO] "; break;
-		case 4: $msmode = " [DBUG] "; break;
-	}
+		$chunks = array_chunk($images, 1000, true);
+		if(count($chunks) > 0) {
+			foreach ($chunks as $key => $chunk) {
+				$imgarr = array();
+				if($exif_mode == 1) {
+					foreach ($chunk as $image) {
+						$exif_data = @exif_read_data($image);
+						$gis = getimagesize($image, $info);
+						$exif_arr = array();
+						$exif_arr['SourceFile'] = $image;
 
-	if(!$debug && $mmode > 3) {
-		return;
-	} else {
-		$line = $dtime.$msmode.$message."\n";
-	}
-	echo $line;
-	file_put_contents($logfile, $line, FILE_APPEND);
-}
-
-function read_photos($path, $thumb_basepath, $pictures_basepath, $user, $webp_basepath) {
-	global $exif_mode;
-	$support_arr = array("jpg","jpeg","png","gif","tif","mp4","mov","wmv","avi","mpg","3gp");
-	if(file_exists($path)) {
-		if($handle = opendir($path)) {
-			while (false !== ($file = readdir($handle))) {
-				if($file === '.' || $file === '..') continue;
-				if(is_dir($path."/".$file."/")) {
-					logm("Check directory $path/$file/", 4);
-					read_photos($path."/".$file, $thumb_basepath, $pictures_basepath, $user, $webp_basepath);
-				} else {
-					$pathparts = pathinfo($path."/".$file);
-					if(isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $support_arr ) && basename(strtolower($file)) != 'folder.jpg' && filesize($path."/".$file) > 0) {
-						$exifArr = createthumb("$path/$file", $thumb_basepath, $pictures_basepath, $user);
-						
-						if(is_array($exifArr)) {
-							if (in_array(strtolower($pathparts['extension']), array("jpg", "jpeg"))) create_webp($path."/".$file, $pictures_basepath, $webp_basepath, $exifArr);
-							if($exif_mode != 2) todb($path."/".$file, $user, $pictures_basepath, $exifArr);
+						if(is_array($exif_data)) {
+							(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
+							(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
+							(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
+							(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
+							(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['DateTimeOriginal'] = strtotime($exif_data['DateTimeOriginal']):filemtime($image);
+							(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
+							(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
+							(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
+							(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:null;
+							(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
+							(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
+							(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
+							(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
+							(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
+							(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
+							(isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
+							(isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
+							(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
+							(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
+							(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
+							$exif_arr['Keywords'] = (isset($info['APP13']) && isset($info['APP13']["2#025"])) ? iptcparse($info['APP13']["2#025"]):null;
+							(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
+							(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
+							//$exif_arr['Subject'] = (isset($info['APP13'])) ? iptcparse($info['APP13'])["2#025"]:null;
+							$exif_arr['Subject'] = (isset($info['APP13']) && isset($info['APP13']["2#025"])) ? iptcparse($info['APP13'])["2#025"]:null;
+							(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
+							(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
+							(isset($exif_data['COMPUTED']['Width'])) ? $exif_arr['ExifImageWidth'] = $exif_data['COMPUTED']['Width']:null;
+							(isset($exif_data['COMPUTED']['Height'])) ? $exif_arr['ExifImageHeight'] = $exif_data['COMPUTED']['Height']:null;
+						} else {
+							if(!is_bool($gis)) {
+								$exif_arr['MIMEType'] = $gis['mime'];
+								$exif_arr['ExifImageWidth'] = $gis[0];
+								$exif_arr['ExifImageHeight'] = $gis[1];
+							} else {
+								$exif_arr['MIMEType'] = mime_content_type($image);
+							}
+							
 						}
-						
-						checkorphaned($path."/".$file);
+						$imgarr[]=$exif_arr;
+					}
+				} elseif ($exif_mode == 2) {
+					$files = implode("' '", $chunk);
+					exec("exiftool $eoptions $etags '$files' 2>&1", $output, $error);
+					$joutput = implode("", $output);
+					$imgarr = json_decode($joutput);
+				}
+
+				foreach($imgarr as $file) {
+					$rthumb = create_thumb($file, $thumb, $base);
+					$rwebp = create_webp($file, $webp, $base);
+					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
+						touch($rthumb[1], $rthumb[0]);
+						if($rwebp[0] > 0) touch($rwebp[1], $rwebp[0]);
 					}
 				}
 			}
-			closedir($handle);
 		}
 	}
 }
 
-function read_thumbs($path, $webp_basepath, $picture_basepath) {
-	if($handle = opendir($path)) {
-		while (false !== ($file = readdir($handle))) {
-			if($file === '.' || $file === '..') continue;
-			
-			if(is_dir($path."/".$file."/")) {
-				read_thumbs($path."/".$file, $webp_basepath, $picture_basepath);
-				if(count(glob($path."/".$file."/*")) === 0) {
-					rmdir($path."/".$file);
-				}
-			} else {
-				delete_asset($path."/".$file, $webp_basepath, $picture_basepath);
-			}
-		}
-		closedir($handle);
-	}
-}
+function create_thumb($file, $thumb, $base) {
+	global $thumbsize, $broken, $hevc;
+	$image = realpath($file['SourceFile']);
+	$thumb_image = str_replace($base, $thumb, $image);
+	$thumb_parts = pathinfo($thumb_image);
+	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	logm("Create thumbnail $thumb_image", 4);
+	$otime = filemtime($image);
 
-function read_webp($path, $webp_basepath, $picture_basepath) {
-	if($handle = opendir($path)) {
-		while (false !== ($file = readdir($handle))) {
-			if($file === '.' || $file === '..') continue;
-			
-			if(is_dir($path."/".$file."/")) {
-				read_webp($path."/".$file, $webp_basepath, $picture_basepath);
-				if(count(glob($path."/".$file."/*")) === 0) {
-					rmdir($path."/".$file);
-				}
-			} else {
-				delete_asset($path."/".$file, $webp_basepath, $picture_basepath);
-			}
-		}
-		closedir($handle);
-	}
-}
-
-function delete_asset($image, $asset_basepath, $picture_basepath) {
-	$image = str_replace('//','/',$image);
-	$org_pinfo = pathinfo(str_replace($asset_basepath, $picture_basepath, $image));
-	if(!file_exists($org_pinfo['dirname']."/".$org_pinfo['filename'])) {
-		unlink($image);
-		logm("Delete thumbnail/webp $image", 4);
-	}
-}
-
-function create_webp($ofile, $pictures_basepath, $webp_basepath, $exif) {
-	global $rcmail;
-	$webp_res = array(1920,1080);
-	$webp_file = str_replace($pictures_basepath, $webp_basepath, $ofile).'.webp';
-	logm("Create webp $webp_file", 4);
-	$otime = filemtime($ofile);
-	if($otime == @filemtime($webp_file)) return false;
-	list($owidth, $oheight) = getimagesize($ofile);
-	$image = imagecreatefromjpeg($ofile);
+	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
 	
-	if(isset($exif['Orientation'])) {
-		switch($exif['Orientation']) {
-			case 3: $degrees = 180; break;		
-			case 4: $degrees = 180; break;		
-			case 5: $degrees = 270; break;		
-			case 6: $degrees = 270; break;		
-			case 7: $degrees = 90; break;		
-			case 8: $degrees = 90; break;		
-			default: $degrees = 0;
-		}
+	if(isset($file['MIMEType'])) {
+		$type = explode('/', $file['MIMEType'])[0];
 	} else {
-		$degrees = 0;
+		logm("Missing MimeType in $image", 2);
+		return array(0, $thumb_image);
 	}
 
-	if($degrees > 0) $image = imagerotate($image, $degrees, 0);		
-
-	if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
-		$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
-		$img = imagescale($image, $nwidth);
-	} else {
-		$img = $image;
-	}
-
-	$directory = dirname($webp_file);
-	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
-	imagewebp($img, $webp_file, 70);
-	imagedestroy($img);
-	imagedestroy($image);
-	touch($webp_file, $otime);
-}
-
-function images($image, $uid) {
-	global $basepath, $images, $tempstore;
-	$tempstore[] = array($image, $uid);
-	$images[] = $image;
-	file_put_contents($basepath."/tempstore.json", json_encode($tempstore, true));
-}
-
-function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
-	global $thumbsize, $ffmpeg, $dfiles, $hevc, $broken, $ccmd, $exif_mode, $ffprobe;
-	$org_pic = realpath($image);
-
-	$thumb_pic = str_replace($pictures_basepath, $thumb_basepath, $org_pic);
-	$thumb_parts = pathinfo($thumb_pic);
-	$thumb_pic = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
-
-	if($dfiles) deldummy($org_pic);
-
-	$otime = filemtime($org_pic);
-	if(file_exists($thumb_pic)) {
-		if($otime == filemtime($thumb_pic)) {
-			logm("Ignore $org_pic", 4);
-			return false;
-		} else {
-			logm("ReParse $org_pic", 4);
-		}
-	} else {
-		logm("$thumb_pic does not exists", 4);
-	}
-	
-	$mimetype = mime_content_type($org_pic);
-	images($org_pic, $uid);
-	$target = "";
-	$degrees = 0;
-	$ppath = "";
-	$type = explode('/', $mimetype)[0];
-	
-	if(!in_array($type, ['image','video'])) {
-		logm("Unsupported: $org_pic", 4);
-		return false;
-	}
-	
 	$thumbpath = $thumb_parts['dirname'];
 		
-	if (!is_dir($thumbpath)) {
-		if(!mkdir($thumbpath, 0755, true)) {
-			logm("Thumbnail subfolder creation failed ($thumbpath). Please check your directory permissions.", 2);
+	if (!is_dir("$thumbpath")) {
+		if(!mkdir("$thumbpath", 0755, true)) {
+			logm("Thumbnail subfolder creation failed ($thumbpath). Please check directory permissions.", 1);
+			return array(0, $thumb_image);
 		}
 	}
 
-	$exifArr = [];
-	$exifArr['MIMEType'] = $mimetype;
-	logm("Create thumbnail $thumb_pic", 4);
-
 	if ($type == "image") {
-		list($width, $height, $itype) = getimagesize($org_pic, $info);
-		$newwidth = ceil($width * $thumbsize / $height);
-		if($newwidth <= 0) logm("Calculate width failed.", 2);
+		$newwidth = ceil($file['ExifImageWidth'] * $thumbsize / $file['ExifImageWidth']);
+		if($newwidth <= 0) {
+			logm("Get width failed.", 2);
+			return array(0, $thumb_image);
+		}
 
-		switch ($itype) {
-			case 1: $source = @imagecreatefromgif($org_pic); break;
-			case 2: $source = @imagecreatefromjpeg($org_pic); break;
-			case 3: $source = @imagecreatefrompng($org_pic); break;
-			default: logm("Unsupported file $org_pic", 1);
+		switch ($file['MIMEType']) {
+			case 'image/gif': $source = @imagecreatefromgif($image); break;
+			case 'image/jpeg': $source = @imagecreatefromjpeg($image); break;
+			case 'image/png': $source = @imagecreatefrompng($image); break;
+			default: logm("Unsupported file $image", 1);
 		}
 
 		if ($source) {
 			$target = imagescale($source, $newwidth, -1, IMG_GENERALIZED_CUBIC);
 			imagedestroy($source);
-			/*
-			if($exif_mode == 1) {
-				$exifArr = readEXIF($org_pic);
-				$ort = $exifArr['Orientation'];
-			} else {
-				$exif_data = @exif_read_data($org_pic);
-				$ort = $exif_data['Orientation'];
-				$exifArr['Orientation'] = $ort;
-			}
-			*/
-			$exifArr = readEXIF($org_pic);
 			
-			$ort = (isset($exif['Orientation']) ? $exifArr['Orientation']:0;
+			$ort = (isset($file['Orientation'])) ? $file['Orientation']:0;
 			switch ($ort) {		
 				case 3: $degrees = 180; break;		
 				case 4: $degrees = 180; break;		
@@ -367,50 +226,85 @@ function createthumb($image, $thumb_basepath, $pictures_basepath, $uid) {
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);		
 
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_pic, 90);
+				imagejpeg($target, $thumb_image, 90);
 				imagedestroy($target);
-				touch($thumb_pic, $otime);
 			} else {
 				logm("Can't write Thumbnail to $thumbpath, please check directory permissions", 1);
+				return array(0, $thumb_image);
 			}
 		} else {
-			$ppath = str_replace($pictures_basepath, '', $org_pic);
-			$broken[] = $ppath;
-			corrupt_thmb($thumbsize, $thumb_pic);
-			logm("Can't create thumbnail $ppath. Picture seems corrupt",1);
+			$broken[] = str_replace($base, '', $image);
+			corrupt_thmb($thumbsize, $thumb_image);
+			logm("Can't create thumbnail $thumb_image. Picture seems corrupt | ".$file['MIMEType'],1);
+			return array(0, $thumb_image);
 		}
 	} elseif ($type == "video") {
-		if(!empty($ffmpeg)) {
-			exec("$ffmpeg -y -v error -i \"".$org_pic."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_pic\" 2>&1", $output, $error);
-			if($error == 0) {
-				touch($thumb_pic, $otime);
-			} else {
-				logm("Video $org_pic seems corrupt. ".$output[0], 2);
-				$ppath = str_replace($pictures_basepath, '', $org_pic);
-				$broken[] = $ppath;
-				corrupt_thmb($thumbsize, $thumb_pic);
-			}
-			
-			exec("$ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\" 2>&1", $output, $error);
-			if($hevc && $output[0] != "hevc") return $exifArr;
-
-			$pathparts = pathinfo($org_pic);
-			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			if(!file_exists($hidden_vid)) {
-				$startconv = time();
-				logm("Convert to $hidden_vid", 4);
-				$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $org_pic, str_replace("%o", $hidden_vid, $ccmd)));
-				exec($ccmd);
-				$diff = time() - $startconv;
-				$cdiff = gmdate("H:i:s", $diff);
-				logm("Video file ($org_pic) converted within $cdiff ($diff sec)", 4);
-			}
-		} else {
-			logm("ffmpeg is not installed, so video formats are not supported.", 1);
+		exec("ffmpeg -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_image\" 2>&1", $output, $error);
+		if($error != 0) {
+			logm("Video $image seems corrupt. ".$output[0], 2);
+			$broken[] = str_replace($base, '', $image);
+			corrupt_thmb($thumbsize, $thumb_image);
+			return array(0, $thumb_image);
 		}
+		
+		exec("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$image\" 2>&1", $output, $error);
+		if($hevc && $output[0] != "hevc") return array($otime, $thumb_image);
+
+		$pathparts = pathinfo($image);
+		$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+		if(!file_exists($hidden_vid)) {
+			$startconv = time();
+			logm("Convert to $hidden_vid", 4);
+			exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$hidden_vid\" 2>&1", $output, $error);
+			logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+		}
+	
 	}
-	$exifArr['MIMEType'] = $mimetype;
-	return $exifArr;
+	return array($otime, $thumb_image);
+}
+
+function create_webp($file, $webp, $base) {
+	global $webp_res;
+	$image = realpath($file['SourceFile']);
+	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
+	$webp_image = str_replace($base, $webp, $image);
+	$webp_parts = pathinfo($webp_image);
+	$webp_image = $webp_parts['dirname'].'/'.$webp_parts['filename'].'.webp';
+	if($file['MIMEType'] != "image/jpeg") return array(0, $webp_image);
+	logm("Create webp $webp_image", 4);
+	$otime = filemtime($image);
+	if($otime == @filemtime($webp_image)) return array($otime, $webp_image);
+	$owidth = $file['ExifImageWidth'];
+	$oheight = $file['ExifImageHeight'];
+	$imaget = @imagecreatefromjpeg($image);
+	if($imaget === false) return array(0, $webp_image);
+	
+	if(isset($file['Orientation'])) {
+		switch($file['Orientation']) {
+			case 3: $degrees = 180; break;		
+			case 4: $degrees = 180; break;		
+			case 5: $degrees = 270; break;		
+			case 6: $degrees = 270; break;		
+			case 7: $degrees = 90; break;		
+			case 8: $degrees = 90; break;		
+			default: $degrees = 0;
+		}
+	} else {
+		$degrees = 0;
+	}
+
+	if($degrees > 0) $imaget = imagerotate($imaget, $degrees, 0);		
+
+	if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
+		$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
+		$imaget = imagescale($imaget, $nwidth);
+	}
+
+	$directory = dirname($webp_image);
+	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
+	imagewebp($imaget, $webp_image, 70);
+	imagedestroy($imaget);
+	return array($otime, $webp_image);
 }
 
 function corrupt_thmb($thumbsize, $thumb_pic) {
@@ -436,152 +330,108 @@ function corrupt_thmb($thumbsize, $thumb_pic) {
 	imagedestroy($image_new);
 }
 
-function exiftool($images, $uid) {
-	global $pictures_basepath;
-
-	$tags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject";
-	$options = "-q -j -d '%s'";
-
-	if (`which exiftool`) {
-		$cimages = array_chunk($images, 1500, true);
-
-		foreach ($cimages as $key => $chunk) {
-			$files = implode("' '", $chunk);
-			exec("exiftool $options $tags '$files' 2>&1", $output, $error);
-			$joutput = implode("", $output);
-			$mdarr = json_decode($joutput, true);
-
-			foreach ($mdarr as &$element) {
-				todb($element['SourceFile'], $uid, $pictures_basepath, $element);
-			}
-		}
-	} else {
-		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
-	}
-}
-
-function todb($file, $user, $pictures_basepath, $exif) {
-	global $rcmail, $ffprobe, $db;
-	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
-	$result = $db->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
+function todb($file, $base, $user) {
+	global $db;
+	$image = realpath($file['SourceFile']);
+	$ppath = trim(str_replace($base, '', $image),'/');
+	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user";
+	$result = $db->query($query);
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
 
-	unset($exif['SourceFile']);
-	if(strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
-	if(strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
+	unset($file['SourceFile']);
+	unset($file['ExifImageWidth']);
+	unset($file['ExifImageHeight']);
+	if(isset($file['ImageDescription']) && strlen($file['ImageDescription']) < 1) unset($file['ImageDescription']);
+	if(isset($file['Copyright']) && strlen($file['Copyright']) < 1) unset($file['Copyright']);
 	
-	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";	
-	$type = explode("/", $exif['MIMEType'])[0];
+	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
+	$exif = "'".json_encode($file,  JSON_HEX_APOS)."'";
+	$type = explode("/", $file['MIMEType'])[0];
 
 	if($type == 'image') {
-		$taken = (isset($exif['DateTimeOriginal']) && is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
+		$taken = (isset($file['DateTimeOriginal']) && is_int($file['DateTimeOriginal']) && $file['DateTimeOriginal'] > 0) ? $file['DateTimeOriginal']:filemtime($image);
 	} else {
-		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0 && is_int($exif['DateTimeOriginal'])) {
-			$taken = $exif['DateTimeOriginal'];
-		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['CreateDate'])) {
-			$taken = $exif['CreateDate'];
+		if(isset($file['DateTimeOriginal']) && $file['DateTimeOriginal'] > 0 && is_int($file['DateTimeOriginal']) && $file['DateTimeOriginal'] > 0) {
+			$taken = $file['DateTimeOriginal'];
+		} elseif (isset($file['CreateDate']) && $file['CreateDate'] > 0 && is_int($file['CreateDate'])) {
+			$taken = $file['CreateDate'];
 		} else {
-			$taken = filemtime($file);
+			$taken = filemtime($image);
 		}
 	}
 
 	if($count == 0) {
-		logm("Add $file to database", 4);
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exifj,$user)";
+		logm("Add $image to database", 4);
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
 	} else {
-		logm("Update database for $file", 4);
-		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
+		logm("Update database for $image", 4);
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
 	}
 
 	$db->startTransaction();
 	$db->query($query);
 	if($db->is_error()) {
-		sleep(1);
+		sleep(2);
 		$db->query($query);
 		$db->endTransaction();
+		if($db->is_error()) {
+			logm($db->is_error(), 1);
+			return $db->is_error();
+		}
 	} else {
 		$db->endTransaction();
 	}
+	return 0;
 }
 
-function checkorphaned($file) {
-	$pathparts = pathinfo("$file");		// Gallery path
-	$filename = $pathparts['basename'];
-	if (strpos($filename, '.') === 0) {	// if hidden file 8start with dot)
-		$ofile = $pathparts['dirname'].'/'.ltrim($pathparts['filename'],'.').'.*';	// liste passende normale files
-		$flist = glob($ofile);
-		if (count($flist) == 0) {	// wenn es keine passenden files gibt, lösche das hidden file
-			logm("Delete orphaned file $file");
-			unlink($file);
+function read_assets($path, $assets, $base, $type) {
+	if($handle = opendir($path)) {
+		while (false !== ($file = readdir($handle))) {
+			if($file === '.' || $file === '..') continue;
+			if(is_dir("$path/$file")) {
+				read_assets("$path/$file", $assets, $base, $type);
+				if(count(glob("$path/$file/*")) === 0) rmdir("$path/$file");
+			} else {
+				delete_asset("$path/$file", $assets, $base, $type);
+			}
 		}
+		closedir($handle);
 	}
 }
 
-function rmexpires() {
+function delete_asset($image, $asset, $base, $type) {
+	$image = realpath($image);
+	$path_parts = pathinfo(str_replace($asset, $base, $image));
+
+	if(count(glob($path_parts['dirname']."/".$path_parts['filename']."*")) == 0) {
+		logm("Delete $type $image", 4);
+		unlink($image);
+	}
+}
+
+function check_hidden($hidden) {
+	$path_parts = pathinfo($hidden);
+	$filename = $path_parts['basename'];
+	if (count(glob($path_parts['dirname'].'/'.ltrim($path_parts['filename'].'.').'*')) == 0) {
+		logm("Delete hidden file $hidden");
+		unlink($hidden);
+	}
+}
+
+function expired_shares() {
 	global $db;
-	$atime = time();
 	logm("Remove expired shares from DB");
-	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < $atime");
+	$result = $db->query("DELETE FROM `pic_shares` WHERE `expire_date` < ".time());
 }
 
-function deldummy($file) {
-	global $mtime;
-	$dtime = time() - filemtime($file);
-	$fsize = filesize($file);
-	if ($dtime > $mtime && $fsize < 1) {
-		unlink($file);
-		logm("Delete dummy file $file ($fsize bytes)", 4);
+function del_dummy($nullsize, $mtime) {
+	$dtime = time() - filemtime($nullsize);
+	if ($dtime > $mtime && filesize($nullsize) < 1) {
+		logm("Delete 0-size $nullsize", 4);
+		unlink($nullsize);
 	}
-}
-
-function readEXIF($file) {
-	$exif_arr = array();
-	$exif_data = @exif_read_data($file);
-
-	$res = getimagesize($file, $info);
-
-	if($exif_data && count($exif_data) > 0) {
-		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
-		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
-		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
-		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
-		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['DateTimeOriginal'] = strtotime($exif_data['DateTimeOriginal']):filemtime($file);
-		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
-		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
-		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
-		(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:null;
-		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
-		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
-		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
-		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
-		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
-		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
-        (isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
-        (isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
-		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
-		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
-		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
-		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
-		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
-		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
-		$exif_arr['Subject'] = (isset($info['APP13'])) ? iptcparse($info['APP13'])["2#025"]:null;
-		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
-		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
-	}
-	return $exif_arr;
-}
-
-function shutter($value) {
-	$pos = strpos($value, '/');
-	$a = (float) substr($value, 0, $pos);
-	$b = (float) substr($value, $pos + 1);
-	$apex = ($b == 0) ? ($a) : ($a / $b);
-	$shutter = pow(2, -$apex);
-	if ($shutter == 0) return false;
-	if ($shutter >= 1) return round($shutter);
-	return '1/'.round(1 / $shutter);
 }
 
 function parse_fraction($v, $round = 0) {
@@ -617,5 +467,64 @@ function gps2Num($coordPart) {
 
     $e = ($s == 0) ? 0:$f/$s;
 	return $e;
+}
+
+function shutter($value) {
+	$pos = strpos($value, '/');
+	$a = (float) substr($value, 0, $pos);
+	$b = (float) substr($value, $pos + 1);
+	$apex = ($b == 0) ? ($a) : ($a / $b);
+	$shutter = pow(2, -$apex);
+	if ($shutter == 0) return false;
+	if ($shutter >= 1) return round($shutter);
+	return '1/'.round(1 / $shutter);
+}
+
+function logm($message, $mmode = 3) {
+	global $rcmail;
+	$dtime = date("Y-m-d H:i:s");
+	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+	$debug = $rcmail->config->get('debug', false);
+	switch($mmode) {
+		case 1: $msmode = " [ERRO] "; break;
+		case 2: $msmode = " [WARN] "; break;
+		case 3: $msmode = " [INFO] "; break;
+		case 4: $msmode = " [DBUG] "; break;
+	}
+
+	if(!$debug && $mmode > 3) {
+		return;
+	} else {
+		$line = $dtime.$msmode.$message."\n";
+	}
+	echo $line;
+	file_put_contents($logfile, $line, FILE_APPEND);
+}
+
+function pntfy($user, $password, $purl, $message) {
+	$authHeader = base64_encode("$user:$password");
+	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
+	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
+		'http' => [
+			'method' => 'POST',
+			'header' =>
+				"Content-Type: text/plain\r\n".
+				$authHeader.
+				"Title: Roundcube Pictures\r\n".
+				"Priority: 3\r\n".
+				"Tags: Roundcube,Pictures",
+			'content' => $message."\r\n\r\nFor details please check maintenance.log"
+		]
+	])), true);
+
+	if(isset($rarr['id'])) 
+		logm("ntfy succesfully", 4);
+	else
+		logm("ntfy failed.", 2);
+}
+
+function etime($start, $s = false) {
+	if($s) return time() - $start;
+	return gmdate("H:i:s", time() - $start);
 }
 ?>

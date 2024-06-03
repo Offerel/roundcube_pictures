@@ -1,6 +1,7 @@
 ### v1.4.20
-- Add to use chunks in tempstore (1500)
-- Added button to corrupt images
+- Add to use chunks for scan
+- Add button to corrupt images
+- Rewrite maintenance
 - Fix unescaped pathname for ffprobe
 - Fix first image of album
   
