@@ -1,10 +1,18 @@
 <?php
+/**
+ * Roundcube Pictures Plugin
+ *
+ * @version 1.4.20
+ * @author Offerel
+ * @copyright Copyright (c) 2024, Offerel
+ * @license GNU General Public License, version 3
+ */
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 require INSTALL_PATH.'program/include/clisetup.php';
 $starttime = time();
 $rcmail = rcube::get_instance();
 $users = array();
-$thumbsize = 220;
+$thumbsize = 300;
 $webp_res = array(1920,1080);
 $hevc = $rcmail->config->get('convert_hevc', false);
 $pictures_path = $rcmail->config->get('pictures_path');
@@ -246,7 +254,7 @@ function create_thumb($file, $thumb, $base) {
 			corrupt_thmb($thumbsize, $thumb_image);
 			return array(0, $thumb_image);
 		}
-		
+
 		exec("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$image\" 2>&1", $output, $error);
 		if($hevc && $output[0] != "hevc") return array($otime, $thumb_image);
 
@@ -256,7 +264,12 @@ function create_thumb($file, $thumb, $base) {
 			$startconv = time();
 			logm("Convert to $hidden_vid", 4);
 			exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$hidden_vid\" 2>&1", $output, $error);
-			logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+			if($error == 0) {
+				logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+			} else {
+				logm("Video $image is corrupt".$output[0], 1);
+				$broken[] = str_replace($base, '', $image);
+			}
 		}
 	
 	}

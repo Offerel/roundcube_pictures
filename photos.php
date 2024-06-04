@@ -17,7 +17,7 @@ if (!empty($rcmail->user->ID)) {
 	$basepath = rtrim($rcmail->config->get('work_path', false), '/');
 	$thumb_path = $basepath."/".$username."/photos/";
 	$webp_path = $basepath."/".$username."/webp/";
-	$thumbsize = 220;
+	$thumbsize = 300;
 	
 	if (!is_dir($pictures_path)) {
 		if(!mkdir($pictures_path, 0755, true)) {
@@ -747,7 +747,6 @@ function showGallery($requestedDir, $offset = 0) {
 		}
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
-			// Gallery folders
 			if (is_dir($current_dir."/".$file)) {
 				if ($file != "." && $file != "..") {
 					checkpermissions($current_dir."/".$file);
@@ -777,11 +776,10 @@ function showGallery($requestedDir, $offset = 0) {
 				}
 			}
 			
-			// Gallery images
 			$allowed = (in_array(strtolower(substr($file, strrpos($file,".")+1)), $ballowed)) ? true:false;
 			$fullpath = $current_dir."/".$file;
 			$fs = filesize($fullpath);
-			
+
 			$tpath = str_replace($pictures_path, $thumb_path, $fullpath);
 			$path_parts = pathinfo($tpath);
 			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
@@ -829,7 +827,6 @@ function showGallery($requestedDir, $offset = 0) {
 	$thumbnails = "";
 	$start = 0;
 
-	// sort folders
 	if (isset($dirs) && sizeof($dirs) > 0) {
 		$thumbnails.= "\n\t\t\t\t\t<div id='folders'>";
 		array_walk($dirs, function (&$row) {
@@ -844,7 +841,6 @@ function showGallery($requestedDir, $offset = 0) {
 		$thumbnails.= "\n\t\t\t\t\t</div>";
 	}
 
-	// sort images
 	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='justified-gallery'>";
 	$thumbnails2 = "";
 	$offset_end = 0;
