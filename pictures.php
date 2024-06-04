@@ -33,6 +33,7 @@ class pictures extends rcube_plugin {
 			$rc = $dbh->num_rows($res);
 			$shares = $dbh->fetch_assoc($res);
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
+			$thumbbase = $config['work_path'].'/'.$shares['username'].'/photos';
 			$shareID = $shares['share_id'];
 			$query = "SELECT b.`pic_path`, b.`pic_EXIF`, a.`shared_pic_id` FROM `pic_shared_pictures` a INNER JOIN `pic_pictures` b ON a.`pic_id`= b.`pic_id` WHERE a.`share_id` = $shareID ORDER BY b.`pic_taken` ASC";
 			$res = $dbh->query($query);
@@ -52,6 +53,9 @@ class pictures extends rcube_plugin {
 
 			for ($x; $x < $mthumbs; $x++) {
 				$fullpath = $basepath.'/'.$pictures[$x][0];
+				$thumb_path = str_replace($basepath, $thumbbase, $fullpath);
+				$path_parts = pathinfo($thumb_path);
+				$thumb_path = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
 				if(file_exists($fullpath)) {
 					$type = getIType($fullpath);
 					$id = $pictures[$x][2];
@@ -60,8 +64,9 @@ class pictures extends rcube_plugin {
 					$img_name = pathinfo($fullpath)['basename'];
 					$imgUrl = "plugins/pictures/simg.php?p=$id&t=1";
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
-					//$gis = getimagesize()[3];
-					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$img_name' /></a>$exifSpan";
+					$gis = getimagesize($thumb_path)[3];
+
+					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='$img_name' /></a>$exifSpan";
 				}
 			}
 

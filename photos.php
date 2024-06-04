@@ -609,12 +609,11 @@ function parseEXIF($jarr) {
 				'query' => str_replace(',','.',$jarr['GPSLatitude']) . ',' . str_replace(',','.',$jarr['GPSLongitude']),
 				'z' => 13
 			),'','&amp;');
+			$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr['GPSLatitude']."/".$jarr['GPSLongitude']."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
 		} else {
 			$osm_params = "";
 			$gm_params = "";
-		}    
-
-		$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr['GPSLatitude']."/".$jarr['GPSLongitude']."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
+		}
 
 		if(array_key_exists('Make', $jarr) && array_key_exists('Model', $jarr)) 
 			$camera = (strpos($jarr['Model'], explode(" ",$jarr['Make'])[0]) !== false) ? $jarr['Model']:$jarr['Make']." - ".$jarr['Model'];			
@@ -797,31 +796,27 @@ function showGallery($requestedDir, $offset = 0) {
 				$exifInfo = ($exif_mode != 0 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
 				$taken = $pdata[$key]['pic_taken'];
 
-				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", $file)) {
-					checkpermissions($current_dir."/".$file);
-					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
-					$imgUrl = "simg.php?$imgParams";
+				checkpermissions("$current_dir/$file");
+
+				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
+				$imgUrl = "simg.php?$imgParams";
+				
+				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
 					$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
-					$files[] = array(
-						"name" => $file,
-						"date" => $taken,
-						"size" => filesize($current_dir."/".$file),
-						"html" => "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>"
-					);
+					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
-				// video files
-				if (preg_match("/\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", $file)) {
-					$thmbParams = http_build_query(array('file' => "$requestedDir/$file", 't' => 1));
-					$thmbUrl = "simg.php?$thmbParams";
+				if (preg_match("/\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", strtolower($file))) {
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
-					$files[] = array(
-						"name" => $file,
-						"date" => $taken,
-						"size" => filesize($current_dir."/".$file),
-						"html" => "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$thmbUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>"
-					);
+					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
 				}
+				
+				$files[] = array(
+					"name" => $file,
+					"date" => $taken,
+					"size" => filesize($current_dir."/".$file),
+					"html" => $html
+				);
 			}
 			}
 		}

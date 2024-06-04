@@ -64,7 +64,7 @@ if(isset($file) && !empty($file)) {
 
 	$imagepath = $image_basepath."/".$data['pic_path'];
 	$thumbpath = $thumb_basepath."/".$data['pic_path'];
-	$thumb_parts = pathinfo($thumb_pic);
+	$thumb_parts = pathinfo($thumbpath);
 	$thumbpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
 
 	switch($mode) {
