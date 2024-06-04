@@ -25,7 +25,7 @@ $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescripti
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
-
+logm("Start maintenance");
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
 for ($x = 0; $x < $rcount; $x++) {
@@ -50,13 +50,21 @@ foreach($users as $user) {
 		}
 	}
 
+	logm("Finished pictures in ".etime($utime));
+
+	logm("Start test");
+	$test = time();
+	test($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
+	logm("End test after ".etime($test));
+
 	logm("Search orphaned thumbnail files");
 	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
 	logm("Search orphaned webp files");
 	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
 	expired_shares();
-
-	logm("$username finished in ".etime($utime)." with $bcount corrupt media");
+	$message = "$username finished in ".etime($utime);
+	$message.= ($bcount > 0) ? " with $bcount corrupt media":"";
+	logm($message);
 }
 
 $message = "Maintenance finished in ".etime($starttime);
@@ -88,18 +96,19 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
 			$otime = filemtime($image);
 			$ttime = @filemtime($thumbp);
-			if($otime == $ttime) unset($images[$key]);
+			if($otime == $ttime) unset($images[$key]); logm("No change, Ignore $image", 4);
 			if(filesize($image) < 1) {
 				if($mtime > 0) del_dummy($image, $mtime);
 				unset($images[$key]);
+				logm("O-Byte, Ignore $image", 4);
 			}
 			$basename = basename($image);
-			if($basename == "folder.jpg") unset($images[$key]);
+			if($basename == "folder.jpg") unset($images[$key]); logm("Ignore $image", 4);
 			if($basename[0] == ".") {
 				check_hidden($image);
 				unset($images[$key]);
+				logm("Ignore hidden $image", 4);
 			}
-
 		}
 
 		$chunks = array_chunk($images, 1000, true);
@@ -108,6 +117,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 				$imgarr = array();
 				if($exif_mode == 1) {
 					foreach ($chunk as $image) {
+						logm("Find exif $image", 4);
 						$exif_data = @exif_read_data($image);
 						$gis = getimagesize($image, $info);
 						$exif_arr = array();
@@ -166,6 +176,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 					$rthumb = create_thumb($file, $thumb, $base);
 					$rwebp = create_webp($file, $webp, $base);
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
+						logm("Set time for thumbnail ".$rthumb[1]." to ".$rthumb[0], 4);
 						touch($rthumb[1], $rthumb[0]);
 						if($rwebp[0] > 0) touch($rwebp[1], $rwebp[0]);
 					}
@@ -407,6 +418,7 @@ function read_assets($path, $assets, $base, $type) {
 				read_assets("$path/$file", $assets, $base, $type);
 				if(count(glob("$path/$file/*")) === 0) rmdir("$path/$file");
 			} else {
+				logm("$path/$file | $assets | $base | $type");
 				delete_asset("$path/$file", $assets, $base, $type);
 			}
 		}
@@ -414,14 +426,41 @@ function read_assets($path, $assets, $base, $type) {
 	}
 }
 
+function test($dir, $a_base, $p_base, $type) {
+	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+	foreach ($iterator as $file) {
+		if ($file->isDir()) {
+			if(count(glob($file)) === 0) logm("Delete empty $file"); rmdir($file);
+		}
+
+		$thumb_path = $file->getPathname();
+		$pext = pathinfo($thumb_path, PATHINFO_EXTENSION);
+
+		if($pext == 'jpg') {
+			//delete_asset("$path/$file", $assets, $base, $type);
+			$picture_path = str_replace($a_base, $p_base, $thumb_path);
+			$path_parts = pathinfo($picture_path);
+			$psearch = $path_parts['dirname'].'/'.$path_parts['filename'].'.*';
+			//if(count(glob($psearch, GLOB_NOSORT)) == 0) {
+			//	logm($psearch);
+			//}
+			//if(count(iterator_to_array(new GlobIterator($psearch, GlobIterator::CURRENT_AS_PATHNAME))) === 0) {
+			//	logm("candelete");
+			//test = count(glob("$psearch{jpg,jpeg,png,gif,mp4}", GLOB_BRACE));
+			//logm($test);
+
+		}
+	}
+}
+
 function delete_asset($image, $asset, $base, $type) {
 	$image = realpath($image);
 	$path_parts = pathinfo(str_replace($asset, $base, $image));
 
-	if(count(glob($path_parts['dirname']."/".$path_parts['filename']."*")) == 0) {
-		logm("Delete $type $image", 4);
-		unlink($image);
-	}
+	//if(count(glob($path_parts['dirname']."/".$path_parts['filename']."*")) == 0) {
+	//	logm("Delete $type $image", 4);
+	//	unlink($image);
+	//}
 }
 
 function check_hidden($hidden) {
