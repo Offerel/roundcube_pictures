@@ -34,6 +34,12 @@ window.onload = function(){
 			selector: '.glightbox'
 		});
 
+		$('#images').justifiedGallery().on('jg.complete', function(e) {
+			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
+				lazyload();
+			}
+		});
+
 		let observer = new IntersectionObserver(function(e) {
 			let last = document.getElementById('last') ? false:true;
 			if(e[0].isIntersecting && e[0].time > 700 && last) lazyload(true);

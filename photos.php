@@ -318,6 +318,12 @@ function showPage($thumbnails, $dir) {
 			captions: false,
 			randomize: false,
 		});
+
+		$('#images').justifiedGallery().on('jg.complete', function(e) {
+			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
+				lazyload();
+			}
+		});
 		
 		$(window).scroll(function() {
 			lazyload();
@@ -326,7 +332,6 @@ function showPage($thumbnails, $dir) {
 		lightbox = GLightbox({
 			plyr: {
 				config: {
-					
 					muted: true,
 				}
 			},
