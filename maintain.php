@@ -15,6 +15,7 @@ $users = array();
 $thumbsize = 300;
 $webp_res = array(1920,1080);
 $hevc = $rcmail->config->get('convert_hevc', false);
+$ccmd = $rcmail->config->get('convert_cmd');
 $pictures_path = $rcmail->config->get('pictures_path');
 $basepath = rtrim($rcmail->config->get('work_path'), '/');
 $exif_mode = $rcmail->config->get('exif');
@@ -183,7 +184,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 }
 
 function create_thumb($file, $thumb, $base) {
-	global $thumbsize, $broken, $hevc;
+	global $thumbsize, $broken, $hevc, $ccmd;
 	$image = realpath($file['SourceFile']);
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
@@ -270,8 +271,9 @@ function create_thumb($file, $thumb, $base) {
 
 		$startconv = time();
 		logm("Convert to $hidden_vid", 4);
-		exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$hidden_vid\" 2>&1", $output, $error);	// change hardware codec if needed
-		//exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v libvpx-vp9 -crf 31 -b:v 0 -c:a libopus -cpu-used -5 -deadline realtime \"$hidden_vid\" 2>&1', $output, $error);	//webm
+		$ccmd = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
+		exec($ccmd, $output, $error);
+		//exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v libvpx-vp9 -crf 31 -b:v 0 -c:a libopus -cpu-used -5 -deadline realtime \"$hidden_vid\" 2>&1", $output, $error);	//webm
 
 		if($error == 0) {
 			logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
