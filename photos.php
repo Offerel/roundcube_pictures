@@ -41,8 +41,6 @@ $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
 $hevc = $rcmail->config->get('convert_hevc', false);
-$ccmd = $rcmail->config->get('convert_cmd', false);
-$ffprobe = exec("which ffprobe");
 $exif_mode = $rcmail->config->get('exif');
 
 if(isset($_POST['getsubs'])) {
@@ -804,7 +802,7 @@ function showGallery($requestedDir, $offset = 0) {
 					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
-				if (preg_match("/\.mp4$|\.mpg$|\.mpeg$|\.mov$|\.avi$|\.wmv$|\.flv$|\.webm$/i", strtolower($file))) {
+				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
 				}
@@ -1045,7 +1043,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exif_mode;
+	global $thumbsize, $pictures_path, $thumb_path, $hevc, $exif_mode;
 	$idir = str_replace($pictures_path, '', $image);
 	$otime = filemtime($image);
 	$thumb_parts = pathinfo($idir);
@@ -1120,8 +1118,7 @@ function createthumb($image) {
 			$vcodec = exec_shell("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
 			if ($hevc && "$vcodec" != "hevc") return false;
 			$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			$ccmd = str_replace("%f", $ffmpeg, str_replace("%i", $image, str_replace("%o", $out, $ccmd)));
-			exec($ccmd);
+			exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$out\" 2>&1", $output, $error);
 		} else {
 			error_log("ffmpeg is not available, video formats are not supported.");
 		}
@@ -1154,7 +1151,7 @@ function corrupt_thmb($thumbsize, $thumbnailpath) {
 }
 
 function todb($file, $user, $pictures_basepath, $exif) {
-	global $rcmail, $ffprobe;
+	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $dbh->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
@@ -1171,7 +1168,7 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		} elseif (isset($exif['CreateDate']) && $exif['CreateDate'] > 0 && is_int($exif['CreateDate'])) {
 			$taken = $exif['CreateDate'];
 		} else {
-			$taken = strtotime(shell_exec("$ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
+			$taken = strtotime(shell_exec("ffprobe -v quiet -select_streams v:0  -show_entries stream_tags=creation_time -of default=noprint_wrappers=1:nokey=1 \"$file\""));
 			$taken = (empty($taken)) ? filemtime($file):$taken;
 		}
 	}

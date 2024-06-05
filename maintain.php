@@ -20,7 +20,7 @@ $basepath = rtrim($rcmail->config->get('work_path'), '/');
 $exif_mode = $rcmail->config->get('exif');
 $pntfy = $rcmail->config->get('pntfy_sec');
 $mtime = $rcmail->config->get('dummy_time', false);
-$supported= array("jpg", "png", "jpeg", "gif", "tif", "mov", "wmv", "avi", "mpg", "mp4", "3gp");
+$supported= array("jpg", "jpeg", "png", "gif", "tif", "mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm");
 $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject -ExifImageWidth -ExifImageHeight";
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
@@ -51,11 +51,6 @@ foreach($users as $user) {
 	}
 
 	logm("Finished pictures in ".etime($utime));
-
-	logm("Start test");
-	$test = time();
-	test($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
-	logm("End test after ".etime($test));
 
 	logm("Search orphaned thumbnail files");
 	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
@@ -96,6 +91,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
 			$otime = filemtime($image);
 			$ttime = @filemtime($thumbp);
+
 			if($otime == $ttime) unset($images[$key]); logm("No change, Ignore $image", 4);
 			if(filesize($image) < 1) {
 				if($mtime > 0) del_dummy($image, $mtime);
@@ -271,18 +267,18 @@ function create_thumb($file, $thumb, $base) {
 
 		$pathparts = pathinfo($image);
 		$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-		if(!file_exists($hidden_vid)) {
-			$startconv = time();
-			logm("Convert to $hidden_vid", 4);
-			exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$hidden_vid\" 2>&1", $output, $error);
-			if($error == 0) {
-				logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
-			} else {
-				logm("Video $image is corrupt".$output[0], 1);
-				$broken[] = str_replace($base, '', $image);
-			}
+
+		$startconv = time();
+		logm("Convert to $hidden_vid", 4);
+		exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"$hidden_vid\" 2>&1", $output, $error);	// change hardware codec if needed
+		//exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v libvpx-vp9 -crf 31 -b:v 0 -c:a libopus -cpu-used -5 -deadline realtime \"$hidden_vid\" 2>&1', $output, $error);	//webm
+
+		if($error == 0) {
+			logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+		} else {
+			logm("Video $image is corrupt".$output[0], 1);
+			$broken[] = str_replace($base, '', $image);
 		}
-	
 	}
 	return array($otime, $thumb_image);
 }
@@ -410,57 +406,38 @@ function todb($file, $base, $user) {
 	return 0;
 }
 
-function read_assets($path, $assets, $base, $type) {
-	if($handle = opendir($path)) {
-		while (false !== ($file = readdir($handle))) {
-			if($file === '.' || $file === '..') continue;
-			if(is_dir("$path/$file")) {
-				read_assets("$path/$file", $assets, $base, $type);
-				if(count(glob("$path/$file/*")) === 0) rmdir("$path/$file");
-			} else {
-				logm("$path/$file | $assets | $base | $type");
-				delete_asset("$path/$file", $assets, $base, $type);
-			}
-		}
-		closedir($handle);
-	}
-}
-
-function test($dir, $a_base, $p_base, $type) {
+function read_assets($dir, $a_base, $p_base, $type) {
+	global $supported;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 	foreach ($iterator as $file) {
 		if ($file->isDir()) {
-			if(count(glob($file)) === 0) logm("Delete empty $file"); rmdir($file);
+			if(count(glob($file)) === 0) {
+				logm("Delete empty $file");
+				rmdir($file);
+			}
 		}
 
 		$thumb_path = $file->getPathname();
 		$pext = pathinfo($thumb_path, PATHINFO_EXTENSION);
 
 		if($pext == 'jpg') {
-			//delete_asset("$path/$file", $assets, $base, $type);
 			$picture_path = str_replace($a_base, $p_base, $thumb_path);
 			$path_parts = pathinfo($picture_path);
-			$psearch = $path_parts['dirname'].'/'.$path_parts['filename'].'.*';
-			//if(count(glob($psearch, GLOB_NOSORT)) == 0) {
-			//	logm($psearch);
-			//}
-			//if(count(iterator_to_array(new GlobIterator($psearch, GlobIterator::CURRENT_AS_PATHNAME))) === 0) {
-			//	logm("candelete");
-			//test = count(glob("$psearch{jpg,jpeg,png,gif,mp4}", GLOB_BRACE));
-			//logm($test);
+			$psearch = $path_parts['dirname'].'/'.$path_parts['filename'];
+
+			$extensions = array();
+			foreach($supported as $ext) {
+				$extensions[] = $ext;
+				$extensions[] = strtoupper($ext);
+			}
+
+			if(count(glob("$psearch.{".implode(',', $extensions)."}", GLOB_BRACE)) === 0) {
+				logm("Delete $type $file");
+				unlink($file);
+			}
 
 		}
 	}
-}
-
-function delete_asset($image, $asset, $base, $type) {
-	$image = realpath($image);
-	$path_parts = pathinfo(str_replace($asset, $base, $image));
-
-	//if(count(glob($path_parts['dirname']."/".$path_parts['filename']."*")) == 0) {
-	//	logm("Delete $type $image", 4);
-	//	unlink($image);
-	//}
 }
 
 function check_hidden($hidden) {
