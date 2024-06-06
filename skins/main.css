@@ -550,7 +550,7 @@ footer a {
 	background: linear-gradient(180deg,rgba(255,255,255,1) 0,rgba(255,255,255,1) 55%,rgba(136,136,136,0) 100%);
 	text-shadow: 0 0 10px #fff;
 	z-index: 3;
-	padding-left: 21px;
+	padding-left: 26px;
 }
 ul.breadcrumb {
 	list-style: none;
