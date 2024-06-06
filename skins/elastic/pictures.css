@@ -48,7 +48,7 @@
 	font-weight: normal;
 }
 #picturestoolbar #sharepicture::before {
-	content: "\f14d";
+	content: "\f1e0";
 }
 #picturestoolbar #uploadpicture::before {
 	content: "\f093";
