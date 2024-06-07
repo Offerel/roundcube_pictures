@@ -18,6 +18,7 @@ $hevc = $rcmail->config->get('convert_hevc', false);
 $ccmd = $rcmail->config->get('convert_cmd');
 $pictures_path = $rcmail->config->get('pictures_path');
 $basepath = rtrim($rcmail->config->get('work_path'), '/');
+$logdir = $rcmail->config->get('log_dir');
 $exif_mode = $rcmail->config->get('exif');
 $pntfy = $rcmail->config->get('pntfy_sec');
 $mtime = $rcmail->config->get('dummy_time', false);
@@ -26,6 +27,15 @@ $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescripti
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
+
+if(isset($argv[1]) && $argv[1] === "trigger") {
+	$lines = file("$logdir/fssync.log");
+	$last_line = $lines[count($lines)-1];
+	if (strpos($last_line, "Failed") !== false) {
+		die();
+	}
+}
+
 logm("Start maintenance");
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
@@ -512,9 +522,9 @@ function shutter($value) {
 }
 
 function logm($message, $mmode = 3) {
-	global $rcmail;
+	global $rcmail, $logdir;
 	$dtime = date("Y-m-d H:i:s");
-	$logfile = $rcmail->config->get('log_dir', false)."/maintenance.log";
+	$logfile = "$logdir/maintenance.log";
 	$debug = $rcmail->config->get('debug', false);
 	switch($mmode) {
 		case 1: $msmode = " [ERRO] "; break;
