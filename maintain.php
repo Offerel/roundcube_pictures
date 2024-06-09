@@ -274,7 +274,7 @@ function create_thumb($file, $thumb, $base) {
 		}
 
 		exec("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$image\" 2>&1", $output, $error);
-		if($hevc && $output[0] != "hevc") return array($otime, $thumb_image);
+		//if($hevc && $output[0] != "hevc") return array($otime, $thumb_image);
 
 		$pathparts = pathinfo($image);
 		$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";

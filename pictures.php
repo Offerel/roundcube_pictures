@@ -66,7 +66,7 @@ class pictures extends rcube_plugin {
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
 					$gis = getimagesize($thumb_path)[3];
 
-					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='$img_name' /></a>$exifSpan";
+					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='$img_name' /><span class='$type' ></span></a>$exifSpan";
 				}
 			}
 
@@ -368,7 +368,7 @@ function gv($val, $type, $lang) {
 
 function showShare($thumbnails, $share) {
 	$shareName = $share['name'];
-	$head = array_key_exists("expires", $share) ? "$shareName<span>(Expires ".date('D, d.m.Y',$share['expires']).")</span>":"";
+	$head = isset($share['expires']) ? "$shareName<span>(Expires ".date('D, d.m.Y',$share['expires']).")</span>":"$shareName";
 	$page = "<!DOCTYPE html>
 	<html>
 		<head>

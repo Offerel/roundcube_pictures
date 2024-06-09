@@ -48,13 +48,18 @@ window.onload = function(){
 
 		lightbox = GLightbox({
 			plyr: {
+				//css: window.location.protocol + '//' + window.location.host + window.location.pathname + 'plugins/pictures/js/plyr/plyr.css',
+				//js: window.location.protocol + '//' + window.location.host + window.location.pathname + 'plugins/pictures/js/plyr/plyr.js',
+				//iconUrl: window.location.protocol + '//' + window.location.host + window.location.pathname + '/plugins/pictures/js/plyr/plyr.svg',
+				//iconUrl: 'js/plyr/plyr.svg',
 				config: {
 					muted: true,
 				}
 			},
 			autoplayVideos: false,
 			loop: false,
-			videosWidth: '100%'
+			videosWidth: '100%',
+			closeOnOutsideClick: false
 		});
 	
 		lightbox.on('close', () => {
