@@ -1080,7 +1080,7 @@ function createthumb($image) {
 
 	if ($mtype == "image") {
 		list($width, $height, $type) = getimagesize($image);
-		$newwidth = ceil($width * $thumbsize / $height);
+		$newwidth = ($width > $height) ? ceil($width/($height/$thumbsize)):$thumbsize;
 		if($newwidth <= 0) error_log("Calculating image width failed.");
 		
 		switch ($type) {

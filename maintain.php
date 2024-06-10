@@ -220,7 +220,7 @@ function create_thumb($file, $thumb, $base) {
 	}
 
 	if ($type == "image") {
-		$newwidth = ceil($file['ExifImageWidth'] * $thumbsize / $file['ExifImageWidth']);
+		$newwidth = ($file['ExifImageWidth'] > $file['ExifImageHeight']) ? ceil($file['ExifImageWidth']/($file['ExifImageHeight']/$thumbsize)):$thumbsize;
 		if($newwidth <= 0) {
 			logm("Get width failed.", 2);
 			return array(0, $thumb_image);
