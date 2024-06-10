@@ -40,8 +40,7 @@ $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
-$hevc = $rcmail->config->get('convert_hevc', false);
-$ccmd = $rcmail->config->get('convert_cmd');
+$ccmd = $rcmail->config->get('convert_video');
 $exif_mode = $rcmail->config->get('exif');
 
 if(isset($_POST['getsubs'])) {
@@ -1049,7 +1048,7 @@ function guardAgainstDirectoryTraversal($path) {
 }
 
 function createthumb($image) {
-	global $thumbsize, $pictures_path, $thumb_path, $hevc, $ccmd, $exif_mode;
+	global $thumbsize, $pictures_path, $thumb_path, $ccmd, $exif_mode;
 	$idir = str_replace($pictures_path, '', $image);
 	$otime = filemtime($image);
 	$thumb_parts = pathinfo($idir);
@@ -1121,11 +1120,11 @@ function createthumb($image) {
 				return $exif;
 			}
 			touch($thumbnailpath, $otime);
-			$vcodec = exec_shell("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$org_pic\"");
-			if ($hevc && "$vcodec" != "hevc") return false;
-			$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			$ccmd = str_replace('%o', $out, str_replace('%i', $image, $ccmd));
-			exec($ccmd, $output, $error);
+			if(strlen($ccmd) > 1) {
+				$ccmd = str_replace('%o', $out, str_replace('%i', $image, $ccmd));
+				$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+				exec($ccmd, $output, $error);
+			}
 		} else {
 			error_log("ffmpeg is not available, video formats are not supported.");
 		}

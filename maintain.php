@@ -14,8 +14,7 @@ $rcmail = rcube::get_instance();
 $users = array();
 $thumbsize = 300;
 $webp_res = array(1920,1080);
-$hevc = $rcmail->config->get('convert_hevc', false);
-$ccmd = $rcmail->config->get('convert_cmd');
+$ccmd = $rcmail->config->get('convert_video');
 $pictures_path = $rcmail->config->get('pictures_path');
 $basepath = rtrim($rcmail->config->get('work_path'), '/');
 $logdir = $rcmail->config->get('log_dir');
@@ -194,7 +193,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 }
 
 function create_thumb($file, $thumb, $base) {
-	global $thumbsize, $broken, $hevc, $ccmd;
+	global $thumbsize, $broken, $ccmd;
 	$image = realpath($file['SourceFile']);
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
@@ -273,23 +272,21 @@ function create_thumb($file, $thumb, $base) {
 			return array(0, $thumb_image);
 		}
 
-		exec("ffprobe -y -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$image\" 2>&1", $output, $error);
-		//if($hevc && $output[0] != "hevc") return array($otime, $thumb_image);
+		if(strlen($ccmd) > 1) {
+			logm("Convert to $hidden_vid", 4);
+			$startconv = time();
+			$ccmd = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
+			$pathparts = pathinfo($image);
+			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 
-		$pathparts = pathinfo($image);
-		$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
+			exec($ccmd, $output, $error);
 
-		$startconv = time();
-		logm("Convert to $hidden_vid", 4);
-		$ccmd = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
-		exec($ccmd, $output, $error);
-		//exec("ffmpeg -y -loglevel quiet -i \"$image\" -c:v libvpx-vp9 -crf 31 -b:v 0 -c:a libopus -cpu-used -5 -deadline realtime \"$hidden_vid\" 2>&1", $output, $error);	//webm
-
-		if($error == 0) {
-			logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
-		} else {
-			logm("Video $image is corrupt".$output[0], 1);
-			$broken[] = str_replace($base, '', $image);
+			if($error == 0) {
+				logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+			} else {
+				logm("Video $image is corrupt".$output[0], 1);
+				$broken[] = str_replace($base, '', $image);
+			}
 		}
 	}
 	return array($otime, $thumb_image);
