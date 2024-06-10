@@ -1,5 +1,7 @@
 ### v1.4.21
 - Fix CSS
+- Fix loading to less photos
+- Changed ffmpeg parameters
   
 ### v1.4.20
 - Add to use chunks for scan
