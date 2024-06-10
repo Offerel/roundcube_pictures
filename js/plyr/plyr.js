@@ -3422,7 +3422,6 @@ typeof navigator === "object" && (function (global, factory) {
     loadSprite: true,
     iconPrefix: 'plyr',
     iconUrl: 'https://cdn.plyr.io/3.7.8/plyr.svg',
-   // iconUrl: window.location.protocol + '//' + window.location.host + window.location.pathname + '/plugins/pictures/js/plyr/plyr.js',
     // Blank video (used to prevent errors on source change)
     blankVideo: 'https://cdn.plyr.io/static/blank.mp4',
     // Quality default

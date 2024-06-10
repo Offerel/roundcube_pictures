@@ -148,9 +148,6 @@ if(file_exists($file)) {
 
 function sendHeaders($file, $mimeType, $filename, $disposition) {
 	header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime($file)).' GMT');
-	header('Accept-Ranges: bytes');
-	header("Content-Length: ".filesize($file));
-	header("Content-Transfer-Encoding: binary\n");
 	header("Cache-Control: private");
 	header("Pragma: private");
 	header("Content-Type: $mimeType");
