@@ -336,6 +336,7 @@ function showPage($thumbnails, $dir) {
 			},
 			autoplayVideos: false,
 			loop: false,
+			videosWidth: '100%',
 			closeOnOutsideClick: false
 		});
 
@@ -1105,7 +1106,7 @@ function createthumb($image) {
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
 		
 		if(is_writable($thumbpath)) {
-			imagejpeg($target, $thumbnailpath, 100);
+			imagejpeg($target, $thumbnailpath, 85);
 			touch($thumbnailpath, $otime);
 		} else {
 			error_log("Can't write Thumbnail. Please check your directory permissions.");

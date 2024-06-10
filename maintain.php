@@ -251,7 +251,7 @@ function create_thumb($file, $thumb, $base) {
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);		
 
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_image, 90);
+				imagejpeg($target, $thumb_image, 85);
 				imagedestroy($target);
 			} else {
 				logm("Can't write Thumbnail to $thumbpath, please check directory permissions", 1);
