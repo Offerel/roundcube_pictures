@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.21
+ * @version 1.4.22
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -40,7 +40,7 @@ if(isset($file) && !empty($file)) {
 			case 1:
 				$pictures_basepath = "$workpath/$username/photos/";
 				$path_parts = pathinfo($pictures_basepath.$file);
-				$file = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
+				$file = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
 				break;
 			default:
 				$pictures_basepath = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)),'/').'/';
@@ -108,6 +108,7 @@ if(file_exists($file)) {
 		case 1:
 			sendHeaders($file, $mimeType, $pathparts['basename'], 'inline');
 			readfile($file);
+			error_log($file);
 			break;
 		case 3:
 			sendHeaders($file, 'application/octet-stream', $pathparts['basename'], 'attachment');

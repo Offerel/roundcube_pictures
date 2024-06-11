@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.4.21
+ * @version 1.4.22
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -99,8 +99,9 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$thumbp = str_replace($base, $thumb, $image);
 			$thumb_parts = pathinfo($thumbp);
 			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+			$thumbw = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 			$otime = filemtime($image);
-			$ttime = @filemtime($thumbp);
+			$ttime = @filemtime($thumbw);
 
 			if($otime == $ttime) unset($images[$key]); logm("No change, Ignore $image", 4);
 			if(filesize($image) < 1) {
@@ -184,6 +185,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
 						logm("Set time for thumbnail ".$rthumb[1]." to ".$rthumb[0], 4);
 						touch($rthumb[1], $rthumb[0]);
+						touch($rthumb[2], $rthumb[0]);
 						if($rwebp[0] > 0) touch($rwebp[1], $rwebp[0]);
 					}
 				}
@@ -198,6 +200,7 @@ function create_thumb($file, $thumb, $base) {
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
 	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$thumb_webp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 	logm("Create thumbnail $thumb_image", 4);
 	$otime = filemtime($image);
 
@@ -207,7 +210,7 @@ function create_thumb($file, $thumb, $base) {
 		$type = explode('/', $file['MIMEType'])[0];
 	} else {
 		logm("Missing MimeType in $image", 2);
-		return array(0, $thumb_image);
+		return array(0, $thumb_image, $thumb_webp);
 	}
 
 	$thumbpath = $thumb_parts['dirname'];
@@ -215,7 +218,7 @@ function create_thumb($file, $thumb, $base) {
 	if (!is_dir("$thumbpath")) {
 		if(!mkdir("$thumbpath", 0755, true)) {
 			logm("Thumbnail subfolder creation failed ($thumbpath). Please check directory permissions.", 1);
-			return array(0, $thumb_image);
+			return array(0, $thumb_image, $thumb_webp);
 		}
 	}
 
@@ -223,7 +226,7 @@ function create_thumb($file, $thumb, $base) {
 		$newwidth = ($file['ExifImageWidth'] > $file['ExifImageHeight']) ? ceil($file['ExifImageWidth']/($file['ExifImageHeight']/$thumbsize)):$thumbsize;
 		if($newwidth <= 0) {
 			logm("Get width failed.", 2);
-			return array(0, $thumb_image);
+			return array(0, $thumb_image, $thumb_webp);
 		}
 
 		switch ($file['MIMEType']) {
@@ -252,16 +255,17 @@ function create_thumb($file, $thumb, $base) {
 
 			if(is_writable($thumbpath)) {
 				imagejpeg($target, $thumb_image, 85);
+				imagewebp($target, $thumb_webp, 60);
 				imagedestroy($target);
 			} else {
 				logm("Can't write Thumbnail to $thumbpath, please check directory permissions", 1);
-				return array(0, $thumb_image);
+				return array(0, $thumb_image, $thumb_webp);
 			}
 		} else {
 			$broken[] = str_replace($base, '', $image);
 			corrupt_thmb($thumbsize, $thumb_image);
 			logm("Can't create thumbnail $thumb_image. Picture seems corrupt | ".$file['MIMEType'],1);
-			return array(0, $thumb_image);
+			return array(0, $thumb_image, $thumb_webp);
 		}
 	} elseif ($type == "video") {
 		exec("ffmpeg -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_image\" 2>&1", $output, $error);
@@ -269,27 +273,27 @@ function create_thumb($file, $thumb, $base) {
 			logm("Video $image seems corrupt. ".$output[0], 2);
 			$broken[] = str_replace($base, '', $image);
 			corrupt_thmb($thumbsize, $thumb_image);
-			return array(0, $thumb_image);
+			return array(0, $thumb_image, $thumb_webp);
 		}
 
 		if(strlen($ccmd) > 1) {
+			$pathparts = pathinfo($image);
+			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			logm("Convert to $hidden_vid", 4);
 			$startconv = time();
 			$ccmd = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
-			$pathparts = pathinfo($image);
-			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 
 			exec($ccmd, $output, $error);
 
 			if($error == 0) {
-				logm("Video $image converted in $cdiff".gmdate("H:i:s", time() - $startconv), 4);
+				logm("Video $image converted in ".gmdate("H:i:s", time() - $startconv), 4);
 			} else {
 				logm("Video $image is corrupt".$output[0], 1);
 				$broken[] = str_replace($base, '', $image);
 			}
 		}
 	}
-	return array($otime, $thumb_image);
+	return array($otime, $thumb_image, $thumb_webp);
 }
 
 function create_webp($file, $webp, $base) {

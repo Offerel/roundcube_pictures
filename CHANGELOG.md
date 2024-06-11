@@ -1,3 +1,6 @@
+### v1.4.22
+- Add webp thumbnails
+  
 ### v1.4.21
 - Fix CSS
 - Fix loading to less photos
