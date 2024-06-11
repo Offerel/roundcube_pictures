@@ -108,7 +108,6 @@ if(file_exists($file)) {
 		case 1:
 			sendHeaders($file, $mimeType, $pathparts['basename'], 'inline');
 			readfile($file);
-			error_log($file);
 			break;
 		case 3:
 			sendHeaders($file, 'application/octet-stream', $pathparts['basename'], 'attachment');
