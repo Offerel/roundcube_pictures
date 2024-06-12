@@ -529,7 +529,12 @@ footer a {
 	padding-bottom: 7px;
 }
 .shadow {
-	background-image: linear-gradient(rgb(0 0 0 / 82%),rgb(0 0 0 / 0%)) !important;
+    background-image: linear-gradient(rgb(0 0 0 / 82%),rgb(0 0 0 / 0))!important;
+    text-shadow: 1px 1px 3px rgba(15,15,15,1);
+    color: white;
+}
+.shadow a {
+	color: white;
 }
 .picbdy {
 	max-width: 1250px;
@@ -547,8 +552,6 @@ footer a {
 	width: 100%;
 	height: 50px;
 	position: fixed;
-	background: linear-gradient(180deg,rgba(255,255,255,1) 0,rgba(255,255,255,1) 55%,rgba(136,136,136,0) 100%);
-	text-shadow: 0 0 10px #fff;
 	z-index: 3;
 	padding-left: 26px;
 }

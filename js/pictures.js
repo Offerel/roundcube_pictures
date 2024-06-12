@@ -39,7 +39,7 @@ window.onload = function(){
 				lazyload();
 			}
 		});
-
+		
 		let observer = new IntersectionObserver(function(e) {
 			let last = document.getElementById('last') ? false:true;
 			if(e[0].isIntersecting && e[0].time > 700 && last) lazyload(true);
@@ -118,11 +118,11 @@ window.onload = function(){
 			prevScrollpos = currentScrollPos;
 		}
 	}
-
+	
 	if (top.location!= self.location) {
 		top.location = self.location.href;
 	}
-
+	
 	window.addEventListener("contextmenu", function(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -166,6 +166,18 @@ window.onload = function(){
 		})
 	});
 };
+
+function count_checks() {
+	if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
+		window.parent.document.getElementById('movepicture').classList.remove('disabled');
+		window.parent.document.getElementById('delpicture').classList.remove('disabled');
+		window.parent.document.getElementById('sharepicture').classList.remove('disabled');
+	} else {
+		window.parent.document.getElementById('movepicture').classList.add('disabled');
+		window.parent.document.getElementById('delpicture').classList.add('disabled');
+		window.parent.document.getElementById('sharepicture').classList.add('disabled');
+	}
+}
 
 function lazyload(slide = false) {
 	$.ajax({

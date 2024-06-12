@@ -245,6 +245,7 @@ function showPage($thumbnails, $dir) {
 	<html>
 		<head>
 			<title>$gal</title>
+			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
@@ -263,7 +264,7 @@ function showPage($thumbnails, $dir) {
 		if(strlen($folder) > 0) $albumnav.= "<li><a href='?p=$path'>$folder</a></li>";
 	}
 	$page.= "</head>
-	\t\t<body class='picbdy' onload='count_checks();'>
+	\t\t<body class='picbdy'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
 	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
@@ -386,6 +387,21 @@ function showPage($thumbnails, $dir) {
 				setTimeout(lazyload, 100, true);
 			}
 		});
+
+		var prevScrollpos = window.scrollY;
+		var header = document.getElementById('header');
+
+		window.onscroll = function() {
+			var currentScrollPos = window.scrollY;
+			if (prevScrollpos > currentScrollPos) {
+				header.style.top = '0';
+				(currentScrollPos > 150) ? header.classList.add('shadow'):header.classList.remove('shadow');
+			} else {
+				header.style.top = '-55px';
+				header.classList.remove('shadow')
+			}
+			prevScrollpos = currentScrollPos;
+		}
 		
 		checkboxes();
 
