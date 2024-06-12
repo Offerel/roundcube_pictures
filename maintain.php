@@ -98,10 +98,9 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 		foreach ($images as $key => $image) {
 			$thumbp = str_replace($base, $thumb, $image);
 			$thumb_parts = pathinfo($thumbp);
-			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
-			$thumbw = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
+			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 			$otime = filemtime($image);
-			$ttime = @filemtime($thumbw);
+			$ttime = @filemtime($thumbp);
 
 			if($otime == $ttime) unset($images[$key]); logm("No change, Ignore $image", 4);
 			if(filesize($image) < 1) {
@@ -199,8 +198,7 @@ function create_thumb($file, $thumb, $base) {
 	$image = realpath($file['SourceFile']);
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
-	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
-	$thumb_webp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
+	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 	logm("Create thumbnail $thumb_image", 4);
 	$otime = filemtime($image);
 
@@ -210,7 +208,7 @@ function create_thumb($file, $thumb, $base) {
 		$type = explode('/', $file['MIMEType'])[0];
 	} else {
 		logm("Missing MimeType in $image", 2);
-		return array(0, $thumb_image, $thumb_webp);
+		return array(0, $thumb_image);
 	}
 
 	$thumbpath = $thumb_parts['dirname'];
@@ -218,7 +216,7 @@ function create_thumb($file, $thumb, $base) {
 	if (!is_dir("$thumbpath")) {
 		if(!mkdir("$thumbpath", 0755, true)) {
 			logm("Thumbnail subfolder creation failed ($thumbpath). Please check directory permissions.", 1);
-			return array(0, $thumb_image, $thumb_webp);
+			return array(0, $thumb_image);
 		}
 	}
 
@@ -226,7 +224,7 @@ function create_thumb($file, $thumb, $base) {
 		$newwidth = ($file['ExifImageWidth'] > $file['ExifImageHeight']) ? ceil($file['ExifImageWidth']/($file['ExifImageHeight']/$thumbsize)):$thumbsize;
 		if($newwidth <= 0) {
 			logm("Get width failed.", 2);
-			return array(0, $thumb_image, $thumb_webp);
+			return array(0, $thumb_image);
 		}
 
 		switch ($file['MIMEType']) {
@@ -254,26 +252,25 @@ function create_thumb($file, $thumb, $base) {
 			if ($degrees != 0) $target = imagerotate($target, $degrees, 0);		
 
 			if(is_writable($thumbpath)) {
-				imagejpeg($target, $thumb_image, 85);
-				imagewebp($target, $thumb_webp, 60);
+				imagewebp($target, $thumb_image, 60);
 				imagedestroy($target);
 			} else {
 				logm("Can't write Thumbnail to $thumbpath, please check directory permissions", 1);
-				return array(0, $thumb_image, $thumb_webp);
+				return array(0, $thumb_image);
 			}
 		} else {
 			$broken[] = str_replace($base, '', $image);
-			corrupt_thmb($thumbsize, $thumb_image);
+			corrupt_thmb($thumb_image);
 			logm("Can't create thumbnail $thumb_image. Picture seems corrupt | ".$file['MIMEType'],1);
-			return array(0, $thumb_image, $thumb_webp);
+			return array(0, $thumb_image);
 		}
 	} elseif ($type == "video") {
 		exec("ffmpeg -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_image\" 2>&1", $output, $error);
 		if($error != 0) {
 			logm("Video $image seems corrupt. ".$output[0], 2);
 			$broken[] = str_replace($base, '', $image);
-			corrupt_thmb($thumbsize, $thumb_image);
-			return array(0, $thumb_image, $thumb_webp);
+			corrupt_thmb($thumb_image);
+			return array(0, $thumb_image);
 		}
 
 		if(strlen($ccmd) > 1) {
@@ -293,7 +290,7 @@ function create_thumb($file, $thumb, $base) {
 			}
 		}
 	}
-	return array($otime, $thumb_image, $thumb_webp);
+	return array($otime, $thumb_image);
 }
 
 function create_webp($file, $webp, $base) {
@@ -335,12 +332,13 @@ function create_webp($file, $webp, $base) {
 
 	$directory = dirname($webp_image);
 	if(!file_exists($directory)) mkdir($directory, 0755 ,true);
-	imagewebp($imaget, $webp_image, 70);
+	imagewebp($imaget, $webp_image, 60);
 	imagedestroy($imaget);
 	return array($otime, $webp_image);
 }
 
-function corrupt_thmb($thumbsize, $thumb_pic) {
+function corrupt_thmb($thumb_pic) {
+	global $thumbsize;
 	$cdir = dirname(__FILE__);
 	$sign = imagecreatefrompng($cdir.'/images/error2.png');
 	$background = imagecreatefromjpeg($cdir.'/images/defaultimage.jpg');
@@ -357,7 +355,7 @@ function corrupt_thmb($thumbsize, $thumb_pic) {
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
 
-	imagejpeg($image_new, $thumb_pic, 95);
+	imagewebp($image_new, $thumb_pic, 60);
 	imagedestroy($sign);
 	imagedestroy($background);
 	imagedestroy($image_new);

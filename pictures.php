@@ -55,7 +55,7 @@ class pictures extends rcube_plugin {
 				$fullpath = $basepath.'/'.$pictures[$x][0];
 				$thumb_path = str_replace($basepath, $thumbbase, $fullpath);
 				$path_parts = pathinfo($thumb_path);
-				$thumb_path = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
+				$thumb_path = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
 				if(file_exists($fullpath)) {
 					$type = getIType($fullpath);
 					$id = $pictures[$x][2];

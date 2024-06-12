@@ -231,7 +231,7 @@ function rsfolderjpg($filename) {
 	$image = imagecreatefromjpeg($filename);
 	$image_p = imagecreatetruecolor($new_width, $new_height);
 	imagecopyresampled($image_p, $image, 0, 0, 0, 0, $new_width, $new_height, $owidth, $oheight);
-	imagejpeg($image_p, $filename, 100);
+	imagewebp($image_p, $filename, 60);
 }
 
 function showPage($thumbnails, $dir) {
@@ -786,7 +786,7 @@ function showGallery($requestedDir, $offset = 0) {
 
 			$tpath = str_replace($pictures_path, $thumb_path, $fullpath);
 			$path_parts = pathinfo($tpath);
-			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.jpg';
+			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
 			$gis = (is_file($tpath)) ? getimagesize($tpath)[3]:"";
 
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
@@ -1053,7 +1053,7 @@ function createthumb($image) {
 	$idir = str_replace($pictures_path, '', $image);
 	$otime = filemtime($image);
 	$thumb_parts = pathinfo($idir);
-	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 	$ttime = filemtime($thumbnailpath);
 
 	if(file_exists($thumbnailpath) && $otime == $ttime) return false;
@@ -1089,7 +1089,7 @@ function createthumb($image) {
 			case 2: $source = @imagecreatefromjpeg($image); break;
 			case 3: $source = @imagecreatefrompng($image); break;
 			default:
-				corrupt_thmb($thumbsize, $thumbnailpath);
+				corrupt_thmb($thumbnailpath);
 				error_log("Unsupported media format ($type).");
 		}
 		
@@ -1106,7 +1106,7 @@ function createthumb($image) {
 		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
 		
 		if(is_writable($thumbpath)) {
-			imagejpeg($target, $thumbnailpath, 85);
+			imagewebp($target, $thumbnailpath, 60);
 			touch($thumbnailpath, $otime);
 		} else {
 			error_log("Can't write Thumbnail. Please check your directory permissions.");
@@ -1117,7 +1117,7 @@ function createthumb($image) {
 			$pathparts = pathinfo($image);
 			exec($ffmpeg." -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1", $output, $error);
 			if($error != 0) {
-				corrupt_thmb($thumbsize, $thumbnailpath);
+				corrupt_thmb($thumbnailpath);
 				return $exif;
 			}
 			touch($thumbnailpath, $otime);
@@ -1135,7 +1135,8 @@ function createthumb($image) {
 	return $exif;
 }
 
-function corrupt_thmb($thumbsize, $thumbnailpath) {
+function corrupt_thmb($thumbnailpath) {
+	global $thumbsize;
 	$sign = imagecreatefrompng('images/error2.png');
 	$background = imagecreatefromjpeg('images/defaultimage.jpg');
 
@@ -1150,8 +1151,7 @@ function corrupt_thmb($thumbsize, $thumbnailpath) {
 
 	$image_new = imagecreatetruecolor($nw, $thumbsize);
 	imagecopyresampled($image_new, $background, 0, 0, 0, 0, $nw, $thumbsize, $ix, $iy);
-
-	imagejpeg($image_new, $thumbnailpath, 95);
+	imagewebp($image_new, $thumbnailpath, 60);
 	imagedestroy($sign);
 	imagedestroy($background);
 	imagedestroy($image_new);
@@ -1234,10 +1234,10 @@ function mvimg($oldpath, $newPath) {
 
 	$th_old = str_replace($pictures_path, $thumb_path, $oldpath);
 	$thumb_parts = pathinfo($th_old);
-	$th_old = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$th_old = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 	$th_new = str_replace($pictures_path, $thumb_path, $newPath);
 	$thumb_parts = pathinfo($th_old);
-	$th_new = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$th_new = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 
 	if(file_exists($th_old)) {
 		rename($th_old, $th_new);
@@ -1264,7 +1264,7 @@ function delimg($file) {
 
 	$thumbnailpath = str_replace($pictures_path, $thumb_path, $file);
 	$thumb_parts = pathinfo($thumbnailpath);
-	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 
 	if(file_exists($thumbnailpath)) unlink($thumbnailpath);
 

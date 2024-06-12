@@ -65,7 +65,7 @@ if(isset($file) && !empty($file)) {
 	$imagepath = $image_basepath."/".$data['pic_path'];
 	$thumbpath = $thumb_basepath."/".$data['pic_path'];
 	$thumb_parts = pathinfo($thumbpath);
-	$thumbpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.jpg';
+	$thumbpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 
 	switch($mode) {
 		case 1:
@@ -116,7 +116,7 @@ if(file_exists($file)) {
 		case 4:
 			$source = @imagecreatefromjpeg($file);
 			sendHeaders($file, 'application/octet-stream', $pathparts['filename'].'.jpg', 'attachment');
-			imagejpeg($source, null, 100);
+			imagejpeg($source, null, 95);
 			imagedestroy($source);
 			break;
 		case 5:
@@ -130,15 +130,12 @@ if(file_exists($file)) {
 
 			if ($owidth > $webp_res[0] || $oheight > $webp_res[1]) {
 				$nwidth = ($owidth > $oheight) ? $webp_res[0]:ceil($owidth/($oheight/$webp_res[1]));
-				$img = imagescale($image, $nwidth);
-			} else {
-				$img = $image;
+				$image = imagescale($image, $nwidth);
 			}
 			
+			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.webp', 'inline');
+			imagewebp($image, null, 60);
 			imagedestroy($image);
-			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.jpg', 'inline');
-			imagejpeg($img, null, 50);
-			imagedestroy($img);
 			break;
 	}
 } else {
