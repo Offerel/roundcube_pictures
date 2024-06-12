@@ -280,6 +280,7 @@ function showPage($thumbnails, $dir) {
 			let btitle = ntitle.split('/');
 			let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
 			window.parent.document.title = ttitle;
+
 			if (document.readyState !== 'complete') {
 				aLoader('hidden');
 			}
@@ -292,7 +293,7 @@ function showPage($thumbnails, $dir) {
 					window.parent.edit_album();
 				}
 			});
-
+			
 			Array.from(document.getElementsByClassName('folder')).forEach(
 				function(e,i,a) { e.addEventListener('click', function() {aLoader()}) }
 			);
@@ -308,7 +309,7 @@ function showPage($thumbnails, $dir) {
 			captions: false,
 			randomize: false,
 		});
-	
+		
 		$('#images').justifiedGallery({
 			rowHeight: 220,
 			margins: $pmargins,
@@ -318,7 +319,7 @@ function showPage($thumbnails, $dir) {
 			captions: false,
 			randomize: false,
 		});
-
+		
 		$('#images').justifiedGallery().on('jg.complete', function(e) {
 			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
 				lazyload();
@@ -387,7 +388,7 @@ function showPage($thumbnails, $dir) {
 				setTimeout(lazyload, 100, true);
 			}
 		});
-
+		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
 
@@ -404,11 +405,11 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		checkboxes();
-
+		
 		function aLoader(mode = 'visible') {
 			document.getElementById('loader').style.visibility = mode;
 		}
-
+		
 		function lazyload(slide = false) {
 			if(document.getElementById('last') && !slide) return false;
 			if(document.getElementsByClassName('glightbox').length <= 0 && !slide) return false;
@@ -447,7 +448,7 @@ function showPage($thumbnails, $dir) {
 				});
 			}
 		}
-
+		
 		function checkboxes() {
 			var chkboxes = $('.icheckbox');
 			var lastChecked = null;

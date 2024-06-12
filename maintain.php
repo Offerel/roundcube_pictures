@@ -184,7 +184,6 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
 						logm("Set time for thumbnail ".$rthumb[1]." to ".$rthumb[0], 4);
 						touch($rthumb[1], $rthumb[0]);
-						touch($rthumb[2], $rthumb[0]);
 						if($rwebp[0] > 0) touch($rwebp[1], $rwebp[0]);
 					}
 				}
