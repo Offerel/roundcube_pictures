@@ -4,8 +4,8 @@ $config['pictures_path'] = '/path/to/%u/files/Pictures/'; // Absolute path to th
 $config['work_path'] = '/mnt/stick/gal_thmbs'; // Path where for every user a separate folder will be created. Thumbnails and WebP Files are saved in subdirectories
 $config['skip_objects'] = array('aFolder', 'aFile.ext'); // Those files and folders will not be displayed
 $config['label_max_length'] = 40; // Maximum chars of a folder name that will be displayed on the folder thumbnail
-$config['exif'] = 2; // 0 = disable EXIF, 1 = Use PHP, 2 = Use exiftool
-$config['convert_video'] = "ffmpeg -y -loglevel quiet -i \"%i\" -c:v h264_v4l2m2m -b:v 8M -c:a copy -movflags +faststart \"%o\" 2>&1"; // command to convert video via ffmpeg, %i = input file, %o = output file, convert is disabled, when empty or 0
+$config['exif'] = 1; // 0 = disable EXIF, 1 = Use PHP, 2 = Use exiftool
+$config['convert_video'] = "ffmpeg -y -loglevel quiet -i \"%i\" -vf format=yuv420p -c:v h264_v4l2m2m -b:v 8M -c:a aac -movflags +faststart \"%o\" 2>&1"; // command to convert video via ffmpeg, %i = input file, %o = output file, convert is disabled, when empty or 0
 $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file will be automatically removed, if bigger as 0 > deleted and moved images are re-created as 0 byte files to prevent re-syncing images
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via ntfy, or set to false

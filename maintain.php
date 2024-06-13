@@ -106,7 +106,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 				$image_parts = pathinfo($image);
 				$hiddenv = $image_parts['dirname'].'/.'.$image_parts['filename'].'.mp4';
 				if(in_array(strtolower($image_parts['extension']), array("mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm")) && !file_exists($hiddenv)) {
-					logm("Hidden video missing, continue $image", 4);
+					logm("Hidden video missing, continue $image", 3);
 					continue;
 				}
 				unset($images[$key]);
@@ -141,7 +141,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 				$imgarr = array();
 				if($exif_mode == 1) {
 					foreach ($chunk as $image) {
-						logm("Find exif $image", 4);
+						logm("Get exif data for $image", 3);
 						$exif_data = @exif_read_data($image);
 						$gis = getimagesize($image, $info);
 						$exif_arr = array();
@@ -200,7 +200,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 					$rthumb = create_thumb($file, $thumb, $base);
 					$rwebp = create_webp($file, $webp, $base);
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
-						logm("Set time for thumbnail ".$rthumb[1]." to ".$rthumb[0], 4);
+						logm("Set time for thumbnail ".$rthumb[1]." to ".date('Y-m-d H:i:s', $rthumb[0]), 4);
 						touch($rthumb[1], $rthumb[0]);
 						if($rwebp[0] > 0) touch($rwebp[1], $rwebp[0]);
 					}
@@ -216,7 +216,7 @@ function create_thumb($file, $thumb, $base) {
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
 	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
-	logm("Create thumbnail $thumb_image", 4);
+	logm("Create thumbnail $thumb_image", 3);
 	$otime = filemtime($image);
 
 	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
@@ -289,11 +289,11 @@ function create_thumb($file, $thumb, $base) {
 			corrupt_thmb($thumb_image);
 			return array(0, $thumb_image);
 		}
-
+		
 		if(strlen($ccmd) > 1) {
 			$pathparts = pathinfo($image);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
-			logm("Convert to $hidden_vid", 4);
+			logm("Convert to $hidden_vid", 3);
 			$startconv = time();
 			$command = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
 			exec($command, $output, $error);
@@ -318,7 +318,7 @@ function create_webp($file, $webp, $base) {
 	$webp_parts = pathinfo($webp_image);
 	$webp_image = $webp_parts['dirname'].'/'.$webp_parts['filename'].'.webp';
 	if($file['MIMEType'] != "image/jpeg") return array(0, $webp_image);
-	logm("Create webp $webp_image", 4);
+	logm("Create webp $webp_image", 3);
 	$otime = filemtime($image);
 	if($otime == @filemtime($webp_image)) return array($otime, $webp_image);
 	$owidth = $file['ExifImageWidth'];
@@ -411,10 +411,10 @@ function todb($file, $base, $user) {
 	}
 
 	if($count == 0) {
-		logm("Add $image to database", 4);
+		logm("Add $image to database", 3);
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
 	} else {
-		logm("Update database for $image", 4);
+		logm("Update database for $image", 3);
 		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
 	}
 
@@ -486,7 +486,7 @@ function expired_shares() {
 function del_dummy($nullsize, $mtime) {
 	$dtime = time() - filemtime($nullsize);
 	if ($dtime > $mtime && filesize($nullsize) < 1) {
-		logm("Delete 0-size $nullsize", 4);
+		logm("Delete 0-byte $nullsize", 3);
 		unlink($nullsize);
 	}
 }
