@@ -102,18 +102,36 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$otime = filemtime($image);
 			$ttime = @filemtime($thumbp);
 
-			if($otime == $ttime) unset($images[$key]); logm("No change, Ignore $image", 4);
+			if($otime == $ttime) {
+				$image_parts = pathinfo($image);
+				$hiddenv = $image_parts['dirname'].'/.'.$image_parts['filename'].'.mp4';
+				if(in_array(strtolower($image_parts['extension']), array("mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm")) && !file_exists($hiddenv)) {
+					logm("Hidden video missing, continue $image", 4);
+					continue;
+				}
+				unset($images[$key]);
+				logm("No change, Ignore $image", 4);
+				continue;
+			}
+
 			if(filesize($image) < 1) {
 				if($mtime > 0) del_dummy($image, $mtime);
 				unset($images[$key]);
 				logm("O-Byte, Ignore $image", 4);
+				continue;
 			}
-			$basename = basename($image);
-			if($basename == "folder.jpg") unset($images[$key]); logm("Ignore $image", 4);
-			if($basename[0] == ".") {
+
+			if(basename($image) === "folder.jpg") {
+				unset($images[$key]);
+				logm("Ignore $image", 4);
+				continue;
+			}
+
+			if(basename($image)[0] == ".") {
 				check_hidden($image);
 				unset($images[$key]);
 				logm("Ignore hidden $image", 4);
+				continue;
 			}
 		}
 
@@ -277,9 +295,9 @@ function create_thumb($file, $thumb, $base) {
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			logm("Convert to $hidden_vid", 4);
 			$startconv = time();
-			$ccmd = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
-
-			exec($ccmd, $output, $error);
+			$command = str_replace('%o', $hidden_vid, str_replace('%i', $image, $ccmd));
+			exec($command, $output, $error);
+			logm($command, 4);
 
 			if($error == 0) {
 				logm("Video $image converted in ".gmdate("H:i:s", time() - $startconv), 4);
