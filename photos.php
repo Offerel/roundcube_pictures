@@ -943,7 +943,7 @@ function getfirstImage($dirname) {
 		closedir($handle);
 		foreach ($files as $key => $file) {
 			$pathparts = pathinfo("$dirname/$file");
-			if (isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $extensions)) $images[] = $file;
+			if (isset($pathparts['extension']) && in_array(strtolower($pathparts['extension']), $extensions) && filesize("$dirname/$file") > 0) $images[] = $file;
 		}
 	}
 
