@@ -21,7 +21,9 @@ $logdir = $rcmail->config->get('log_dir');
 $exif_mode = $rcmail->config->get('exif');
 $pntfy = $rcmail->config->get('pntfy_sec');
 $mtime = $rcmail->config->get('dummy_time', false);
-$supported= array("jpg", "jpeg", "png", "gif", "tif", "mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm");
+$spictures = array("jpg", "jpeg", "png", "gif", "tif");
+$svideos = array("mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm");
+$supported = array_merge($spictures, $svideos);
 $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescription -Make -Software -Flash# -ExposureProgram# -ExifIFD:MeteringMode# -WhiteBalance# -GPSLatitude# -GPSLongitude# -Orientation# -ExposureTime -TargetExposureTime -LensID -MIMEType -CreateDate -Artist -Description -Title -Copyright -Subject -ExifImageWidth -ExifImageHeight";
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
@@ -35,7 +37,7 @@ if(isset($argv[1]) && $argv[1] === "trigger") {
 	}
 }
 
-logm("Start maintenance");
+logm("--- Start maintenance ---");
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
 for ($x = 0; $x < $rcount; $x++) {
@@ -64,9 +66,12 @@ foreach($users as $user) {
 
 	logm("Search orphaned thumbnail files");
 	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
+
 	logm("Search orphaned webp files");
 	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
+
 	expired_shares();
+
 	$message = "$username finished in ".etime($utime);
 	$message.= ($bcount > 0) ? " with $bcount corrupt media":"";
 	logm($message);
@@ -79,7 +84,7 @@ if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy
 
 
 function scanGallery($dir, $base, $thumb, $webp, $user) {
-	global $supported, $etags, $eoptions, $exif_mode, $basepath, $mtime;
+	global $supported, $svideos, $etags, $eoptions, $exif_mode, $basepath, $mtime;
 	$images = array();
     foreach (new DirectoryIterator($dir) as $fileInfo) {
         if (!$fileInfo->isDot()) {
@@ -105,7 +110,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			if($otime == $ttime) {
 				$image_parts = pathinfo($image);
 				$hiddenv = $image_parts['dirname'].'/.'.$image_parts['filename'].'.mp4';
-				if(in_array(strtolower($image_parts['extension']), array("mov", "wmv", "avi", "mpg", "mp4", "3gp", "ogv", "webm")) && !file_exists($hiddenv)) {
+				if(in_array(strtolower($image_parts['extension']), $svideos) && !file_exists($hiddenv)) {
 					logm("Hidden video missing, continue $image", 3);
 					continue;
 				}
@@ -440,7 +445,7 @@ function read_assets($dir, $a_base, $p_base, $type) {
 	foreach ($iterator as $file) {
 		if ($file->isDir()) {
 			if(count(glob($file)) === 0) {
-				logm("Delete empty $file");
+				logm("Delete empty directory $file");
 				rmdir($file);
 			}
 		}
@@ -448,7 +453,7 @@ function read_assets($dir, $a_base, $p_base, $type) {
 		$thumb_path = $file->getPathname();
 		$pext = pathinfo($thumb_path, PATHINFO_EXTENSION);
 
-		if($pext == 'jpg') {
+		if($pext == 'webp') {
 			$picture_path = str_replace($a_base, $p_base, $thumb_path);
 			$path_parts = pathinfo($picture_path);
 			$psearch = $path_parts['dirname'].'/'.$path_parts['filename'];
