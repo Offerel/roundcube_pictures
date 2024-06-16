@@ -121,6 +121,7 @@ if(isset($_POST['alb_action'])) {
 				die(1);
 			}
 			break;
+		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
 	}
 	die();
 }
@@ -193,6 +194,35 @@ if( isset($_GET['g']) ) {
 	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
 	$thumbnails = showGallery($dir, $offset);
 	die($thumbnails);
+}
+
+function search_photos($kwstr) {
+	global $rcmail, $pictures_path, $thumb_path;
+	$dbh = rcmail_utils::db();
+	$keywords = json_decode($kwstr);
+	$wcond = "";
+	foreach($keywords as $keyword) {
+		$wcond.= " `pic_EXIF` LIKE '%$keyword%' AND";
+	}
+	$query = "SELECT * FROM `pic_pictures` WHERE$wcond `user_id` = ".$rcmail->user->ID." ORDER BY `pic_taken`;";
+	//error_log($query);
+	$dbh->query($query);
+	$rows = $dbh->num_rows();
+	$pdata = [];
+	for ($i = 0; $i < $rows; $i++) {
+		array_push($pdata, $dbh->fetch_assoc());
+	}
+	//error_log(print_r($pdata, true));
+	$html = '';
+
+	foreach($pdata as $image) {
+		$linkUrl = "simg.php?file=".$image['pic_path'];
+		$imgUrl = "simg.php?file=".$image['pic_path'].'&t=1';
+		$gis = getimagesize("$pictures_path/".$image['pic_path'])[3];
+		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
+	}
+
+	return $html;
 }
 
 function removeDirectory($path, $user) {

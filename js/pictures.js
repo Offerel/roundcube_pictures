@@ -19,6 +19,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("movepicture", mv_img, !0);
 	rcmail.register_command("move_image", move_picture, !0);
 	rcmail.register_command("delpicture", delete_picture, !0);
+	rcmail.register_command("searchphoto", searchform, !0);
 });
 
 window.onload = function(){
@@ -165,7 +166,49 @@ window.onload = function(){
 			}
 		})
 	});
+
+	if(document.getElementById('skeywords')) document.getElementById('skeywords').addEventListener('input', function(e) {
+		if(document.getElementById('skeywords').value.length > 0) document.getElementById('spb').classList.remove('disabled');
+	});
+
+	if(document.getElementById('spb')) document.getElementById('spb').addEventListener('click', function(e) {
+		let keywords = document.getElementById('skeywords').value.split(' ');
+		if (keywords.length > 0) dosearch(keywords);
+	});
+
+	if(document.getElementById('csb')) document.getElementById('csb').addEventListener('click', function(e) {
+		document.getElementById('searchphotof').style.display='none';
+	});
 };
+
+function dosearch(keywords) {
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			alb_action: "search",
+			target: '',
+			src: '',
+			keyw: JSON.stringify(keywords),
+		},
+		success: function(response) {
+			document.getElementById('searchphotof').style.display='none';
+			let folders = document.getElementById('picturescontentframe').contentWindow.document.getElementById('folders');
+			let header = document.getElementById('picturescontentframe').contentWindow.document.getElementById('header');
+			//header.innerText = "Search for:" + keywords.join(', ');
+			folders.innerHTML = '';
+			folders.style.height = 0;
+			document.getElementById('picturescontentframe').contentWindow.document.getElementById('images').innerHTML = response;
+			document.getElementById('picturescontentframe').contentWindow.$('#images').justifiedGallery('norewind');
+		}
+	});
+}
+
+function searchform() {
+	$("#searchphotof").contents().find("h2").html("Search");
+	document.getElementById("searchphotof").style.display = "block";
+	document.getElementById('skeywords').focus();
+}
 
 function count_checks() {
 	if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {

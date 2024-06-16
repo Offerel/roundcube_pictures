@@ -11,7 +11,8 @@
 			<roundcube:button command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" innerclass="inner" id="movepicture" />
 			<roundcube:button command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" innerclass="inner" id="delpicture" />
 			<roundcube:button command="sharepicture" type="link" class="button share disabled" label="pictures.share" title="pictures.share" innerclass="inner" id="sharepicture" />
-			<roundcube:button command="uploadpicture" type="link" class="button upload" label="pictures.upload" itle="pictures.upload" innerclass="inner" id="uploadpicture" t/>
+			<roundcube:button command="uploadpicture" type="link" class="button upload" label="pictures.upload" title="pictures.upload" innerclass="inner" id="uploadpicture" />
+			<roundcube:button command="searchphoto" type="link" class="button search" label="search" title="search" innerclass="inner" id="searchphoto" />
 		</div>
 	</div>
 	<div class="iframe-wrapper">	
@@ -87,6 +88,27 @@
 						<div id="link">&nbsp;</div><button id="btnclp"></button>
 						<div id="shareedit">
 							<roundcube:button command="sharepic" id="sbtn" type="link" class="button" label="pictures.share">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<h3></h3>
+				</div>
+			</div>
+		</div>
+
+		<div id="searchphotof" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" onClick="document.getElementById('searchphotof').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<h2 id="mheader"></h2>
+				</div>
+				<div id="modal-body" class="modal-body">
+					<form>
+						<input type="text" name="skeywords" id="skeywords" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
+						<div id="sphoto">
+							<roundcube:button command="psearch" id="spb" type="link" class="button disabled" label="search">
+							<roundcube:button command="pschancel" id="csb" type="link" class="button" label="cancel">
 						</div>
 					</form>
 				</div>

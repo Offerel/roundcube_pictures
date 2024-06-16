@@ -56,6 +56,9 @@
 #picturestoolbar #delpicture::before {
 	content: "\f2ed";
 }
+#picturestoolbar #searchphoto::before {
+	content: "\f002";
+}
 #pluginbody{
 	height:100%
 }
@@ -118,7 +121,7 @@
 	background:#c6c6c6!important;
 	border:1px solid #c6c6c6!important
 }
-#albedit,#albadd{
+#albedit,#albadd,#searchphotof{
 	display:none
 }
 .modal-body-text{
