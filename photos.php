@@ -82,7 +82,7 @@ if(isset($_FILES['galleryfiles'])) {
 				if($fname == 'folder.jpg') {
 					rsfolderjpg("$pictures_path$folder/$fname");
 				} else {
-					$exif = createthumb("$pictures_path$folder/$fname", $pictures_path);
+					$exif = createthumb("$pictures_path$folder/$fname", $_FILES['galleryfiles']['type'][$i]);
 					todb("$pictures_path$folder/".$fname, $rcmail->user->ID, $pictures_path, $exif);
 				}
 				
@@ -1065,7 +1065,7 @@ function guardAgainstDirectoryTraversal($path) {
 	}
 }
 
-function createthumb($image) {
+function createthumb($image, $mimetype) {
 	global $thumbsize, $pictures_path, $thumb_path, $ccmd, $exif_mode;
 	$idir = str_replace($pictures_path, '', $image);
 	$otime = filemtime($image);
@@ -1093,7 +1093,6 @@ function createthumb($image) {
 	}
 
 	$exif = [];
-	$mimetype = mime_content_type($image);
 	$mtype = explode('/', $mimetype)[0];
 
 	if ($mtype == "image") {
@@ -1105,6 +1104,9 @@ function createthumb($image) {
 			case 1: $source = @imagecreatefromgif($image); break;
 			case 2: $source = @imagecreatefromjpeg($image); break;
 			case 3: $source = @imagecreatefrompng($image); break;
+			case 6: $source = @imagecreatefrombmp($image); break;
+			case 18: $source = @imagecreatefromwebp($image); break;
+			case 19: $source = @imagecreatefromavif($image); break;
 			default:
 				corrupt_thmb($thumbnailpath);
 				error_log("Unsupported media format ($type).");
@@ -1128,7 +1130,7 @@ function createthumb($image) {
 		} else {
 			error_log("Can't write Thumbnail. Please check your directory permissions.");
 		}
-	} elseif ($type == "video") {
+	} elseif ($mtype == "video") {
 		$ffmpeg = exec("which ffmpeg");
 		if(file_exists($ffmpeg)) {
 			$pathparts = pathinfo($image);

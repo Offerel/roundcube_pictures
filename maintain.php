@@ -253,7 +253,10 @@ function create_thumb($file, $thumb, $base) {
 			case 'image/gif': $source = @imagecreatefromgif($image); break;
 			case 'image/jpeg': $source = @imagecreatefromjpeg($image); break;
 			case 'image/png': $source = @imagecreatefrompng($image); break;
-			default: logm("Unsupported file $image", 1);
+			case 'image/bmp': $source = @imagecreatefrombmp($image); break;
+			case 'image/webp': $source = @imagecreatefromwebp($image); break;
+			case 'image/avif': $source = @imagecreatefromavif($image); break;
+			default: logm("Unsupported media format $image", 1);
 		}
 
 		if ($source) {
