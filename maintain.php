@@ -86,20 +86,20 @@ if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy
 function scanGallery($dir, $base, $thumb, $webp, $user) {
 	global $supported, $svideos, $etags, $eoptions, $exif_mode, $basepath, $mtime;
 	$images = array();
-    foreach (new DirectoryIterator($dir) as $fileInfo) {
-        if (!$fileInfo->isDot()) {
-            if ($fileInfo->isDir()) {
-                scanGallery($fileInfo->getPathname(), $base, $thumb, $webp, $user);
-            } else {
-            	$filename = pathinfo($fileInfo->getFilename());
-            	if(isset($filename['extension']) && in_array(strtolower($filename['extension']), $supported)) {
+	foreach (new DirectoryIterator($dir) as $fileInfo) {
+		if (!$fileInfo->isDot()) {
+			if ($fileInfo->isDir()) {
+				scanGallery($fileInfo->getPathname(), $base, $thumb, $webp, $user);
+			} else {
+				$filename = pathinfo($fileInfo->getFilename());
+				if(isset($filename['extension']) && in_array(strtolower($filename['extension']), $supported)) {
 					$images[] = $dir.'/'.$filename['basename'];
 				}
 			}
-        }
-    }
+		}
+	}
 
-    if (count($images) > 0) {
+	if (count($images) > 0) {
 		foreach ($images as $key => $image) {
 			$thumbp = str_replace($base, $thumb, $image);
 			$thumb_parts = pathinfo($thumbp);
@@ -173,11 +173,10 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 							(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
 							(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
 							(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
-							$exif_arr['Keywords'] = (isset($info['APP13']) && isset($info['APP13']["2#025"])) ? iptcparse($info['APP13']["2#025"]):null;
+							$exif_arr['Keywords'] = (isset($info['APP13'])) ? iptc_keywords($info['APP13']):null;
 							(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
 							(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
-							//$exif_arr['Subject'] = (isset($info['APP13'])) ? iptcparse($info['APP13'])["2#025"]:null;
-							$exif_arr['Subject'] = (isset($info['APP13']) && isset($info['APP13']["2#025"])) ? iptcparse($info['APP13'])["2#025"]:null;
+							$exif_arr['Subject'] = (isset($info['APP13'])) ? iptc_keywords($info['APP13']):null;
 							(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 							(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
 							(isset($exif_data['COMPUTED']['Width'])) ? $exif_arr['ExifImageWidth'] = $exif_data['COMPUTED']['Width']:null;
@@ -213,6 +212,15 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			}
 		}
 	}
+}
+
+function iptc_keywords($iptcdata) {
+	if(isset(iptcparse($iptcdata)['2#025'])) {
+		$keywords = implode(', ', iptcparse($iptcdata)['2#025']);
+	} else {
+		$keywords = null;
+	}
+	return $keywords;
 }
 
 function create_thumb($file, $thumb, $base) {
@@ -527,10 +535,10 @@ function gps2Num($coordPart) {
 	if (count($parts) <= 0) return 0;
 	if (count($parts) == 1) return $parts[0];
 
-    $f = floatval($parts[0]);
-    $s = floatval($parts[1]);
+	$f = floatval($parts[0]);
+	$s = floatval($parts[1]);
 
-    $e = ($s == 0) ? 0:$f/$s;
+	$e = ($s == 0) ? 0:$f/$s;
 	return $e;
 }
 

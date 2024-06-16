@@ -766,6 +766,7 @@ function showGallery($requestedDir, $offset = 0) {
 		for ($i = 0; $i < $rows; $i++) {
 			array_push($pdata, $dbh->fetch_assoc());
 		}
+
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
 			if (is_dir($current_dir."/".$file)) {
@@ -812,22 +813,22 @@ function showGallery($requestedDir, $offset = 0) {
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
-				$exifInfo = ($exif_mode != 0 && preg_match("/.jpg$|.jpeg$/i", $file) && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
+				$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
 				$taken = $pdata[$key]['pic_taken'];
 
 				checkpermissions("$current_dir/$file");
 
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
+				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
-					$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
 					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
-					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
+					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				$files[] = array(
@@ -969,7 +970,7 @@ function parse_fraction($v, $round = 0) {
 	return round($x / $y, $round);
 }
 
-function readEXIF($file) {
+function readEXIF($file, $info) {
 	$exif_arr = array();
 	$exif_data = @exif_read_data($file);
 
@@ -994,14 +995,23 @@ function readEXIF($file) {
 		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
 		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
-		(isset($exif_data['Keywords'])) ? $exif_arr['Keywords'] = $exif_data['Keywords']:null;
+		(isset($info['APP13'])) ? $exif_arr['Keywords'] = iptc_keywords($info['APP13']):null;
 		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
 		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
 		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
 		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
-		(isset($exif_data['Subject'])) ? $exif_arr['Subject'] = $exif_data['Subject']:null;
+		(isset($info['APP13'])) ? $exif_arr['Subject'] = iptc_keywords($info['APP13']):null;
 	}
 	return $exif_arr;
+}
+
+function iptc_keywords($iptcdata) {
+	if(isset(iptcparse($iptcdata)['2#025'])) {
+		$keywords = implode(', ', iptcparse($iptcdata)['2#025']);
+	} else {
+		$keywords = null;
+	}
+	return $keywords;
 }
 
 function exiftool($image) {
@@ -1096,7 +1106,7 @@ function createthumb($image, $mimetype) {
 	$mtype = explode('/', $mimetype)[0];
 
 	if ($mtype == "image") {
-		list($width, $height, $type) = getimagesize($image);
+		list($width, $height, $type) = getimagesize($image, $info);
 		$newwidth = ($width > $height) ? ceil($width/($height/$thumbsize)):$thumbsize;
 		if($newwidth <= 0) error_log("Calculating image width failed.");
 		
@@ -1116,7 +1126,7 @@ function createthumb($image, $mimetype) {
 		imagedestroy($source);
 
 		switch($exif_mode) {
-			case 1: $exif = readEXIF($image); break;
+			case 1: $exif = readEXIF($image, $info); break;
 			case 2: $exif = exiftool($image); break;
 		}
 
