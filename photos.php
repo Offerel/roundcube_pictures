@@ -40,7 +40,7 @@ $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
 $skip_objects = $rcmail->config->get('skip_objects', false);
-$ccmd = $rcmail->config->get('convert_video');
+$ccmd = $rcmail->config->get('ffmpeg_cmd');
 $exif_mode = $rcmail->config->get('exif');
 
 if(isset($_POST['getsubs'])) {
