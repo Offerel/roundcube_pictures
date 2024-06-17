@@ -21,6 +21,8 @@ $labels['galdconfirm'] = "Soll das markierte Album gelöscht werden?";
 $labels['selalb'] = "Album auswählen";
 $labels['selshr'] = "Neues Share";
 $labels['corpics'] = "Fehler beim Verarbeiten neuer Bilder. Die folgenden Bilder scheinen defekt zu sein. Bitte diese Bilder reparieren oder entfernen:";
+$labels['searchfor'] = "Suche nach: ";
+$labels['noresults'] = "Keine Ergebnisse";
 
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";

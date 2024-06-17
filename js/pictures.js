@@ -201,24 +201,37 @@ function dosearch() {
 			keyw: JSON.stringify(keywords),
 		},
 		success: function(response) {
-			if(response.length > 10) {
-				let iframe = document.getElementById('picturescontentframe');
-				iframe.contentWindow.document.getElementById('images').innerHTML = response;
-
-				if(iframe.contentWindow.document.getElementById('folders')) {
-					let folders = iframe.contentWindow.document.getElementById('folders');
-					folders.innerHTML = '';
-					folders.style.display = 'none';
-				}
-
-				let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
-				header.innerHTML = "<li>Search for: " + keywords.join(', ') + "</li>";
-				iframe.contentWindow.$('#images').justifiedGallery('norewind');
-				iframe.contentWindow.lightbox.reload();
-			} else {
-				alert('No Results');
-			}
 			document.getElementById('searchphotof').style.display='none';
+			setTimeout(() => {
+				if(response.length > 30) {
+					let iframe = document.getElementById('picturescontentframe');
+					iframe.contentWindow.document.getElementById('images').innerHTML = response;
+	
+					if(iframe.contentWindow.document.getElementById('folders')) {
+						let folders = iframe.contentWindow.document.getElementById('folders');
+						folders.innerHTML = '';
+						folders.style.display = 'none';
+					}
+	
+					let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
+					header.innerHTML = "<li>" + rcmail.gettext('searchfor','pictures') + keywords.join(', ') + "</li>";
+	
+					iframe.contentWindow.$('#images').justifiedGallery({
+						rowHeight: 220,
+						margins: 7,
+						border: 0,
+						lastRow: 'nojustify',
+						captions: true,
+						randomize: false,
+						selector: '.glightbox'
+					});
+	
+					iframe.contentWindow.$('#images').justifiedGallery('norewind');
+					iframe.contentWindow.lightbox.reload();
+				} else {
+					alert(rcmail.gettext('noresults','pictures'));
+				}
+			}, 50);
 		}
 	});
 }

@@ -21,6 +21,8 @@ $labels['galdconfirm'] = "Do you want to delete the marked album?";
 $labels['selalb'] = "Choose Album";
 $labels['selshr'] = "New Share";
 $labels['corpics'] = "There was an error processing your new pictures. The following pictures appear to be corrupted. Please fix or delete these images:";
+$labels['searchfor'] = "Search for: ";
+$labels['noresults'] = "No Results";
 
 $labels['em_undefined'] = "Undefined";
 $labels['em_manual'] = "Manual";

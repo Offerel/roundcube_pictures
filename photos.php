@@ -360,7 +360,7 @@ function showPage($thumbnails, $dir) {
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
-			captions: true,
+			captions: false,
 			randomize: false,
 		});
 		
