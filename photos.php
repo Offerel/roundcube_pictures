@@ -197,7 +197,7 @@ if( isset($_GET['g']) ) {
 }
 
 function search_photos($kwstr) {
-	global $rcmail, $pictures_path, $thumb_path;
+	global $rcmail, $pictures_path, $thumb_path, $exif_mode;
 	$dbh = rcmail_utils::db();
 	$keywords = json_decode($kwstr);
 	$wcond = "";
@@ -217,7 +217,8 @@ function search_photos($kwstr) {
 		$linkUrl = "simg.php?file=".$image['pic_path'];
 		$imgUrl = "simg.php?file=".$image['pic_path'].'&t=1';
 		$path_parts = pathinfo("$thumb_path".$image['pic_path']);
-		$thumbnail = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
+		$file = $path_parts['filename'];
+		$thumbnail = $path_parts['dirname'].'/'.$file.'.webp';
 		$gis = getimagesize($thumbnail)[3];
 		$exif = json_decode($image['pic_EXIF'], true);
 
@@ -228,10 +229,12 @@ function search_photos($kwstr) {
 		} elseif (isset($exif['Keywords'])) {
 			$alt = $exif['Keywords'];
 		} else {
-			$alt = '';
+			$alt = $file;
 		}
 		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
-		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
+		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true)):NULL;
+		$caption = (strlen($exifInfo) > 10) ? "<div id='".$path_parts['basename']."' class='exinfo'>$exifInfo</div>":"";
+		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 	}
 	return $html;
 }
@@ -357,7 +360,7 @@ function showPage($thumbnails, $dir) {
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
-			captions: false,
+			captions: true,
 			randomize: false,
 		});
 		

@@ -185,7 +185,7 @@ window.onload = function(){
 };
 
 function dosearch() {
-	let keywords = document.getElementById('skeywords').value.split(' ');
+	let keywords = document.getElementById('skeywords').value.split(' ').filter(elm => elm);
 	if (keywords.length <= 0) {
 		document.getElementById('searchphotof').style.display='none';
 		return false;
@@ -204,7 +204,6 @@ function dosearch() {
 			if(response.length > 10) {
 				let iframe = document.getElementById('picturescontentframe');
 				iframe.contentWindow.document.getElementById('images').innerHTML = response;
-				iframe.contentWindow.$('#images').justifiedGallery('norewind');
 
 				if(iframe.contentWindow.document.getElementById('folders')) {
 					let folders = iframe.contentWindow.document.getElementById('folders');
@@ -212,49 +211,10 @@ function dosearch() {
 					folders.style.display = 'none';
 				}
 
-				iframe.contentWindow.$('#images').justifiedGallery({
-					rowHeight: 220,
-					maxRowHeight: 250,
-					margins: 7,
-					border: 0,
-					lastRow: 'nojustify',
-					captions: false,
-					randomize: false,
-					selector: '.glightbox'
-				});
-
 				let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
-				header.innerHTML = "<li>Search for:" + keywords.join(', ') + "</li>";
-
-				const searchbox = GLightbox({
-					plyr: {
-						config: {
-							iconUrl: 'plugins/pictures/js/plyr/plyr.svg',
-							muted: true,
-						}
-					},
-					autoplayVideos: false,
-					loop: false,
-					videosWidth: '100%',
-					closeOnOutsideClick: false
-				});
-
-				const html = new DOMParser().parseFromString(response, 'text/html');
-				html.body.childNodes.forEach(element => {
-
-					if (element.childNodes[0].classList.contains('glightbox')) {
-						searchbox.insertSlide({
-							//'href': element.childNodes[0].href.replace("simg.php", 'plugins/pictures/simg.php'),
-							'href': element.childNodes[0].href,
-							'type': element.childNodes[0].dataset.type
-						});
-					}
-				});
-				searchbox.reload();
-				//searchbox.openAt(10);
-				iframe.contentWindow.scrollBy(0, -window.innerHeight);
+				header.innerHTML = "<li>Search for: " + keywords.join(', ') + "</li>";
 				iframe.contentWindow.$('#images').justifiedGallery('norewind');
-				//lazyload();
+				iframe.contentWindow.lightbox.reload();
 			} else {
 				alert('No Results');
 			}
@@ -577,7 +537,6 @@ function dloader(dialogid, button, mode) {
 
 function copyLink() {
 	let link = document.getElementById('link').innerText;
-	console.log("copylink", link);
 	navigator.clipboard.writeText(link);
 	document.getElementById('share_edit').style.display='none';
 	window.parent.document.getElementById('info').style.display = 'none';
