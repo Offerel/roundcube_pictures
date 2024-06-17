@@ -26,7 +26,6 @@ window.onload = function(){
 	if( $('#images').length ) {
 		$('#images').justifiedGallery({
 			rowHeight: 220,
-			maxRowHeight: 220,
 			margins: 7,
 			border: 0,
 			lastRow: 'nojustify',
@@ -171,17 +170,27 @@ window.onload = function(){
 		if(document.getElementById('skeywords').value.length > 0) document.getElementById('spb').classList.remove('disabled');
 	});
 
-	if(document.getElementById('spb')) document.getElementById('spb').addEventListener('click', function(e) {
-		let keywords = document.getElementById('skeywords').value.split(' ');
-		if (keywords.length > 0) dosearch(keywords);
+	if(document.getElementById('spb')) document.getElementById('spb').addEventListener('click', function() {
+		dosearch()
 	});
 
 	if(document.getElementById('csb')) document.getElementById('csb').addEventListener('click', function(e) {
 		document.getElementById('searchphotof').style.display='none';
 	});
+
+	document.querySelector("#searchphotof form").addEventListener('submit', function(e) {
+		e.preventDefault();
+		dosearch();
+	});
 };
 
-function dosearch(keywords) {
+function dosearch() {
+	let keywords = document.getElementById('skeywords').value.split(' ');
+	if (keywords.length <= 0) {
+		document.getElementById('searchphotof').style.display='none';
+		return false;
+	}
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -192,14 +201,64 @@ function dosearch(keywords) {
 			keyw: JSON.stringify(keywords),
 		},
 		success: function(response) {
+			if(response.length > 10) {
+				let iframe = document.getElementById('picturescontentframe');
+				iframe.contentWindow.document.getElementById('images').innerHTML = response;
+				iframe.contentWindow.$('#images').justifiedGallery('norewind');
+
+				if(iframe.contentWindow.document.getElementById('folders')) {
+					let folders = iframe.contentWindow.document.getElementById('folders');
+					folders.innerHTML = '';
+					folders.style.display = 'none';
+				}
+
+				iframe.contentWindow.$('#images').justifiedGallery({
+					rowHeight: 220,
+					maxRowHeight: 250,
+					margins: 7,
+					border: 0,
+					lastRow: 'nojustify',
+					captions: false,
+					randomize: false,
+					selector: '.glightbox'
+				});
+
+				let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
+				header.innerHTML = "<li>Search for:" + keywords.join(', ') + "</li>";
+
+				const searchbox = GLightbox({
+					plyr: {
+						config: {
+							iconUrl: 'plugins/pictures/js/plyr/plyr.svg',
+							muted: true,
+						}
+					},
+					autoplayVideos: false,
+					loop: false,
+					videosWidth: '100%',
+					closeOnOutsideClick: false
+				});
+
+				const html = new DOMParser().parseFromString(response, 'text/html');
+				html.body.childNodes.forEach(element => {
+
+					if (element.childNodes[0].classList.contains('glightbox')) {
+						searchbox.insertSlide({
+							//'href': element.childNodes[0].href.replace("simg.php", 'plugins/pictures/simg.php'),
+							'href': element.childNodes[0].href,
+							'type': element.childNodes[0].dataset.type
+						});
+					}
+				});
+				searchbox.reload();
+				//searchbox.openAt(10);
+				iframe.contentWindow.scrollBy(0, -window.innerHeight);
+				iframe.contentWindow.$('#images').justifiedGallery('norewind');
+				//lazyload();
+			} else {
+				alert('No Results');
+			}
 			document.getElementById('searchphotof').style.display='none';
-			let folders = document.getElementById('picturescontentframe').contentWindow.document.getElementById('folders');
-			let header = document.getElementById('picturescontentframe').contentWindow.document.getElementById('header');
-			//header.innerText = "Search for:" + keywords.join(', ');
-			folders.innerHTML = '';
-			folders.style.height = 0;
-			document.getElementById('picturescontentframe').contentWindow.document.getElementById('images').innerHTML = response;
-			document.getElementById('picturescontentframe').contentWindow.$('#images').justifiedGallery('norewind');
 		}
 	});
 }
@@ -500,7 +559,7 @@ async function copyPageUrl(text) {
 	} catch (err) {
 	  console.error('Failed to copy: ', err);
 	}
-  }
+}
 
 function dloader(dialogid, button, mode) {
 	if(document.getElementById('mdark')) document.getElementById('mdark').remove();

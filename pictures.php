@@ -105,6 +105,7 @@ class pictures extends rcube_plugin {
 			$this->register_action('index', array($this, 'action'));
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
+			$this->include_script('js/glightbox/glightbox.min.js');
 		} else {
 			$this->add_hook('render_page', [$this, 'checkbroken']);
 		}

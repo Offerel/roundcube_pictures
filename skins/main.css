@@ -564,6 +564,7 @@ ul.breadcrumb {
 ul.breadcrumb li {
 	display: inline;
 	font-size: 18px;
+	font-weight: 700;
 }
 ul.breadcrumb li+li:before {
 	content: '/\00a0';

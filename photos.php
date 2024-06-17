@@ -205,23 +205,34 @@ function search_photos($kwstr) {
 		$wcond.= " `pic_EXIF` LIKE '%$keyword%' AND";
 	}
 	$query = "SELECT * FROM `pic_pictures` WHERE$wcond `user_id` = ".$rcmail->user->ID." ORDER BY `pic_taken`;";
-	//error_log($query);
 	$dbh->query($query);
 	$rows = $dbh->num_rows();
 	$pdata = [];
 	for ($i = 0; $i < $rows; $i++) {
 		array_push($pdata, $dbh->fetch_assoc());
 	}
-	//error_log(print_r($pdata, true));
-	$html = '';
 
+	$html = '<span id=\"last\"></span>';
 	foreach($pdata as $image) {
 		$linkUrl = "simg.php?file=".$image['pic_path'];
 		$imgUrl = "simg.php?file=".$image['pic_path'].'&t=1';
-		$gis = getimagesize("$pictures_path/".$image['pic_path'])[3];
-		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
-	}
+		$path_parts = pathinfo("$thumb_path".$image['pic_path']);
+		$thumbnail = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
+		$gis = getimagesize($thumbnail)[3];
+		$exif = json_decode($image['pic_EXIF'], true);
 
+		if(isset($exif['ImageDescription'])) {
+			$alt = $exif['ImageDescription'];
+		} elseif (isset($exif['Titel'])) {
+			$alt = $exif['Titel'];
+		} elseif (isset($exif['Keywords'])) {
+			$alt = $exif['Keywords'];
+		} else {
+			$alt = '';
+		}
+		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
+		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>";
+	}
 	return $html;
 }
 
