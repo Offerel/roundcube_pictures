@@ -193,6 +193,11 @@ window.onload = function(){
 	document.getElementById('medescription').addEventListener('input', function(e) {
 		if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
 	});
+
+	var inputElem = document.querySelector('mekeywords');
+	var tagify = new Tagify(inputElem, {
+		whitelist: ['foo', 'bar', 'and baz', 0, 1, 2]
+	});
 };
 
 function dosearch() {

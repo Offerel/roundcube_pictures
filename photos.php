@@ -348,6 +348,7 @@ function showPage($thumbnails, $dir) {
 			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
+			<link rel='stylesheet' href='js/tagify/tagify.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>

@@ -106,6 +106,8 @@ class pictures extends rcube_plugin {
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
 			$this->include_script('js/glightbox/glightbox.min.js');
+			$this->include_stylesheet('js/tagify/tagify.css');
+			$this->include_script('js/tagify/tagify.min.js');
 		} else {
 			$this->add_hook('render_page', [$this, 'checkbroken']);
 		}
