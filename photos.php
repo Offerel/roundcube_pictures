@@ -122,7 +122,7 @@ if(isset($_POST['alb_action'])) {
 			}
 			break;
 		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
-		case 'gmdata': die(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW))); break;
+		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 	}
 	die();
 }
@@ -198,15 +198,55 @@ if( isset($_GET['g']) ) {
 }
 
 function get_mdata($files) {
-	$keywords = json_decode($files);
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$files = json_decode($files);
+	$test = implode("','", $files);
+	$query = "SELECT `pic_EXIF` from `pic_pictures` WHERE `pic_path` IN ('$test') AND user_id = ".$rcmail->user->ID;
+	$dbh->query($query);
+	$rows = $dbh->num_rows();
+	$data = [];
+	for ($i = 0; $i < $rows; $i++) {
+		array_push($data, json_decode($dbh->fetch_assoc()['pic_EXIF'], true));
+	}
 
-	$array = array(
-		"keywords" => "test, neu",
-		"title" => "testtitle",
-		"description" => "descri"
+	$final_keywords = 0;
+	$final_title = 0;
+	$final_description = 0;
+
+	foreach ($data as $key => $exif) {
+		if($key == 0 && count($data) > 1) {
+			$last_keywords = isset($exif['Keywords']) ? $exif['Keywords']:'';
+			$last_title = isset($exif['Title']) ? $exif['Title']:'';
+			$last_description = isset($exif['ImageDescription']) ? $exif['ImageDescription']:'';
+			continue;
+		} elseif(count($data) == 1) {
+			$final_keywords = $exif['Keywords'];
+			$final_title = $exif['Title'];
+			$final_description = $exif['ImageDescription'];
+			continue;
+		}
+	  
+		$keywords = isset($exif['Keywords']) ? $exif['Keywords']:'';
+		$final_keywords = ($keywords == $last_keywords && $final_keywords != 2) ? $keywords:2;
+		$last_keywords = $keywords;
+	  
+		$title = isset($exif['Title']) ? $exif['Title']:'';
+		$final_title = ($title == $last_title && $final_title != 2) ? $title:2;
+		$last_title = $title;
+	  
+		$description = isset($exif['ImageDescription']) ? $exif['ImageDescription']:'';
+		$final_description = ($description == $last_description && $final_description != 2) ? $description:2;
+		$last_description = $description;
+	}
+
+	$mdata = array(
+		"keywords" => $final_keywords,
+		"title" => $final_title,
+		"description" => $final_description
 	);
 	
-	return json_encode($array);
+	return $mdata;
 }
 
 function search_photos($kwstr) {
@@ -829,7 +869,7 @@ function showGallery($requestedDir, $offset = 0) {
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
 			if (is_dir($current_dir."/".$file)) {
-				if ($file != "." && $file != "..") {
+				if ($file != "." && $file != ".." && strpos($file, '.') !== 0) {
 					checkpermissions($current_dir."/".$file);
 					$requestedDir = trim($requestedDir,"/");
 					$npath = trim($requestedDir.'/'.$file,'/');

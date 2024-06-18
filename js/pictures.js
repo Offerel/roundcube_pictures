@@ -274,9 +274,26 @@ function metaform() {
 		},
 		success: function(response) {
 			let rarr = JSON.parse(response);
-			document.getElementById('mekeywords').value = rarr['keywords'];
-			document.getElementById('metitle').value = rarr['title'];
-			document.getElementById('medescription').value = rarr['description'];
+			if(rarr['keywords'] == 2) {
+				document.getElementById('mekeywords').placeholder = 'Multiple Values';
+				document.getElementById('mekeywords').value = '';
+			} else {
+				document.getElementById('mekeywords').value = rarr['keywords'];
+			}
+
+			if(rarr['title'] == 2) {
+				document.getElementById('metitle').placeholder = 'Multiple Values';
+				document.getElementById('metitle').value = '';
+			} else {
+				document.getElementById('metitle').value = rarr['title'];
+			}
+
+			if(rarr['description'] == 2) {
+				document.getElementById('medescription').placeholder = 'Multiple Values';
+				document.getElementById('medescription').value = '';
+			} else {
+				document.getElementById('medescription').value = rarr['description'];
+			}
 		}
 	});
 
