@@ -5,10 +5,10 @@
 	<div id="messagelist-header" class="header">
 		<a class="button icon task-menu-button" href="#menu" style="z-index: 1; left: 0; position: absolute;"><span class="inner"><roundcube:label name="menu" /></span></a>
 		<div id="picturestoolbar" class="toolbar" role="toolbar" aria-labelledby="aria-label-toolbar">
-			<!-- toolbar -->
 			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
 			<roundcube:button command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" innerclass="inner" id="addalbum" />
 			<roundcube:button command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" innerclass="inner" id="movepicture" />
+			<roundcube:button command="edit_meta" type="link" class="button edit disabled" label="edit" title="edit" innerclass="inner" id="editmeta" />
 			<roundcube:button command="delpicture" type="link" class="button delete disabled" label="pictures.delete" title="pictures.delete" innerclass="inner" id="delpicture" />
 			<roundcube:button command="sharepicture" type="link" class="button share disabled" label="pictures.share" title="pictures.share" innerclass="inner" id="sharepicture" />
 			<roundcube:button command="uploadpicture" type="link" class="button upload" label="pictures.upload" title="pictures.upload" innerclass="inner" id="uploadpicture" />
@@ -105,10 +105,32 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
-						<input type="text" name="skeywords" id="skeywords" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
+						<input type="text" name="skeywords" id="skeywords" value="" />
 						<div id="sphoto">
 							<roundcube:button command="psearch" id="spb" type="link" class="button disabled" label="search">
 							<roundcube:button command="pschancel" id="csb" type="link" class="button" label="cancel">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<h3></h3>
+				</div>
+			</div>
+		</div>
+
+		<div id="metadata" class="modal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" onClick="document.getElementById('metadata').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+				</div>
+				<div id="modal-body" class="modal-body">
+					<form>
+						<label for="mekeywords">Keywords</label><input type="text" name="mekeywords" id="mekeywords" value="" />
+						<label for="metitle">Titel</label><input type="text" name="metitle" id="metitle" value="" />
+						<label for="medescription">Description</label><input type="text" name="medescription" id="medescription" value="" />
+						<div id="sphoto">
+							<roundcube:button command="mesave" id="mes" type="link" class="button disabled" label="save">
+							<roundcube:button command="mecancel" id="mec" type="link" class="button" label="cancel">
 						</div>
 					</form>
 				</div>

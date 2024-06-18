@@ -20,6 +20,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("move_image", move_picture, !0);
 	rcmail.register_command("delpicture", delete_picture, !0);
 	rcmail.register_command("searchphoto", searchform, !0);
+	rcmail.register_command("edit_meta", metaform, !0);
 });
 
 window.onload = function(){
@@ -182,6 +183,16 @@ window.onload = function(){
 		e.preventDefault();
 		dosearch();
 	});
+
+	document.getElementById('mekeywords').addEventListener('input', function(e) {
+		if(document.getElementById('mekeywords').value.length > 0) document.getElementById('mes').classList.remove('disabled');
+	});
+	document.getElementById('metitle').addEventListener('input', function(e) {
+		if(document.getElementById('metitle').value.length > 0) document.getElementById('mes').classList.remove('disabled');
+	});
+	document.getElementById('medescription').addEventListener('input', function(e) {
+		if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
+	});
 };
 
 function dosearch() {
@@ -242,15 +253,49 @@ function searchform() {
 	document.getElementById('skeywords').focus();
 }
 
+function metaform() {
+	let iframe = document.getElementById('picturescontentframe');
+	let nodes = iframe.contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
+
+	let media = []
+	for (let i=0; i < nodes.length; i++) {
+		let dir = new URLSearchParams(new URL(nodes[i].baseURI).search).get('p');
+		media.push(dir + '/' + nodes[i].value);
+	}
+
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			alb_action: "gmdata",
+			target: '',
+			src: '',
+			files: JSON.stringify(media),
+		},
+		success: function(response) {
+			let rarr = JSON.parse(response);
+			document.getElementById('mekeywords').value = rarr['keywords'];
+			document.getElementById('metitle').value = rarr['title'];
+			document.getElementById('medescription').value = rarr['description'];
+		}
+	});
+
+	$("#metadata").contents().find("h2").html("");
+	document.getElementById("metadata").style.display = "block";
+	document.getElementById('mekeywords').focus();
+}
+
 function count_checks() {
 	if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
 		window.parent.document.getElementById('movepicture').classList.remove('disabled');
 		window.parent.document.getElementById('delpicture').classList.remove('disabled');
 		window.parent.document.getElementById('sharepicture').classList.remove('disabled');
+		window.parent.document.getElementById('editmeta').classList.remove('disabled');
 	} else {
 		window.parent.document.getElementById('movepicture').classList.add('disabled');
 		window.parent.document.getElementById('delpicture').classList.add('disabled');
 		window.parent.document.getElementById('sharepicture').classList.add('disabled');
+		window.parent.document.getElementById('editmeta').classList.add('disabled');
 	}
 }
 

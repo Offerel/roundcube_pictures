@@ -122,6 +122,7 @@ if(isset($_POST['alb_action'])) {
 			}
 			break;
 		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
+		case 'gmdata': die(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW))); break;
 	}
 	die();
 }
@@ -194,6 +195,18 @@ if( isset($_GET['g']) ) {
 	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
 	$thumbnails = showGallery($dir, $offset);
 	die($thumbnails);
+}
+
+function get_mdata($files) {
+	$keywords = json_decode($files);
+
+	$array = array(
+		"keywords" => "test, neu",
+		"title" => "testtitle",
+		"description" => "descri"
+	);
+	
+	return json_encode($array);
 }
 
 function search_photos($kwstr) {
@@ -517,10 +530,12 @@ function showPage($thumbnails, $dir) {
 				window.parent.document.getElementById('movepicture').classList.remove('disabled');
 				window.parent.document.getElementById('delpicture').classList.remove('disabled');
 				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
+				window.parent.document.getElementById('editmeta').classList.remove('disabled');
 			} else {
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 				window.parent.document.getElementById('sharepicture').classList.add('disabled');
+				window.parent.document.getElementById('editmeta').classList.add('disabled');
 			}
 		}
 		
