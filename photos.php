@@ -234,8 +234,8 @@ function get_mdata($files) {
 			continue;
 		} elseif(count($data) == 1) {
 			$final_keywords = $exif['Keywords'];
-			$final_title = $exif['Title'];
-			$final_description = $exif['ImageDescription'];
+			$final_title = isset($exif['Title']) ? $exif['Title']:'';
+			$final_description = isset($exif['ImageDescription']) ? $exif['ImageDescription']:'';
 			continue;
 		}
 	  

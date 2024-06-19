@@ -50,5 +50,6 @@ CREATE TABLE IF NOT EXISTS `pic_tags` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`tag_id`),
   KEY `user_id` (`user_id`),
+  UNIQUE KEY `pic_tags_unique` (`tag_name`,`user_id`),
   CONSTRAINT `pic_tags_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
