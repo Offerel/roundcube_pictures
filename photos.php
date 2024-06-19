@@ -123,6 +123,7 @@ if(isset($_POST['alb_action'])) {
 			break;
 		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
 		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
+		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
 	}
 	die();
 }
@@ -197,12 +198,23 @@ if( isset($_GET['g']) ) {
 	die($thumbnails);
 }
 
+function save_keywords($data) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$keywords = json_decode($data);
+	foreach ($keywords as $key => $value) {
+		$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES ('$value', ".$rcmail->user->ID.");";
+		$res = $dbh->query($query);
+		$tagid = ($res === false) ? "":$dbh->insert_id("pic_tags");
+	}
+}
+
 function get_mdata($files) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$files = json_decode($files);
-	$test = implode("','", $files);
-	$query = "SELECT `pic_EXIF` from `pic_pictures` WHERE `pic_path` IN ('$test') AND user_id = ".$rcmail->user->ID;
+	$files = implode("','", $files);
+	$query = "SELECT `pic_EXIF` from `pic_pictures` WHERE `pic_path` IN ('$files') AND user_id = ".$rcmail->user->ID;
 	$dbh->query($query);
 	$rows = $dbh->num_rows();
 	$data = [];

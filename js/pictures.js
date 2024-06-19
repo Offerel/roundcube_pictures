@@ -174,9 +174,12 @@ window.onload = function(){
 	if(document.getElementById('spb')) document.getElementById('spb').addEventListener('click', function() {
 		dosearch()
 	});
-
 	if(document.getElementById('csb')) document.getElementById('csb').addEventListener('click', function(e) {
 		document.getElementById('searchphotof').style.display='none';
+	});
+
+	if(document.getElementById('mec')) document.getElementById('mec').addEventListener('click', function() {
+		document.getElementById('metadata').style.display='none';
 	});
 
 	document.querySelector("#searchphotof form").addEventListener('submit', function(e) {
@@ -184,9 +187,6 @@ window.onload = function(){
 		dosearch();
 	});
 
-	document.getElementById('mekeywords').addEventListener('input', function(e) {
-		if(document.getElementById('mekeywords').value.length > 0) document.getElementById('mes').classList.remove('disabled');
-	});
 	document.getElementById('metitle').addEventListener('input', function(e) {
 		if(document.getElementById('metitle').value.length > 0) document.getElementById('mes').classList.remove('disabled');
 	});
@@ -194,7 +194,7 @@ window.onload = function(){
 		if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
 	});
 
-	let WhiteList = (rcmail.env.ptags != undefined) ? JSON.parse(rcmail.env.ptags):[];
+	const WhiteList = (rcmail.env.ptags != undefined) ? JSON.parse(rcmail.env.ptags):[];
 	tagify = new Tagify(document.getElementById('mekeywords'), {
 		whitelist: WhiteList,
 		dropdown : {
@@ -210,6 +210,13 @@ window.onload = function(){
 		duplicates: false,
 		enforceWhitelist: false,
 		delimiters: ',|;'
+	});
+
+	tagify.on('add remove', function(e) {
+		document.getElementById('mes').classList.remove('disabled');
+	});
+	if(document.getElementById('mes')) document.getElementById('mes').addEventListener('click', function() {
+		save_meta(WhiteList)
 	});
 };
 
@@ -318,6 +325,44 @@ function metaform() {
 	$("#metadata").contents().find("h2").html("");
 	document.getElementById("metadata").style.display = "block";
 	document.getElementById('mekeywords').focus();
+}
+
+function save_meta(WhiteList) {
+	const meta_data = {keywords:JSON.parse(document.getElementById('mekeywords').value).map(item => item.value), title:document.getElementById('metitle').value, description:document.getElementById('medescription').value};
+	const iframe = document.getElementById('picturescontentframe');
+	const nodes = iframe.contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
+
+	let files = []
+	for (let i=0; i < nodes.length; i++) {
+		let dir = new URLSearchParams(new URL(nodes[i].baseURI).search).get('p');
+		files.push(dir + '/' + nodes[i].value);
+	}
+
+	console.log(meta_data);
+	console.log(files);
+
+//	Todos:	- new keywords into pic_tags
+//			- read current iptc data of files in files
+//			- exchange old values against new values for files
+//			- Save new exif json in database
+	//let difference = WhiteList.filter(x => !meta_data.keywords.includes(x));
+	let new_keywords = meta_data.keywords.filter(x => !WhiteList.includes(x));
+
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			alb_action: "keywords",
+			target: '',
+			src: '',
+			keywords: JSON.stringify(new_keywords),
+		},
+		success: function(new_keywords) {
+			console.log("done");
+		}
+	});
+
+	//console.log(new_keywords);
 }
 
 function count_checks() {
