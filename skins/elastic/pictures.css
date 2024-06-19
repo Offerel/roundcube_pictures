@@ -391,22 +391,36 @@
 	content: '\f030';
 }
 #modal-body label {
-    font-weight: bold;
-    width: 130px;
-    float: left;
-    text-align: left;
-    font-size: .9em;
+	font-weight: bold;
+	width: 130px;
+	float: left;
+	text-align: left;
+	font-size: .9em;
 }
 #modal-body label:after {
-    content: ": ";
+	content: ": ";
+}
+.tagify {
+	width: 100%;
+	border-radius: 5px;
+	border: 1px solid #b2b2b2 !important;
+	background: #fff;
+	margin: -8px auto 10px;
+	height: 49px;
+	overflow: auto;
+	flex-wrap: nowrap !important;
+	text-align: left;
+}
+.tagify__tag-text, .tagify__input {
+	white-space: nowrap !important;
 }
 #metadata #modal-body input {
-    width: 100%;
-    height: 25px;
-    margin: -10px auto 10px;
-    border: 1px solid #b2b2b2;
-    outline: 0;
-    border-radius: 5px;
+	width: 100%;
+	height: 37px;
+	margin: -10px auto 10px;
+	border: 1px solid #b2b2b2;
+	outline: 0;
+	border-radius: 5px;
 }
 @media screen and (max-width: 768px) {
 	#picturestoolbar {

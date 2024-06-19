@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
  */
-var lightbox;
+var lightbox, tagify;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
@@ -194,9 +194,22 @@ window.onload = function(){
 		if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
 	});
 
-	var inputElem = document.querySelector('mekeywords');
-	var tagify = new Tagify(inputElem, {
-		whitelist: ['foo', 'bar', 'and baz', 0, 1, 2]
+	let WhiteList = (rcmail.env.ptags != undefined) ? JSON.parse(rcmail.env.ptags):[];
+	tagify = new Tagify(document.getElementById('mekeywords'), {
+		whitelist: WhiteList,
+		dropdown : {
+			classname	: "color-blue",
+			trim		: true,
+			enabled		: 0,
+			maxItems	: WhiteList.length,
+			position	: "text",
+			closeOnSelect : false,
+			highlightFirst: true
+		},
+		trim: true,
+		duplicates: false,
+		enforceWhitelist: false,
+		delimiters: ',|;'
 	});
 };
 

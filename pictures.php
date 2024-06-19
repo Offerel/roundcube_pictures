@@ -106,6 +106,7 @@ class pictures extends rcube_plugin {
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
 			$this->include_script('js/glightbox/glightbox.min.js');
+			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
 			$this->include_stylesheet('js/tagify/tagify.css');
 			$this->include_script('js/tagify/tagify.min.js');
 		} else {
@@ -190,6 +191,20 @@ class pictures extends rcube_plugin {
 			$attrib['id'] = 'rcmailpicturescontent';
 		$attrib['name'] = $attrib['id'];
 		return $rcmail->output->frame($attrib);
+	}
+
+	function get_tags() {
+		$rcmail = rcmail::get_instance();
+		$uid = $rcmail->user->ID;
+		$dbh = $rcmail->get_dbh();
+		$res = $dbh->query("SELECT `tag_name` FROM `pic_tags` WHERE `user_id` = $uid ORDER BY `tag_name`;");
+		$tags = array();
+
+		for ($x = 0; $x < $dbh->num_rows($res); $x++) {
+			array_push($tags, $dbh->fetch_assoc($res)['tag_name']);
+		}
+
+		return $tags;
 	}
 
 	function checkbroken() {

@@ -529,9 +529,9 @@ footer a {
 	padding-bottom: 7px;
 }
 .shadow {
-    background-image: linear-gradient(rgb(0 0 0 / 82%),rgb(0 0 0 / 0))!important;
-    text-shadow: 1px 1px 3px rgba(15,15,15,1);
-    color: white;
+	background-image: linear-gradient(rgb(0 0 0 / 82%),rgb(0 0 0 / 0))!important;
+	text-shadow: 1px 1px 3px rgba(15,15,15,1);
+	color: white;
 }
 .shadow a {
 	color: white;
