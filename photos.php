@@ -124,6 +124,7 @@ if(isset($_POST['alb_action'])) {
 		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
 		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
+		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
 	}
 	die();
 }
@@ -198,15 +199,45 @@ if( isset($_GET['g']) ) {
 	die($thumbnails);
 }
 
+function meta_files($data) {
+	global $pictures_path;
+	$pictures_path = rtrim($pictures_path, '/');
+	$data = json_decode($data, true);
+
+	$files = $data['files'];
+	foreach ($files as $key => $value) {
+		$files[$key] = "$pictures_path/$value";
+	}
+
+	$files = implode('" "', $files);
+	$keywords = implode(', ', $data['keywords']);
+	$description = $data['description'];
+	$title = $data['title'];
+
+	//"exiftool -title=\"$title\" -ImageDescription=\"$description\" -IPTC:Keywords=\"$keywords\" \"$files\"";
+	//touch old date
+}
+
 function save_keywords($data) {
 	global $rcmail;
+	$uid = $rcmail->user->ID;
 	$dbh = rcmail_utils::db();
 	$keywords = json_decode($data);
 	foreach ($keywords as $key => $value) {
-		$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES ('$value', ".$rcmail->user->ID.");";
+		$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES ('$value', $uid);";
 		$res = $dbh->query($query);
 		$tagid = ($res === false) ? "":$dbh->insert_id("pic_tags");
 	}
+
+	$query = "SELECT `tag_name` FROM `pic_tags` WHERE `user_id` = $uid ORDER BY `tag_name`;";
+	$res = $dbh->query($query);
+	$tags = array();
+
+	for ($x = 0; $x < $dbh->num_rows($res); $x++) {
+		array_push($tags, $dbh->fetch_assoc($res)['tag_name']);
+	}
+
+	return json_encode($tags);
 }
 
 function get_mdata($files) {

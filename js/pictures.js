@@ -328,7 +328,6 @@ function metaform() {
 }
 
 function save_meta(WhiteList) {
-	const meta_data = {keywords:JSON.parse(document.getElementById('mekeywords').value).map(item => item.value), title:document.getElementById('metitle').value, description:document.getElementById('medescription').value};
 	const iframe = document.getElementById('picturescontentframe');
 	const nodes = iframe.contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
 
@@ -338,14 +337,14 @@ function save_meta(WhiteList) {
 		files.push(dir + '/' + nodes[i].value);
 	}
 
-	console.log(meta_data);
-	console.log(files);
+	const meta_data = {
+		keywords:JSON.parse(document.getElementById('mekeywords').value).map(item => item.value), 
+		title:document.getElementById('metitle').value, 
+		description:document.getElementById('medescription').value,
+		files: files
+	};
 
-//	Todos:	- new keywords into pic_tags
-//			- read current iptc data of files in files
-//			- exchange old values against new values for files
-//			- Save new exif json in database
-	//let difference = WhiteList.filter(x => !meta_data.keywords.includes(x));
+//	Todos:	- Save new exif json in database
 	let new_keywords = meta_data.keywords.filter(x => !WhiteList.includes(x));
 
 	$.ajax({
@@ -358,11 +357,23 @@ function save_meta(WhiteList) {
 			keywords: JSON.stringify(new_keywords),
 		},
 		success: function(new_keywords) {
-			console.log("done");
+			tagify.whitelist = JSON.parse(new_keywords);
 		}
 	});
 
-	//console.log(new_keywords);
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			alb_action: "mfiles",
+			target: '',
+			src: '',
+			data: JSON.stringify(meta_data),
+		},
+		success: function(response) {
+			console.log(response);
+		}
+	});
 }
 
 function count_checks() {
