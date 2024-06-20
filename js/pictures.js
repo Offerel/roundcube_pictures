@@ -371,7 +371,7 @@ function save_meta(WhiteList) {
 			data: JSON.stringify(meta_data),
 		},
 		success: function(response) {
-			if(response != 0) rcmail.display_message(response, 'error');
+			(response != 0) ? rcmail.display_message(response, 'error'):rcmail.display_message('Data saved', 'confirmation');
 			dloader('#metadata', mes, 'remove');
 			document.getElementById('metadata').style.display='none';
 
