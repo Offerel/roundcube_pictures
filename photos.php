@@ -205,17 +205,52 @@ function meta_files($data) {
 	$data = json_decode($data, true);
 
 	$files = $data['files'];
+	$times = array();
 	foreach ($files as $key => $value) {
 		$files[$key] = "$pictures_path/$value";
+		$times[$key] = filemtime("$pictures_path/$value");
 	}
 
-	$files = implode('" "', $files);
+	$media = implode('" "', $files);
 	$keywords = implode(', ', $data['keywords']);
 	$description = $data['description'];
 	$title = $data['title'];
 
-	//"exiftool -title=\"$title\" -ImageDescription=\"$description\" -IPTC:Keywords=\"$keywords\" \"$files\"";
-	//touch old date
+	exec("exiftool -title=\"$title\" -ImageDescription=\"$description\" -IPTC:Keywords=\"$keywords\" \"$media\"", $output, $error);
+	$msg = ($error != 0) ? 'exiftool: '.trim(preg_replace('/\s+/', ' ', implode(',', $output))):0;
+
+	foreach ($files as $key => $value) {
+		touch($value, $times[$key]);
+	}
+
+	meta_db($data);
+
+	if($msg != 0) error_log($msg);
+	return $msg;
+}
+
+function meta_db($data) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$uid = $rcmail->user->ID;
+	$files = implode('\',\'', $data['files']);
+	$keywords = implode(', ', $data['keywords']);
+	$query = "SELECT `pic_id`, `pic_EXIF` FROM `pic_pictures` WHERE `pic_path` IN ('$files') AND `user_id` = $uid";
+	$dbh->query($query);
+	$rows = $dbh->num_rows();
+	$db_data = [];
+	for ($i=0; $i < $rows; $i++) { 
+		array_push($db_data, $dbh->fetch_assoc());
+	}
+
+	foreach ($db_data as $key => $value) {
+		$exif_arr = json_decode($value['pic_EXIF'], true);
+		if(isset($keywords) && strlen($keywords) > 0) $exif_arr['Keywords'] = $keywords;
+		if(isset($data['description'])  && strlen($data['description']) > 0) $exif_arr['ImageDescription'] = $data['description'];
+		if(isset($data['title']) && strlen($data['title']) > 0) $exif_arr['Title'] = $data['title'];
+		$query = "UPDATE `pic_pictures` SET `pic_EXIF` = '".json_encode($exif_arr)."' WHERE `pic_id` = ".$value['pic_id'];
+		$dbh->query($query);
+	}
 }
 
 function save_keywords($data) {
@@ -797,12 +832,13 @@ function parseEXIF($jarr) {
 		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
 		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
 		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('Title', $jarr)) ? $rcmail->gettext('exif_title','pictures').": ".$jarr['Title']."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
 		
-		if(isset($jarr['Subject']) && is_array($jarr['Subject'])) {
-			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".implode(", ", $jarr['Subject'])."<br>";
-		} elseif (isset($jarr['Subject']) && !is_array($jarr['Subject'])) {
-			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Subject']."<br>";
+		if(isset($jarr['Keywords']) && is_array($jarr['Keywords'])) {
+			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".implode(", ", $jarr['Keywords'])."<br>";
+		} elseif (isset($jarr['Keywords']) && !is_array($jarr['Keywords'])) {
+			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Keywords']."<br>";
 		}
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
@@ -1115,37 +1151,38 @@ function parse_fraction($v, $round = 0) {
 
 function readEXIF($file, $info) {
 	$exif_arr = array();
+	ini_set('exif.decode_unicode_motorola','UCS-2LE');
 	$exif_data = @exif_read_data($file);
 
 	if($exif_data && count($exif_data) > 0) {
-		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:null;
-		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):null;
-		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):null;
-		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:null;
+		(isset($exif_data['Model'])) ? $exif_arr['Model'] = $exif_data['Model']:"";
+		(isset($exif_data['FocalLength'])) ? $exif_arr['FocalLength'] = parse_fraction($exif_data['FocalLength']):"";
+		(isset($exif_data['FNumber'])) ? $exif_arr['FNumber'] = parse_fraction($exif_data['FNumber'],2):"";
+		(isset($exif_data['ISOSpeedRatings'])) ? $exif_arr['ISO'] = $exif_data['ISOSpeedRatings']:"";
 		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['DateTimeOriginal'] = strtotime($exif_data['DateTimeOriginal']):filemtime($file);
-		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:null;
-		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:null;
-		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:null;
-		(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:null;
-		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:null;
-		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:null;
-		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:null;
-		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):null;
-		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):null;
-		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:null;
-		(isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:null;
-		(isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):null;
-		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:null;
-		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:null;
-		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):null;
-		(isset($info['APP13'])) ? $exif_arr['Keywords'] = iptc_keywords($info['APP13']):null;
-		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:null;
-		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:null;
-		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:null;
-		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:null;
-		(isset($info['APP13'])) ? $exif_arr['Subject'] = iptc_keywords($info['APP13']):null;
+		(isset($exif_data['ImageDescription'])) ? $exif_arr['ImageDescription'] = $exif_data['ImageDescription']:"";
+		(isset($exif_data['Make'])) ? $exif_arr['Make'] = $exif_data['Make']:"";
+		(isset($exif_data['Software'])) ? $exif_arr['Software'] = $exif_data['Software']:"";
+		(isset($exif_data['Flash'])) ? $exif_arr['Flash'] = $exif_data['Flash']:"";
+		(isset($exif_data['ExposureProgram'])) ? $exif_arr['ExposureProgram'] = $exif_data['ExposureProgram']:"";
+		(isset($exif_data['MeteringMode'])) ? $exif_arr['MeteringMode'] = $exif_data['MeteringMode']:"";
+		(isset($exif_data['WhiteBalance'])) ? $exif_arr['WhiteBalance'] = $exif_data['WhiteBalance']:"";
+		(isset($exif_data["GPSLatitude"])) ? $exif_arr['GPSLatitude'] = gps($exif_data['GPSLatitude'],$exif_data['GPSLatitudeRef']):"";
+		(isset($exif_data["GPSLongitude"])) ? $exif_arr['GPSLongitude'] = gps($exif_data['GPSLongitude'],$exif_data['GPSLongitudeRef']):"";
+		(isset($exif_data['Orientation'])) ? $exif_arr['Orientation'] = $exif_data['Orientation']:"";
+		(isset($exif_data['ExposureTime'])) ? $exif_arr['ExposureTime'] = $exif_data['ExposureTime']:"";
+		(isset($exif_data['ShutterSpeedValue'])) ? $exif_arr['TargetExposureTime'] = shutter($exif_data['ShutterSpeedValue']):"";
+		(isset($exif_data['UndefinedTag:0xA434'])) ? $exif_arr['LensID'] = $exif_data['UndefinedTag:0xA434']:"";
+		(isset($exif_data['MimeType'])) ? $exif_arr['MIMEType'] = $exif_data['MimeType']:"";
+		(isset($exif_data['DateTimeOriginal'])) ? $exif_arr['CreateDate'] = strtotime($exif_data['DateTimeOriginal']):"";
+		(isset($info['APP13'])) ? $exif_arr['Keywords'] = iptc_keywords($info['APP13']):"";
+		(isset($exif_data['Artist'])) ? $exif_arr['Artist'] = $exif_data['Artist']:"";
+		(isset($exif_data['Description'])) ? $exif_arr['Description'] = $exif_data['Description']:"";
+		(isset($exif_data['Title'])) ? $exif_arr['Title'] = $exif_data['Title']:"";
+		(isset($exif_data['Copyright'])) ? $exif_arr['Copyright'] = $exif_data['Copyright']:"";
 	}
-	return $exif_arr;
+
+	return array_filter($exif_arr);
 }
 
 function iptc_keywords($iptcdata) {

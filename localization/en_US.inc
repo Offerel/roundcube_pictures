@@ -62,6 +62,7 @@ $labels['exif_exptime'] = "Exposure time";
 $labels['exif_texptime'] = "Shutter speed";
 $labels['exif_copyright'] = "Copyright";
 $labels['exif_keywords'] = "Keywords";
+$labels['exif_title'] = "Title";
 
 $labels['ptheme'] = "Theme";
 $labels['theme_dark'] = "Dark";

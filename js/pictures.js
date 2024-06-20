@@ -330,6 +330,7 @@ function metaform() {
 function save_meta(WhiteList) {
 	const iframe = document.getElementById('picturescontentframe');
 	const nodes = iframe.contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
+	dloader('#metadata', mes, 'add');
 
 	let files = []
 	for (let i=0; i < nodes.length; i++) {
@@ -344,7 +345,6 @@ function save_meta(WhiteList) {
 		files: files
 	};
 
-//	Todos:	- Save new exif json in database
 	let new_keywords = meta_data.keywords.filter(x => !WhiteList.includes(x));
 
 	$.ajax({
@@ -371,7 +371,10 @@ function save_meta(WhiteList) {
 			data: JSON.stringify(meta_data),
 		},
 		success: function(response) {
-			console.log(response);
+			if(response != 0) rcmail.display_message(response, 'error');
+			dloader('#metadata', mes, 'remove');
+			document.getElementById('metadata').style.display='none';
+
 		}
 	});
 }
