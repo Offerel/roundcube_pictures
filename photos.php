@@ -216,7 +216,7 @@ function meta_files($data) {
 	$description = $data['description'];
 	$title = $data['title'];
 
-	exec("exiftool -title=\"$title\" -ImageDescription=\"$description\" -IPTC:Keywords=\"$keywords\" \"$media\"", $output, $error);
+	exec("exiftool -overwrite_original -title=\"$title\" -ImageDescription=\"$description\" -IPTC:Keywords=\"$keywords\" \"$media\"", $output, $error);
 	$msg = ($error != 0) ? 'exiftool: '.trim(preg_replace('/\s+/', ' ', implode(',', $output))):0;
 
 	foreach ($files as $key => $value) {
