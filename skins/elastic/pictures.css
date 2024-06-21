@@ -400,16 +400,17 @@
 #modal-body label:after {
 	content: ": ";
 }
-.tagify {
-	width: 100%;
-	border-radius: 5px;
-	border: 1px solid #b2b2b2 !important;
-	background: #fff;
-	margin: -8px auto 10px;
-	height: 49px;
-	overflow: auto;
-	flex-wrap: nowrap !important;
-	text-align: left;
+#modal-body .tagify {
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #b2b2b2!important;
+    background: #fff;
+    margin: -8px auto 10px;
+    height: 49px;
+    flex-wrap: nowrap!important;
+    text-align: left;
+    overflow-x: scroll;
+    overflow-y: hidden;
 }
 .tagify__tag-text, .tagify__input {
 	white-space: nowrap !important;
