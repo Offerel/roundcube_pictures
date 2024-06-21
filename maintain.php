@@ -201,6 +201,8 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 					$imgarr = json_decode($joutput);
 				}
 
+				new_keywords($imgarr, $user);
+
 				foreach($imgarr as $file) {
 					$rthumb = create_thumb($file, $thumb, $base);
 					$rwebp = create_webp($file, $webp, $base);
@@ -213,6 +215,34 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			}
 		}
 	}
+}
+
+function new_keywords($arr, $uid) {
+	global $db;
+	$kw = array();
+	foreach ($arr as $key => $image) {
+		$kw = array_merge($kw, explode(', ', $image['Keywords']));
+	}
+	$kw = array_unique($kw);
+
+	$tags = array();
+	$query = "SELECT `tag_name` FROM `pic_tags` WHERE `user_id` = $uid  ORDER BY `tag_name`;";
+	$result = $db->query($query);
+	$rcount = $db->num_rows($result);
+
+	for ($x = 0; $x < $rcount; $x++) {
+		array_push($tags, $db->fetch_assoc($result)['tag_name']); //	"('".$db->fetch_assoc($result)['tag_name']."', '$uid)"
+	}
+
+	$diff = array_diff($kw, $tags);
+	$vals = "";
+	foreach ($diff as $key => $value) {
+		$vals.= "('".$value."', $uid),";
+	}
+	$vals = substr($vals, 0, -1);
+
+	$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES $vals;";
+	$db->query($query);
 }
 
 function iptc_keywords($iptcdata) {
