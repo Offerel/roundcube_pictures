@@ -235,14 +235,15 @@ function new_keywords($arr, $uid) {
 	}
 
 	$diff = array_diff($kw, $tags);
-	$vals = "";
-	foreach ($diff as $key => $value) {
-		$vals.= "('".$value."', $uid),";
+	if(is_array($diff) && count($diff) > 0) {
+		$vals = "";
+		foreach ($diff as $key => $value) {
+			$vals.= "('".$value."', $uid),";
+		}
+		$vals = substr($vals, 0, -1);
+		$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES $vals;";
+		$db->query($query);
 	}
-	$vals = substr($vals, 0, -1);
-
-	$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES $vals;";
-	$db->query($query);
 }
 
 function iptc_keywords($iptcdata) {
