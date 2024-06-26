@@ -696,6 +696,8 @@ function copyLink() {
 }
 
 function move_picture() {
+	let button = document.getElementById('mvp');
+	dloader('#img_edit', button, 'add');
 	var a = [],
 		b = document.getElementById("album_org_img").value,
 		c = document.getElementById("album_name_img").value,
@@ -715,6 +717,7 @@ function move_picture() {
 		},
 		success: function(a) {
 			1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0))
+			dloader('#img_edit', button, 'remove');
 		}
 	})
 }
