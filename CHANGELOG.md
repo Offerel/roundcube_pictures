@@ -1,5 +1,9 @@
-### v1.4.22
+### v1.5.0
 - Add webp thumbnails
+- Add new keywords from maintenance script
+- Add Tags in DB
+- Add Title, Description and Keywords Editor
+- Add Tagify (https://yaireo.github.io/tagify/)
   
 ### v1.4.21
 - Fix CSS
