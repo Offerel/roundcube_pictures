@@ -519,6 +519,10 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('slide_changed', (data) => {
+			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
+			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
+			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
+
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			let dlbtn = document.createElement('button');
 			let fbtn = document.createElement('button');
@@ -541,17 +545,14 @@ function showPage($thumbnails, $dir) {
 			closebtn.before(fbtn);
 			
 			if(document.getElementById(file)) {
+				let iBox = document.getElementById(file);
 				let infobtn = document.createElement('button');
 				infobtn.id = 'infbtn';
+				infobtn.dataset.iid = file;
 				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-				infobtn.addEventListener('mouseover', function() {
-					document.getElementById(file).classList.add('eshow');
-					document.getElementById(file).addEventListener('mouseover', function() {document.getElementById(file).classList.add('eshow')})
-				});
-				infobtn.addEventListener('mouseout', function() {
-					document.getElementById(file).classList.remove('eshow');
-					document.getElementById(file).addEventListener('mouseout', function() {document.getElementById(file).classList.remove('eshow')})
-				});
+				infobtn.addEventListener('mouseover', iBoxShow, true);
+				infobtn.addEventListener('mouseout', iBoxShow, true);
+				infobtn.addEventListener('click', iBoxShow, true);
 				closebtn.before(infobtn);
 			}
 		});
@@ -581,6 +582,17 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		checkboxes();
+
+		function iBoxShow(e) {
+			let iid = document.getElementById('infbtn').dataset.iid;
+			let iBox = document.getElementById(iid);
+			iBox.classList.toggle('eshow');
+			
+			if(e.type == 'click') {
+				this.removeEventListener('mouseover', iBoxShow, true);
+				this.removeEventListener('mouseout', iBoxShow, true);
+			}
+		}
 		
 		function aLoader(mode = 'visible') {
 			document.getElementById('loader').style.visibility = mode;
