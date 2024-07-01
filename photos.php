@@ -451,7 +451,9 @@ function showPage($thumbnails, $dir) {
 	$page.= $thumbnails;
 	$page.="
 	<script>
+	var clicks = 0;
 		document.onreadystatechange = function() {
+			
 			let ntitle = '$gal';
 			let btitle = ntitle.split('/');
 			let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
@@ -523,6 +525,10 @@ function showPage($thumbnails, $dir) {
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
 			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
 
+			document.querySelectorAll('.exinfo').forEach(element => {
+				element.classList.remove('eshow');
+			});
+
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			let dlbtn = document.createElement('button');
 			let fbtn = document.createElement('button');
@@ -565,6 +571,12 @@ function showPage($thumbnails, $dir) {
 				setTimeout(lazyload, 100, true);
 			}
 		});
+
+		lightbox.on('close', () => {
+			document.querySelectorAll('.exinfo').forEach(element => {
+				element.classList.remove('eshow');
+			});
+		});
 		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
@@ -586,11 +598,19 @@ function showPage($thumbnails, $dir) {
 		function iBoxShow(e) {
 			let iid = document.getElementById('infbtn').dataset.iid;
 			let iBox = document.getElementById(iid);
-			iBox.classList.toggle('eshow');
 			
 			if(e.type == 'click') {
-				this.removeEventListener('mouseover', iBoxShow, true);
-				this.removeEventListener('mouseout', iBoxShow, true);
+				clicks += 1;
+				if(clicks % 2 != 0) {
+					iBox.classList.add('eshow')
+					this.removeEventListener('mouseover', iBoxShow, true);
+					this.removeEventListener('mouseout', iBoxShow, true);
+				} else {
+					this.addEventListener('mouseover', iBoxShow, true);
+					this.addEventListener('mouseout', iBoxShow, true);
+				}
+			} else {
+				iBox.classList.toggle('eshow');
 			}
 		}
 		

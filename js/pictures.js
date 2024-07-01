@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
  */
-var lightbox, tagify;
+var lightbox, tagify, clicks;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
@@ -62,17 +62,20 @@ window.onload = function(){
 	
 		lightbox.on('close', () => {
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
+			document.querySelectorAll('.exinfo').forEach(element => {
+				element.classList.remove('eshow');
+			});
 		});
 	
 		lightbox.on('slide_changed', (data) => {
-			document.querySelectorAll('exinfo').forEach(element => {
+			document.querySelectorAll('.exinfo').forEach(element => {
 				element.classList.remove('eshow');
-				console.log(element);
 			});
+
+			clicks = 0;
 
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
-			console.log("changed");
 
 			let imglink = new URL(data.current.slideConfig.href);
 			let exinfo = 'exif_' + imglink.searchParams.get('p');
@@ -179,52 +182,62 @@ window.onload = function(){
 		document.getElementById('metadata').style.display='none';
 	});
 
-	document.querySelector("#searchphotof form").addEventListener('submit', function(e) {
-		e.preventDefault();
-		dosearch();
-	});
-
-	document.getElementById('metitle').addEventListener('input', function(e) {
-		if(document.getElementById('metitle').value.length > 0) document.getElementById('mes').classList.remove('disabled');
-	});
-	document.getElementById('medescription').addEventListener('input', function(e) {
-		if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
-	});
-
-	const WhiteList = (rcmail.env.ptags != undefined) ? JSON.parse(rcmail.env.ptags):[];
-	tagify = new Tagify(document.getElementById('mekeywords'), {
-		whitelist: WhiteList,
-		dropdown : {
-			classname	: "color-blue",
-			trim		: true,
-			enabled		: 0,
-			maxItems	: WhiteList.length,
-			position	: "text",
-			closeOnSelect : false,
-			highlightFirst: true
-		},
-		trim: true,
-		duplicates: false,
-		enforceWhitelist: false,
-		delimiters: ',|;'
-	});
-
-	tagify.on('add remove', function(e) {
-		document.getElementById('mes').classList.remove('disabled');
-	});
-	if(document.getElementById('mes')) document.getElementById('mes').addEventListener('click', function() {
-		save_meta(WhiteList)
-	});
+	if(document.getElementById('searchphotof')) {
+		document.querySelector("#searchphotof form").addEventListener('submit', function(e) {
+			e.preventDefault();
+			dosearch();
+		});
+	
+		document.getElementById('metitle').addEventListener('input', function(e) {
+			if(document.getElementById('metitle').value.length > 0) document.getElementById('mes').classList.remove('disabled');
+		});
+		document.getElementById('medescription').addEventListener('input', function(e) {
+			if(document.getElementById('medescription').value.length > 0) document.getElementById('mes').classList.remove('disabled');
+		});
+	
+		const WhiteList = (rcmail.env.ptags != undefined) ? JSON.parse(rcmail.env.ptags):[];
+		tagify = new Tagify(document.getElementById('mekeywords'), {
+			whitelist: WhiteList,
+			dropdown : {
+				classname	: "color-blue",
+				trim		: true,
+				enabled		: 0,
+				maxItems	: WhiteList.length,
+				position	: "text",
+				closeOnSelect : false,
+				highlightFirst: true
+			},
+			trim: true,
+			duplicates: false,
+			enforceWhitelist: false,
+			delimiters: ',|;'
+		});
+	
+		tagify.on('add remove', function(e) {
+			document.getElementById('mes').classList.remove('disabled');
+		});
+		if(document.getElementById('mes')) document.getElementById('mes').addEventListener('click', function() {
+			save_meta(WhiteList)
+		});
+	}
 };
 
 function iBoxShow(e) {
 	let iid = document.getElementById('infbtn').dataset.iid;
 	let iBox = document.getElementById(iid);
-	iBox.classList.toggle('eshow');
 	
 	if(e.type == 'click') {
-		this.removeEventListener('mouseover', iBoxShow, true);
-		this.removeEventListener('mouseout', iBoxShow, true);
+		clicks += 1;
+		if(clicks % 2 != 0) {
+			iBox.classList.add('eshow')
+			this.removeEventListener('mouseover', iBoxShow, true);
+			this.removeEventListener('mouseout', iBoxShow, true);
+		} else {
+			this.addEventListener('mouseover', iBoxShow, true);
+			this.addEventListener('mouseout', iBoxShow, true);
+		}
+	} else {
+		iBox.classList.toggle('eshow');
 	}
 }
 
