@@ -294,7 +294,7 @@ function dosearch() {
 }
 
 function searchform() {
-	$("#searchphotof").contents().find("h2").html("Search");
+	$("#searchphotof").contents().find("h2").html(rcmail.gettext('search','pictures'));
 	document.getElementById("searchphotof").style.display = "block";
 	document.getElementById('skeywords').focus();
 }
@@ -343,7 +343,7 @@ function metaform() {
 		}
 	});
 
-	$("#metadata").contents().find("h2").html("");
+	$("#metadata").contents().find("h2").html(rcmail.gettext('metadata','pictures'));
 	document.getElementById("metadata").style.display = "block";
 	document.getElementById('mekeywords').focus();
 }

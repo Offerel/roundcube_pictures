@@ -35,17 +35,14 @@
 						<input type="hidden" name="album_org" id="album_org" value="">
 						<div id="mv_target"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<div id="albedit">
-							<roundcube:button command="rename_alb" id="rnb" type="link" class="button disabled" label="pictures.rename">
-							<roundcube:button command="move_alb" id="mvb" type="link" class="button disabled" label="pictures.move">
-							<roundcube:button command="delete_alb" id="dalb" type="link" class="button" label="pictures.delete">
+							<roundcube:button command="rename_alb" id="rnb" type="link" class="btn btn-secondary disabled" label="pictures.rename">
+							<roundcube:button command="move_alb" id="mvb" type="link" class="btn btn-secondary disabled" label="pictures.move">
+							<roundcube:button command="delete_alb" id="dalb" type="link" class="btn btn-primary" label="pictures.delete">
 						</div>
 						<div id="albadd">
-							<roundcube:button command="add_alb" id="addb" type="link" class="button disabled" label="pictures.create">
+							<roundcube:button command="add_alb" id="addb" type="link" class="btn btn-primary" label="pictures.create">
 						</div>
 					</form>
-				</div>
-				<div class="modal-footer">
-					<h3></h3>
 				</div>
 			</div>
 		</div>
@@ -62,11 +59,8 @@
 						<span id="rpath">&nbsp;</span>
 						<input type="hidden" name="album_org_img" id="album_org_img">
 						<div id="mv_target_img"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
-						<roundcube:button command="move_image" id="mvp" type="link" class="button disabled" label="pictures.move">
+						<roundcube:button command="move_image" id="mvp" type="link" class="btn btn-primary disabled" label="pictures.move">
 					</form>
-				</div>
-				<div class="modal-footer">
-					<h3></h3>
 				</div>
 			</div>
 		</div>
@@ -87,12 +81,9 @@
 						<input type="date" id="expiredate" style="width: calc(100% - 35px) !important"><input type="checkbox" title="Never" id="never" style="width: 20px;right: -15px;position: relative;">
 						<div id="link">&nbsp;</div><button id="btnclp"></button>
 						<div id="shareedit">
-							<roundcube:button command="sharepic" id="sbtn" type="link" class="button" label="pictures.share">
+							<roundcube:button command="sharepic" id="sbtn" type="link" class="btn btn-primary" label="pictures.share">
 						</div>
 					</form>
-				</div>
-				<div class="modal-footer">
-					<h3></h3>
 				</div>
 			</div>
 		</div>
@@ -107,13 +98,10 @@
 					<form>
 						<input type="text" name="skeywords" id="skeywords" value="" />
 						<div id="sphoto">
-							<roundcube:button command="psearch" id="spb" type="link" class="button disabled" label="search">
-							<roundcube:button command="pschancel" id="csb" type="link" class="button" label="cancel">
+							<roundcube:button command="psearch" id="spb" type="link" class="btn btn-primary" label="search">
+							<roundcube:button command="pschancel" id="csb" type="link" class="btn btn-secondary" label="cancel">
 						</div>
 					</form>
-				</div>
-				<div class="modal-footer">
-					<h3></h3>
 				</div>
 			</div>
 		</div>
@@ -122,6 +110,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<span class="close" onClick="document.getElementById('metadata').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<h2 id="mheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
@@ -129,13 +118,10 @@
 						<label for="metitle">Titel</label><input type="text" name="metitle" id="metitle" value="" />
 						<label for="medescription">Description</label><input type="text" name="medescription" id="medescription" value="" />
 						<div id="sphoto">
-							<roundcube:button command="mesave" id="mes" type="link" class="button disabled" label="save">
-							<roundcube:button command="mecancel" id="mec" type="link" class="button" label="cancel">
+							<roundcube:button command="mesave" id="mes" type="link" class="btn btn-primary disabled" label="save">
+							<roundcube:button command="mecancel" id="mec" type="link" class="btn btn-secondary" label="cancel">
 						</div>
 					</form>
-				</div>
-				<div class="modal-footer">
-					<h3></h3>
 				</div>
 			</div>
 		</div>

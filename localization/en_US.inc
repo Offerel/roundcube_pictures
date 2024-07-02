@@ -23,6 +23,8 @@ $labels['selshr'] = "New Share";
 $labels['corpics'] = "There was an error processing your new pictures. The following pictures appear to be corrupted. Please fix or delete these images:";
 $labels['searchfor'] = "Search for: ";
 $labels['noresults'] = "No Results";
+$labels['search'] = "Search";
+$labels['metadata'] = "Metadata";
 
 $labels['em_undefined'] = "Undefined";
 $labels['em_manual'] = "Manual";

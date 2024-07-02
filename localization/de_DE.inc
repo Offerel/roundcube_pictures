@@ -23,6 +23,8 @@ $labels['selshr'] = "Neues Share";
 $labels['corpics'] = "Fehler beim Verarbeiten neuer Bilder. Die folgenden Bilder scheinen defekt zu sein. Bitte diese Bilder reparieren oder entfernen:";
 $labels['searchfor'] = "Suche nach: ";
 $labels['noresults'] = "Keine Ergebnisse";
+$labels['search'] = "Suche";
+$labels['metadata'] = "Metadaten";
 
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";

@@ -580,6 +580,17 @@ function showPage($thumbnails, $dir) {
 				element.classList.remove('eshow');
 			});
 		});
+
+		lightbox.on('open', () => {
+			document.querySelector('.gclose').addEventListener('click', () => {
+				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
+				if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
+				if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
+				document.querySelectorAll('.exinfo').forEach(element => {
+					element.classList.remove('eshow');
+				});
+			}, {once: true});
+		});
 		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
