@@ -235,7 +235,7 @@
     border-top-right-radius: 5px;
     border-top-left-radius: 5px;
 }
-metadata h2, #album_edit h2, #img_edit h2, #share_edit h2 {
+#searchphotof h2, #metadata h2, #album_edit h2, #img_edit h2, #share_edit h2 {
     font-size: 17px;
     font-weight: 700;
 }
