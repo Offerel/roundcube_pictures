@@ -514,7 +514,10 @@ footer a {
 	border-radius: 4px;
 	cursor: pointer;
 	border: none;
-	fill: #fff;
+}
+#infbtn:disabled {
+    cursor: default;
+    opacity: .3;
 }
 #fbtn:hover, #infbtn:hover, #dlbtn:hover {
 	background-color: rgba(0,0,0,.7);
