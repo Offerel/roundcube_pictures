@@ -1,3 +1,8 @@
+### v1.5.1
+- Updated Tagify 4.27.0 (https://yaireo.github.io/tagify/)
+- CSS Fixes
+- Move Info Button
+
 ### v1.5.0
 - Add webp thumbnails
 - Add new keywords from maintenance script

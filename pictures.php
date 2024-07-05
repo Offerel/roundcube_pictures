@@ -108,7 +108,7 @@ class pictures extends rcube_plugin {
 			$this->include_script('js/glightbox/glightbox.min.js');
 			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
 			$this->include_stylesheet('js/tagify/tagify.css');
-			$this->include_script('js/tagify/tagify.min.js');
+			$this->include_script('js/tagify/tagify.js');
 		} else {
 			$this->add_hook('render_page', [$this, 'checkbroken']);
 		}
