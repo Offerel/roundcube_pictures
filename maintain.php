@@ -31,7 +31,7 @@ $db = $rcmail->get_dbh();
 
 if(isset($argv[1]) && $argv[1] === "trigger") {
 	$lines = file("$logdir/fssync.log");
-	$last_line = $lines[count($lines)-1];
+	$last_line = (count($lines) > 0) ? $lines[count($lines)-1]:0;
 	if (strpos($last_line, "Failed") !== false) {
 		die();
 	}
@@ -221,7 +221,8 @@ function new_keywords($arr, $uid) {
 	global $db;
 	$kw = array();
 	foreach ($arr as $key => $image) {
-		$kw = array_merge($kw, explode(', ', $image['Keywords']));
+		$keywords = isset($image['Keywords']) ? explode(', ', $image['Keywords']):array();
+		$kw = array_merge($kw, $keywords);
 	}
 	$kw = array_unique($kw);
 
