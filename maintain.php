@@ -80,6 +80,7 @@ foreach($users as $user) {
 
 $message = "Maintenance finished in ".etime($starttime);
 $message.= "\nSource: ".$pieces[2]." (".$pieces[3].")";
+$message.= "\nDate: ".$pieces[0].' '.$pieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 logm($message);
 if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
