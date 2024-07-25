@@ -28,20 +28,20 @@ $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescripti
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
+$arg = (isset($argv[1])) ? $argv[1]:"manual";
 
-if(isset($argv[1]) && $argv[1] === "trigger") {
+if($arg === "trigger") {
 	$lines = file("$logdir/fssync.log");
 	$last_line = (count($lines) > 0) ? $lines[count($lines)-1]:0;
 	$logpieces = explode(" ", $last_line);
 	$reason = (isset($logpieces[4])) ? $logpieces[4]:'Log empty';
 
-	if (strpos($last_line, "SyncOK") === false) {
-		logm("--- Cancel maintenance, $reason ---");
-		die();
+	if($reason !== "SyncOK") {
+		die(logm("--- Cancel maintenance, $reason ---"););
 	}
-}
+} 
 
-logm("--- Start maintenance ---");
+logm("--- Start maintenance $arg ---");
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
 for ($x = 0; $x < $rcount; $x++) {
