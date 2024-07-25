@@ -32,12 +32,15 @@ $db = $rcmail->get_dbh();
 if(isset($argv[1]) && $argv[1] === "trigger") {
 	$lines = file("$logdir/fssync.log");
 	$last_line = (count($lines) > 0) ? $lines[count($lines)-1]:0;
-	if (strpos($last_line, "Failed") !== false) {
+	$logpieces = explode(" ", $last_line);
+	$reason = (isset($logpieces[4])) ? $logpieces[4]:'Log empty';
+
+	if (strpos($last_line, "SyncOK") === false) {
+		logm("--- Cancel maintenance, $reason ---");
 		die();
 	}
 }
 
-$pieces = explode(" ", $last_line);
 logm("--- Start maintenance ---");
 $result = $db->query("SELECT username, user_id FROM users;");
 $rcount = $db->num_rows($result);
@@ -79,8 +82,8 @@ foreach($users as $user) {
 }
 
 $message = "Maintenance finished in ".etime($starttime);
-$message.= "\nSource: ".$pieces[2]." (".$pieces[3].")";
-$message.= "\nDate: ".$pieces[0].' '.$pieces[1];
+$message.= "\nSource: ".$logpieces[2]." (".$logpieces[3].")";
+$message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 logm($message);
 if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
