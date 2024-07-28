@@ -170,13 +170,18 @@ if(isset($_POST['img_action'])) {
 							$ret = $dbh->query($query);
 						}
 
-						foreach($images as $image) {
-							$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` = '$image' AND `user_id` = $user_id";
-							$ret = $dbh->query($query);
-							$pic_id = $dbh->fetch_assoc()['pic_id'];
-							$query = "INSERT INTO `pic_shared_pictures` (`share_id`,`user_id`,`pic_id`) VALUES ('$shareid',$user_id,$pic_id)";
-							$ret = $dbh->query($query);
+						$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` IN ('".implode("','", $images)."') AND `user_id` = $user_id";
+						$ret = $dbh->query($query);
+
+						$query = "INSERT INTO `pic_shared_pictures` (`share_id`, `user_id`, `pic_id`) VALUES ";
+
+						$rows = $dbh->num_rows();
+						for ($i=0; $i < $rows; $i++) { 
+							$query.="($shareid, $user_id, ".$dbh->fetch_assoc()['pic_id']."),";
 						}
+
+						$query = substr_replace($query,";", -1);
+						$ret = $dbh->query($query);
 
 						$query = "SELECT `share_link` FROM `pic_shares` WHERE `share_id` = $shareid";
 						$dbh->query($query);
