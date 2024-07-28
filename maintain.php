@@ -34,7 +34,7 @@ if($arg === "trigger") {
 	$lines = file("$logdir/fssync.log");
 	$last_line = (count($lines) > 0) ? $lines[count($lines)-1]:"";
 	$logpieces = explode(" ", $last_line);
-	$reason = (isset($logpieces[4])) ? $logpieces[4]:'Log empty';
+	$reason = (isset($logpieces[4])) ? trim($logpieces[4]):'Log empty';
 
 	if($reason !== "SyncOK") {
 		die(logm("--- Cancel maintenance, $reason ---"));
