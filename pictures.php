@@ -79,6 +79,7 @@ class pictures extends rcube_plugin {
 				showShare($thumbnails, array(
 					"name" => $shares['share_name'],
 					"expires" => $shares['expire_date'],
+					"first" => $pictures[0][2]
 				));
 			}
 		}
@@ -386,13 +387,28 @@ function gv($val, $type, $lang) {
 
 function showShare($thumbnails, $share) {
 	$shareName = $share['name'];
-	$head = isset($share['expires']) ? "$shareName<span>(Expires ".date('D, d.m.Y',$share['expires']).")</span>":"$shareName";
+	$expDate = isset($share['expires']) ? date('D, d.m.Y',$share['expires']):'';
+	$shareDescription = isset($share['expires']) ? "Shared Gallery \"$shareName\", expires on $expDate":"Shared Gallery \"$shareName\" will not expire";
+	$actual_link = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+	$first = $share['first'];
+
+	$actual_url = parse_url($actual_link);
+	$actual_image = $actual_url["scheme"]."://".$actual_url["host"].$actual_url["path"]."plugins/pictures/simg.php?p=$first&t=0&w=6";
+
+	$head = isset($share['expires']) ? "$shareName<span>(Expires $expDate)</span>":"$shareName";
 	$page = "<!DOCTYPE html>
 	<html>
 		<head>
 			<meta charset='UTF-8'>
 			<meta http-equiv='X-UA-Compatible' content='IE=Edge'>
 			<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
+
+			<meta property='og:title' content='Gallery: $shareName' />
+			<meta property='og:type' content='website' />
+			<meta property='og:description' content='$shareDescription'>
+			<meta property='og:image' content='$actual_image' />
+			<meta property='og:url' content='$actual_link'>
+
 			<link rel='apple-touch-icon' sizes='180x180' href='plugins/pictures/images/apple-touch-icon.png'>
 			<link rel='icon' type='image/png' sizes='32x32' href='plugins/pictures/images/favicon-32x32.png'>
 			<link rel='icon' type='image/png' sizes='16x16' href='plugins/pictures/images/favicon-16x16.png'>

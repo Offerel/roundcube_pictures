@@ -123,6 +123,20 @@ if(file_exists($file)) {
 			sendHeaders($file, 'image/webp', $pathparts['filename'].'.webp', 'inline');
 			readfile($file);
 			break;
+		case 6:
+			list($owidth, $oheight) = getimagesize($file);
+			$image = @imagecreatefromjpeg($file);
+			$pres = array(1200,630);
+			if ($owidth > $pres[0] || $oheight > $pres[1]) {
+				$nwidth = ($owidth > $oheight) ? $pres[0]:ceil($owidth/($oheight/$pres[1]));
+				$nheight = ceil($oheight/($owidth/$nwidth));
+				$image = imagescale($image, $nwidth);
+			}
+
+			$image = imagecrop($image, ['x' => 0, 'y' => ($nheight - $pres[1])/2, 'width' => $pres[0], 'height' => $pres[1]]);
+			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.jpg', 'inline');
+			imagejpeg($image, null, 75);
+			break;
 		default:
 			list($owidth, $oheight) = getimagesize($file);
 			$image = @imagecreatefromjpeg($file);
