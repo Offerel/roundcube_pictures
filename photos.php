@@ -55,6 +55,18 @@ if(isset($_POST['getsubs'])) {
 	die($select);
 }
 
+if(isset($_POST['getusers'])) {
+	$users = getUsers();
+	$select = "<select name='susers' id='susers'><option selected='true' disabled='disabled'>Select User...</option>";
+	foreach ($users as $user) {
+		//$user = trim(substr($dir,strlen($pictures_path)),'/');
+		//if(!strposa($dir, $skip_objects))
+		$select.= "<option>$user</option>";
+	}
+	$select.="</select>";
+	die($select);
+}
+
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
 	$select = "<select id='shares' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
@@ -1138,6 +1150,16 @@ function getAllSubDirectories($directory, $directory_seperator = "/") {
 	}
 	asort($dirs);
 	return $dirs;
+}
+
+function getUsers() {
+	global $rcmail;
+	//$dirs = array_map(function($item)use($directory_seperator){return $item.$directory_seperator;},array_filter(glob($directory.'*' ),'is_dir'));
+	//foreach($dirs AS $dir) {
+	//	$dirs = array_merge($dirs,getAllSubDirectories($dir,$directory_seperator) );
+	//}
+	//asort($users);
+	return $users;
 }
 
 function getExistingShares() {

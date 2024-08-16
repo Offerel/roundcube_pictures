@@ -554,6 +554,20 @@ function getsubs() {
 	})
 }
 
+function getusers() {
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			getusers: "1"
+		},
+		success: function(a) {
+			$("#s_users").html(a);
+			//setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
+		}
+	})
+}
+
 function mvbtncl() {
 	document.getElementById('mvb').classList.remove('disabled');
 	document.getElementById('album_name').value = document.getElementById('album_org').value.split("/").pop();
@@ -588,6 +602,8 @@ function getshares() {
 			});
 		}
 	})
+
+	getusers();
 }
 
 function rename_album() {
