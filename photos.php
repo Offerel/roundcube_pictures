@@ -1480,8 +1480,10 @@ function todb($file, $user, $pictures_basepath, $exif) {
 }
 
 function rmdb($file, $user) {
+	global $pictures_path;
 	$dbh = rcmail_utils::db();
-	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` like \"$file%\" AND `user_id` = $user";
+	$ffile = str_replace($pictures_path,'', $file);
+	$query = "DELETE FROM `pic_pictures` WHERE `pic_path` like \"$ffile%\" AND `user_id` = $user";
 	$ret = $dbh->query($query);
 }
 
