@@ -264,7 +264,7 @@ function iptc_keywords($iptcdata) {
 
 function create_thumb($file, $thumb, $base) {
 	global $thumbsize, $broken, $ccmd;
-	$image = realpath($file['SourceFile']);
+	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$thumb_image = str_replace($base, $thumb, $image);
 	$thumb_parts = pathinfo($thumb_image);
 	$thumb_image = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
@@ -367,7 +367,7 @@ function create_thumb($file, $thumb, $base) {
 
 function create_webp($file, $webp, $base) {
 	global $webp_res;
-	$image = realpath($file['SourceFile']);
+	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
 	$webp_image = str_replace($base, $webp, $image);
 	$webp_parts = pathinfo($webp_image);
@@ -435,7 +435,7 @@ function corrupt_thmb($thumb_pic) {
 
 function todb($file, $base, $user) {
 	global $db;
-	$image = realpath($file['SourceFile']);
+	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$ppath = trim(str_replace($base, '', $image),'/');
 	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user";
 	$result = $db->query($query);
