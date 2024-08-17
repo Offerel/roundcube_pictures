@@ -126,7 +126,7 @@ if(file_exists($file)) {
 		case 6:
 			list($owidth, $oheight) = getimagesize($file);
 			$image = @imagecreatefromjpeg($file);
-			$pres = array(1200,630);
+			$pres = array(1200,675);
 			if ($owidth > $pres[0] || $oheight > $pres[1]) {
 				$nwidth = ($owidth > $oheight) ? $pres[0]:ceil($owidth/($oheight/$pres[1]));
 				$nheight = ceil($oheight/($owidth/$nwidth));
@@ -134,8 +134,8 @@ if(file_exists($file)) {
 			}
 
 			$image = imagecrop($image, ['x' => 0, 'y' => ($nheight - $pres[1])/2, 'width' => $pres[0], 'height' => $pres[1]]);
-			sendHeaders($file, 'image/jpeg', $pathparts['filename'].'.jpg', 'inline');
-			imagejpeg($image, null, 75);
+			sendHeaders($file, 'image/webp', $pathparts['filename'].'.webp', 'inline');
+			imagewebp($image, null, 60);
 			break;
 		default:
 			list($owidth, $oheight) = getimagesize($file);

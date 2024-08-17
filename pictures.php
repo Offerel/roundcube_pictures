@@ -404,15 +404,21 @@ function showShare($thumbnails, $share) {
 			<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
 
 			<meta property='og:title' content='Gallery: $shareName' />
+			<meta property='og:description' content='$shareDescription' />
+			<meta property='og:url' content='$actual_link' />
+			<meta property='og:image' itemprop='image' content='$actual_image' />
+			<meta property='og:image:width' content='1200' />
+			<meta property='og:image:height' content='675' />
+			<meta property='og:site_name' content='Gallery: $shareName' />
 			<meta property='og:type' content='website' />
-			<meta property='og:description' content='$shareDescription'>
-			<meta property='og:image' content='$actual_image' />
-			<meta property='og:url' content='$actual_link'>
 
 			<link rel='apple-touch-icon' sizes='180x180' href='plugins/pictures/images/apple-touch-icon.png'>
 			<link rel='icon' type='image/png' sizes='32x32' href='plugins/pictures/images/favicon-32x32.png'>
 			<link rel='icon' type='image/png' sizes='16x16' href='plugins/pictures/images/favicon-16x16.png'>
+
 			<title>$shareName</title>
+			<meta name='description' content='$shareDescription' />
+			
 			<link rel='stylesheet' href='plugins/pictures/js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
 			<link rel='stylesheet' href='plugins/pictures/skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='plugins/pictures/js/glightbox/glightbox.min.css' type='text/css' />
