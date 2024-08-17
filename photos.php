@@ -55,18 +55,6 @@ if(isset($_POST['getsubs'])) {
 	die($select);
 }
 
-if(isset($_POST['getusers'])) {
-	$users = getUsers();
-	$select = "<select name='susers' id='susers'><option selected='true' disabled='disabled'>Select User...</option>";
-	foreach ($users as $user) {
-		//$user = trim(substr($dir,strlen($pictures_path)),'/');
-		//if(!strposa($dir, $skip_objects))
-		$select.= "<option>$user</option>";
-	}
-	$select.="</select>";
-	die($select);
-}
-
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
 	$select = "<select id='shares' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
@@ -204,6 +192,12 @@ if(isset($_POST['img_action'])) {
 						$query = "DELETE FROM `pic_shares` WHERE `share_id` = $share AND `user_id` = $user_id";
 						$ret = $dbh->query($query);
 						die("0");
+						break;
+		case 'cUser':	$user = filter_var($_POST['user'], FILTER_UNSAFE_RAW);
+						$query = "SELECT COUNT(*) as 'count' FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
+						$dbh->query($query);
+						$count = $dbh->fetch_assoc()['count'];
+						die($count);
 						break;
 	}
 	die();

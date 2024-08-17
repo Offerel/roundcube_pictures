@@ -73,14 +73,13 @@
 				</div>
 				<div id="modal-body" class="modal-body sebody">
 					<form>
+						<label for="suser">User</label>
+						<input type="text" id="suser">
+
 						<label for="sname">Share Name</label>
 						<input type="text" id="sname"><button id="rsh" disabled></button>
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<input type="hidden" id="sid">
-						<!--
-						<label for="suser">User</label>
-						<div class="s_users"><roundcube:label name="loading" quoting="html" /></div>
-						-->
 						<label for="expiredate">Expire Date</label>
 						<input type="date" id="expiredate" style="width: calc(100% - 35px) !important"><input type="checkbox" title="Never" id="never" style="width: 20px;right: -15px;position: relative;">
 						<div id="link">&nbsp;</div><button id="btnclp"></button>

@@ -220,7 +220,47 @@ window.onload = function(){
 			save_meta(WhiteList)
 		});
 	}
+
+	document.getElementById('suser').addEventListener('blur', function(e) {
+		checkUser(this.value);
+	});
 };
+
+function checkUser(value) {
+	$.ajax({
+		type: 'POST',
+		url: "plugins/pictures/photos.php",
+		data: {
+			img_action: "cUser",
+			images: [],
+			user: value
+		},success: function(response) {
+			let sname = document.getElementById('sname');
+			let shares = document.getElementById('shares');
+			let rsh = document.getElementById('rsh');
+			let expiredate = document.getElementById('expiredate');
+			let never = document.getElementById('never');
+
+			if(response == 1) {
+				console.log('internal share to');
+				sname.disabled = true;
+				shares.disabled = true;
+				rsh.disabled = true;
+				expiredate.disabled = true;
+				expiredate.style.color = "lightgray";
+				never.disabled = true;
+			} else {
+				console.log('external share');
+				sname.disabled = false;
+				shares.disabled = false;
+				rsh.disabled = false;
+				expiredate.disabled = false;
+				expiredate.style.color = "black";
+				never.disabled = false;
+			}
+		}
+	});
+}
 
 function iBoxShow(e) {
 	let iid = document.getElementById('infbtn').dataset.iid;
@@ -554,20 +594,6 @@ function getsubs() {
 	})
 }
 
-function getusers() {
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			getusers: "1"
-		},
-		success: function(a) {
-			$("#s_users").html(a);
-			//setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
-		}
-	})
-}
-
 function mvbtncl() {
 	document.getElementById('mvb').classList.remove('disabled');
 	document.getElementById('album_name').value = document.getElementById('album_org').value.split("/").pop();
@@ -602,8 +628,6 @@ function getshares() {
 			});
 		}
 	})
-
-	getusers();
 }
 
 function rename_album() {
