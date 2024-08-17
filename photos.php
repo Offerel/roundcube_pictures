@@ -134,7 +134,7 @@ if(isset($_POST['img_action'])) {
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
 	$action = $_POST['img_action'];
-	$images = $_POST['images'];
+	$images = isset($_POST['images']) ? $_POST['images']:[];
 	$org_path = isset($_POST['orgPath']) ? urldecode($_POST['orgPath']):'';
 	$album_target = isset($_POST['target']) ? html_entity_decode(trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
 
@@ -160,6 +160,10 @@ if(isset($_POST['img_action'])) {
 						$sharelink = bin2hex(random_bytes(25));
 						$edate = filter_var($_POST['expiredate'], FILTER_SANITIZE_NUMBER_INT);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
+
+						if(filter_var($_POST['intern'], FILTER_VALIDATE_BOOLEAN)) {
+							shareIntern($sharename, $images, filter_var($_POST['suser'], FILTER_UNSAFE_RAW));
+						}
 
 						if(empty($shareid)) {
 							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
@@ -208,6 +212,18 @@ if( isset($_GET['g']) ) {
 	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
 	$thumbnails = showGallery($dir, $offset);
 	die($thumbnails);
+}
+
+function shareIntern($sharename, $images, $sUser) {
+	global $rcmail, $username;
+	$share_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename";
+	mkdir($share_path, 0755, true);
+	foreach ($images as $key => $image) {
+		$org_path = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/')."/".$image;
+		$sym_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename/".basename($image);
+		symlink($org_path, $sym_path);
+	}
+	die();
 }
 
 function meta_files($data) {

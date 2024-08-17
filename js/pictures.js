@@ -227,36 +227,34 @@ window.onload = function(){
 };
 
 function checkUser(value) {
+	if(value.length < 5) return false;
 	$.ajax({
 		type: 'POST',
 		url: "plugins/pictures/photos.php",
 		data: {
 			img_action: "cUser",
-			images: [],
 			user: value
 		},success: function(response) {
-			let sname = document.getElementById('sname');
 			let shares = document.getElementById('shares');
 			let rsh = document.getElementById('rsh');
 			let expiredate = document.getElementById('expiredate');
 			let never = document.getElementById('never');
+			let suser = document.getElementById('suser');
 
 			if(response == 1) {
-				console.log('internal share to');
-				sname.disabled = true;
 				shares.disabled = true;
 				rsh.disabled = true;
 				expiredate.disabled = true;
 				expiredate.style.color = "lightgray";
 				never.disabled = true;
+				suser.style.borderColor = 'green';
 			} else {
-				console.log('external share');
-				sname.disabled = false;
 				shares.disabled = false;
 				rsh.disabled = false;
 				expiredate.disabled = false;
 				expiredate.style.color = "black";
 				never.disabled = false;
+				suser.style.borderColor = 'red';
 			}
 		}
 	});
@@ -524,6 +522,7 @@ function selectShare() {
 	document.getElementById("share_edit").style.display = "block";
 	let someDate = new Date();
 	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
+	document.getElementById('sname').focus();
 }
 
 function add_album() {
@@ -601,6 +600,9 @@ function mvbtncl() {
 }
 
 function getshares() {
+	document.getElementById('suser').value = "";
+	document.getElementById('suser').style.borderColor = "#b2b2b2";
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -686,6 +688,8 @@ function delete_album() {
 }
 
 function sharepicture() {
+	let suser = document.getElementById('suser').value;
+	let internal = document.getElementById('expiredate').disabled;
 	var pictures = [];
 	let sbtn = document.getElementById('sbtn');
 	dloader('#share_edit', sbtn, 'add');
@@ -704,7 +708,9 @@ function sharepicture() {
 			images: pictures,
 			shareid: document.getElementById('sid').value,
 			sharename: document.getElementById('sname').value,
-			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000)
+			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
+			intern: internal,
+			suser: suser
 		},
 		success: function(a) {
 			const url = new URL(location.href);
