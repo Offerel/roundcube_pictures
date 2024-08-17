@@ -106,10 +106,10 @@ if(isset($_POST['alb_action'])) {
 	$mtarget = $pictures_path.$_POST['target'];
 	$oldpath = str_replace($pictures_path,'',$src);
 	$newPath = str_replace($pictures_path,'',$target);
-	$nnewPath = str_replace($pictures_path,'',$mtarget);
+	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'move':	mvdb("$oldpath | $nnewPath"); die(rename($src, $mtarget)); break;
+		case 'move':	mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
 		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
@@ -217,13 +217,19 @@ if( isset($_GET['g']) ) {
 function shareIntern($sharename, $images, $sUser) {
 	global $rcmail, $username;
 	$share_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename";
-	mkdir($share_path, 0755, true);
+	@mkdir($share_path, 0755, true);
 	foreach ($images as $key => $image) {
 		$org_path = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/')."/".$image;
 		$sym_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename/".basename($image);
-		symlink($org_path, $sym_path);
+		@symlink($org_path, $sym_path);
 	}
-	die();
+
+	$dtime = date("d.m.Y H:i:s");
+	$logfile = $rcmail->config->get('log_dir', false)."/fssync.log";
+	$line = $dtime." SharedPictures Pictures SyncOK\n";
+	file_put_contents($logfile, $line, FILE_APPEND);
+
+	die('intern');
 }
 
 function meta_files($data) {
@@ -1160,16 +1166,6 @@ function getAllSubDirectories($directory, $directory_seperator = "/") {
 	}
 	asort($dirs);
 	return $dirs;
-}
-
-function getUsers() {
-	global $rcmail;
-	//$dirs = array_map(function($item)use($directory_seperator){return $item.$directory_seperator;},array_filter(glob($directory.'*' ),'is_dir'));
-	//foreach($dirs AS $dir) {
-	//	$dirs = array_merge($dirs,getAllSubDirectories($dir,$directory_seperator) );
-	//}
-	//asort($users);
-	return $users;
 }
 
 function getExistingShares() {

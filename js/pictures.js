@@ -713,6 +713,11 @@ function sharepicture() {
 			suser: suser
 		},
 		success: function(a) {
+			if(a == 'intern') {
+				document.getElementById('share_edit').style.display='none';
+				window.parent.document.getElementById('info').style.display = 'none';
+				return false;
+			}
 			const url = new URL(location.href);
 			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
 			$("#link").contents().get(0).nodeValue = nurl;
