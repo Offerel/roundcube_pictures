@@ -510,7 +510,8 @@ function uploadpicture() {
 function selectShare() {
 	getshares();
 	document.getElementById('sid').value = '';
-	document.getElementById('sname').value = '';
+	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
+	document.getElementById('sname').value = url.searchParams.get('p').split('/').pop();
 	document.getElementById('expiredate').value = '';
 	document.getElementById('expiredate').disabled = false;
 	document.getElementById('rsh').disabled = true;

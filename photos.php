@@ -222,6 +222,8 @@ function shareIntern($sharename, $images, $sUser) {
 		$org_path = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/')."/".$image;
 		$sym_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename/".basename($image);
 		@symlink($org_path, $sym_path);
+		$otime = filemtime($org_path);
+		touch($sym_path, $otime);
 	}
 
 	$dtime = date("d.m.Y H:i:s");
