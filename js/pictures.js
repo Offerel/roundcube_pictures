@@ -522,6 +522,7 @@ function selectShare() {
 	document.getElementById("share_edit").style.display = "block";
 	let someDate = new Date();
 	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
+	document.getElementById('sbtn').tabIndex = 5;
 	document.getElementById('sname').focus();
 }
 
@@ -577,6 +578,26 @@ function edit_album() {
 	document.getElementById("mv_target").style.display = "block";
 	document.getElementById("album_edit").style.display = "block";
 	document.getElementById("album_name").focus();
+
+	document.getElementById("dalb").removeEventListener('mouseover', btn_title);
+	document.getElementById("mvb").removeEventListener('mouseover', btn_title);
+	document.getElementById("rnb").removeEventListener('mouseover', btn_title);
+	
+	document.getElementById("dalb").addEventListener('mouseover', btn_title);
+	document.getElementById("mvb").addEventListener('mouseover', btn_title);
+	document.getElementById("rnb").addEventListener('mouseover', btn_title);
+}
+
+function btn_title() {
+	let title = '';
+	switch (this.id) {
+		case 'dalb': title = "Delete Album: " + document.getElementById('album_org').value; break;
+		case 'mvb': title = "Move '" + document.getElementById('album_org').value + "' to '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
+		case 'rnb': title = "Rename '" + document.getElementById('album_org').value + "' to '" + document.getElementById('album_name').value + "'"; break;
+		default: break;
+	}
+
+	this.title = title;
 }
 
 function getsubs() {

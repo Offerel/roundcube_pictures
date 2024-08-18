@@ -317,10 +317,10 @@
 	z-index: 2;
 }
 #share_target {
-	top: 76px;
-	position: absolute;
-	z-index: 1;
-	width: calc(100% - 50px);
+    top: 23px;
+    position: absolute;
+    z-index: 1;
+    width: calc(100% - 50px);
 }
 #album_name_img {
 	margin-bottom: 0 !important;

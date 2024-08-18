@@ -72,19 +72,18 @@
 					<h2 id="sheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body sebody">
-					<form>
-						<label for="suser">User</label>
-						<input type="text" id="suser" placeholder="Intern Username">
-
+					<form>		
 						<label for="sname">Share Name</label>
-						<input type="text" id="sname"><button id="rsh" disabled></button>
+						<input type="text" id="sname" tabindex="1"><button id="rsh" disabled></button>
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
+						<label for="suser">User</label>
+						<input type="text" id="suser" placeholder="Intern Username" tabindex="2">
 						<input type="hidden" id="sid">
 						<label for="expiredate">Expire Date</label>
-						<input type="date" id="expiredate" style="width: calc(100% - 35px) !important"><input type="checkbox" title="Never" id="never" style="width: 20px;right: -15px;position: relative;">
+						<input type="date" tabindex="3" id="expiredate" style="width: calc(100% - 35px) !important"><input type="checkbox" tabindex="3" title="never" id="never" style="width: 20px;right: -15px;position: relative;">
 						<div id="link">&nbsp;</div><button id="btnclp"></button>
 						<div id="shareedit">
-							<roundcube:button command="sharepic" id="sbtn" type="link" class="btn btn-primary" label="pictures.share">
+							<roundcube:button command="sharepic" id="sbtn" type="link"  class="btn btn-primary" label="pictures.share">
 						</div>
 					</form>
 				</div>
@@ -121,7 +120,7 @@
 						<label for="metitle">Titel</label><input type="text" name="metitle" id="metitle" value="" />
 						<label for="medescription">Description</label><input type="text" name="medescription" id="medescription" value="" />
 						<div id="sphoto">
-							<roundcube:button command="mesave" id="mes" type="link" class="btn btn-primary disabled" label="save">
+							<roundcube:button command="mesave" id="mes" type="link" title="Does not work with shared media" class="btn btn-primary disabled" label="save" >
 							<roundcube:button command="mecancel" id="mec" type="link" class="btn btn-secondary" label="cancel">
 						</div>
 					</form>

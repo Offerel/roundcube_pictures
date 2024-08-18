@@ -57,7 +57,7 @@ if(isset($_POST['getsubs'])) {
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
-	$select = "<select id='shares' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
+	$select = "<select id='shares' tabindex='-1' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
 	foreach ($shares as $share) {
 		$name = $share['share_name'];
 		$id = $share['share_id'];
@@ -102,10 +102,10 @@ if(isset($_FILES['galleryfiles'])) {
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
 	$src = rtrim($pictures_path,'/').'/'.filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = urldecode($src.'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$target = urldecode(dirname($src).'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
 	$mtarget = $pictures_path.$_POST['target'];
 	$oldpath = str_replace($pictures_path,'',$src);
-	$newPath = str_replace($pictures_path,'',$target);
+	$newPath = html_entity_decode(str_replace($pictures_path,'',$target));
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
@@ -239,6 +239,7 @@ function meta_files($data) {
 
 	$files = $data['files'];
 	$times = array();
+
 	foreach ($files as $key => $value) {
 		$files[$key] = "$pictures_path/$value";
 		$times[$key] = filemtime("$pictures_path/$value");
@@ -259,6 +260,7 @@ function meta_files($data) {
 	meta_db($data);
 
 	if($msg != 0) error_log($msg);
+
 	return $msg;
 }
 
@@ -484,31 +486,28 @@ function showPage($thumbnails, $dir) {
 	$page.= $thumbnails;
 	$page.="
 	<script>
-	var clicks = 0;
-		document.onreadystatechange = function() {
-			
-			let ntitle = '$gal';
-			let btitle = ntitle.split('/');
-			let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
-			window.parent.document.title = ttitle;
+		var clicks = 0;
+		let ntitle = '$gal';
+		let btitle = ntitle.split('/');
+		let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
+		window.parent.document.title = ttitle;
 
-			if (document.readyState !== 'complete') {
-				aLoader('hidden');
-			}
-			
-			let headerN = document.querySelector('#header .breadcrumb');
-			
-			headerN.lastElementChild.addEventListener('click', function(e){
-				if(headerN.childElementCount > 1) {
-					e.preventDefault();
-					window.parent.edit_album();
-				}
-			});
-			
-			Array.from(document.getElementsByClassName('folder')).forEach(
-				function(e,i,a) { e.addEventListener('click', function() {aLoader()}) }
-			);
+		if (document.readyState !== 'complete') {
+			aLoader('hidden');
 		}
+		
+		let headerN = document.querySelector('#header .breadcrumb');
+		
+		headerN.lastElementChild.addEventListener('click', function(e){
+			if(headerN.childElementCount > 1) {
+				e.preventDefault();
+				window.parent.edit_album();
+			}
+		});
+		
+		Array.from(document.getElementsByClassName('folder')).forEach(
+			function(e,i,a) { e.addEventListener('click', function() {aLoader()}) }
+		);
 
 		$('#folders').justifiedGallery({
 			rowHeight: 220,
