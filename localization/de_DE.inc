@@ -32,6 +32,8 @@ $labels['extlinktitle'] = "Teilen als externer Link";
 $labels['intsharetitle'] = "Mit internem Benutzer teilen";
 $labels['DelAlbum'] = "Album löschen";
 $labels['MovAlbum'] = "Verschiebe";
+$labels['RenAlbum'] = "Umbenennen";
+$labels['to'] = "nach";
 
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";

@@ -597,9 +597,9 @@ function edit_album() {
 function btn_title() {
 	let title = '';
 	switch (this.id) {
-		case 'dalb': title = rcmail.gettext('DelAlbum','pictures') + ": " + document.getElementById('album_org').value; break;
-		case 'mvb': title = rcmail.gettext('MovAlbum','pictures') + " '" + document.getElementById('album_org').value + "' to '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
-		case 'rnb': title = "Rename '" + document.getElementById('album_org').value + "' to '" + document.getElementById('album_name').value + "'"; break;
+		case 'dalb': title = rcmail.gettext('DelAlbum','pictures') + " " + document.getElementById('album_org').value; break;
+		case 'mvb': title = rcmail.gettext('MovAlbum','pictures') + " '" + document.getElementById('album_org').value + "' " + rcmail.gettext('to','pictures') + " '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
+		case 'rnb': title = rcmail.gettext('RenAlbum','pictures') + " '" + document.getElementById('album_org').value + "' " + rcmail.gettext('to','pictures') + " '" + document.getElementById('album_name').value + "'"; break;
 		default: break;
 	}
 
