@@ -216,6 +216,7 @@ if( isset($_GET['g']) ) {
 
 function shareIntern($sharename, $images, $sUser) {
 	global $rcmail, $username;
+	$dbh = rcmail_utils::db();
 	$share_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename";
 	@mkdir($share_path, 0755, true);
 	foreach ($images as $key => $image) {
@@ -224,6 +225,11 @@ function shareIntern($sharename, $images, $sUser) {
 		@symlink($org_path, $sym_path);
 		$otime = filemtime($org_path);
 		touch($sym_path, $otime);
+		$query = "SELECT `user_id` FROM `users` WHERE `username` = '$sUser'";
+		$dbh->query($query);
+		$uid = $dbh->fetch_assoc()['user_id'];
+		$query = "INSERT INTO `pic_symlink_map` (`user_id`,`symlink`,`target`) VALUES ($uid, '$sym_path', '$org_path')";
+		$dbh->query($query);
 	}
 
 	$dtime = date("d.m.Y H:i:s");
