@@ -41,10 +41,19 @@ CREATE TABLE IF NOT EXISTS `pic_shares` (
 );
 
 CREATE TABLE IF NOT EXISTS `pic_tags` (
-  `tag_id` INTEGER INTEGER,
+  `tag_id` INTEGER,
   `tag_name` TEXT NOT NULL,
   `user_id` INTEGER NOT NULL,
   PRIMARY KEY (`tag_id` AUTOINCREMENT),
   UNIQUE KEY `pic_tags_unique` (`tag_name`,`user_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS `pic_symlink_map` (
+  `user_id` INTEGER NOT NULL,
+  `symlink` TEXT NOT NULL,
+  `target` TEXT NOT NULL,
+  UNIQUE KEY `symlink` (`symlink`,`target`,`user_id`),
+  KEY `user_id` (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 );
