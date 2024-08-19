@@ -25,6 +25,13 @@ $labels['searchfor'] = "Search for: ";
 $labels['noresults'] = "No Results";
 $labels['search'] = "Search";
 $labels['metadata'] = "Metadata";
+$labels['ShareName'] = "Share Name";
+$labels['IntUser'] = "Internal User";
+$labels['ExpDate'] = "Expires on";
+$labels['extlinktitle'] = "Share as external link";
+$labels['intsharetitle'] = "Share to internal user";
+$labels['DelAlbum'] = "Delete Album";
+$labels['MovAlbum'] = "Move";
 
 $labels['em_undefined'] = "Undefined";
 $labels['em_manual'] = "Manual";

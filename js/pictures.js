@@ -238,6 +238,7 @@ function checkUser(value) {
 			let shares = document.getElementById('shares');
 			let rsh = document.getElementById('rsh');
 			let expiredate = document.getElementById('expiredate');
+			let sbtn = document.getElementById('sbtn');
 			let never = document.getElementById('never');
 			let suser = document.getElementById('suser');
 
@@ -248,6 +249,7 @@ function checkUser(value) {
 				expiredate.style.color = "lightgray";
 				never.disabled = true;
 				suser.style.borderColor = 'green';
+				sbtn.title = rcmail.gettext('intsharetitle','pictures');
 			} else {
 				shares.disabled = false;
 				rsh.disabled = false;
@@ -255,6 +257,7 @@ function checkUser(value) {
 				expiredate.style.color = "black";
 				never.disabled = false;
 				suser.style.borderColor = 'red';
+				sbtn.title = rcmail.gettext('extlinktitle','pictures');
 			}
 		}
 	});
@@ -511,6 +514,7 @@ function selectShare() {
 	getshares();
 	document.getElementById('sid').value = '';
 	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
+	let sbtn = document.getElementById('sbtn');
 	document.getElementById('sname').value = url.searchParams.get('p').split('/').pop();
 	document.getElementById('expiredate').value = '';
 	document.getElementById('expiredate').disabled = false;
@@ -518,12 +522,13 @@ function selectShare() {
 	document.getElementById('never').checked = false;
 	document.getElementById('link').value = '';
 	document.getElementById('link').style.visibility = "hidden";
-	document.getElementById('sbtn').style.visibility = "visible";
+	sbtn.style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
 	let someDate = new Date();
 	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 30));
-	document.getElementById('sbtn').tabIndex = 5;
+	sbtn.tabIndex = 5;
+	sbtn.title = rcmail.gettext('extlinktitle','pictures');
 	document.getElementById('sname').focus();
 }
 
@@ -592,8 +597,8 @@ function edit_album() {
 function btn_title() {
 	let title = '';
 	switch (this.id) {
-		case 'dalb': title = "Delete Album: " + document.getElementById('album_org').value; break;
-		case 'mvb': title = "Move '" + document.getElementById('album_org').value + "' to '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
+		case 'dalb': title = rcmail.gettext('DelAlbum','pictures') + ": " + document.getElementById('album_org').value; break;
+		case 'mvb': title = rcmail.gettext('MovAlbum','pictures') + " '" + document.getElementById('album_org').value + "' to '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
 		case 'rnb': title = "Rename '" + document.getElementById('album_org').value + "' to '" + document.getElementById('album_name').value + "'"; break;
 		default: break;
 	}
