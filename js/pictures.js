@@ -242,7 +242,7 @@ function checkUser(value) {
 			let never = document.getElementById('never');
 			let suser = document.getElementById('suser');
 
-			if(response == 1) {
+			if(parseInt(response) && response > 0) {
 				shares.disabled = true;
 				rsh.disabled = true;
 				expiredate.disabled = true;
@@ -250,6 +250,7 @@ function checkUser(value) {
 				never.disabled = true;
 				suser.style.borderColor = 'green';
 				sbtn.title = rcmail.gettext('intsharetitle','pictures');
+				document.getElementById('uid').value = response;
 			} else {
 				shares.disabled = false;
 				rsh.disabled = false;
@@ -258,6 +259,7 @@ function checkUser(value) {
 				never.disabled = false;
 				suser.style.borderColor = 'red';
 				sbtn.title = rcmail.gettext('extlinktitle','pictures');
+				document.getElementById('uid').value = '';
 			}
 		}
 	});
@@ -737,12 +739,17 @@ function sharepicture() {
 			sharename: document.getElementById('sname').value,
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
 			intern: internal,
-			suser: suser
+			suser: suser,
+			uid: document.getElementById('uid').value
 		},
 		success: function(a) {
 			if(a == 'intern') {
+				document.getElementById('expiredate').disabled = false;
+				document.getElementById('expiredate').style.color = 'black';
+				document.getElementById('never').disabled = false;
 				document.getElementById('share_edit').style.display='none';
 				window.parent.document.getElementById('info').style.display = 'none';
+				dloader('#share_edit', sbtn, 'remove');
 				return false;
 			}
 			const url = new URL(location.href);

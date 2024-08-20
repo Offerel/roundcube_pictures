@@ -162,7 +162,7 @@ if(isset($_POST['img_action'])) {
 						$expiredate = ($edate > 0) ? $edate:"NULL";
 
 						if(filter_var($_POST['intern'], FILTER_VALIDATE_BOOLEAN)) {
-							shareIntern($sharename, $images, filter_var($_POST['suser'], FILTER_UNSAFE_RAW));
+							shareIntern($sharename, $images, filter_var($_POST['suser'], FILTER_UNSAFE_RAW), filter_var($_POST['uid'], FILTER_SANITIZE_NUMBER_INT));
 						}
 
 						if(empty($shareid)) {
@@ -198,10 +198,10 @@ if(isset($_POST['img_action'])) {
 						die("0");
 						break;
 		case 'cUser':	$user = filter_var($_POST['user'], FILTER_UNSAFE_RAW);
-						$query = "SELECT COUNT(*) as 'count' FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
+						$query = "SELECT `user_id` FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
 						$dbh->query($query);
-						$count = $dbh->fetch_assoc()['count'];
-						die($count);
+						$uid = $dbh->fetch_assoc()['user_id'];
+						die($uid);
 						break;
 	}
 	die();
@@ -214,7 +214,7 @@ if( isset($_GET['g']) ) {
 	die($thumbnails);
 }
 
-function shareIntern($sharename, $images, $sUser) {
+function shareIntern($sharename, $images, $sUser, $uid) {
 	global $rcmail, $username;
 	$dbh = rcmail_utils::db();
 	$share_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename";
@@ -225,9 +225,6 @@ function shareIntern($sharename, $images, $sUser) {
 		@symlink($org_path, $sym_path);
 		$otime = filemtime($org_path);
 		touch($sym_path, $otime);
-		$query = "SELECT `user_id` FROM `users` WHERE `username` = '$sUser'";
-		$dbh->query($query);
-		$uid = $dbh->fetch_assoc()['user_id'];
 		$query = "INSERT INTO `pic_symlink_map` (`user_id`,`symlink`,`target`) VALUES ($uid, '$sym_path', '$org_path')";
 		$dbh->query($query);
 	}
