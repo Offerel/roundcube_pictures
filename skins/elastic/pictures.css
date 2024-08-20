@@ -322,6 +322,9 @@
     z-index: 1;
     width: calc(100% - 50px);
 }
+#target {
+    margin-top: 10px;
+}
 #album_name_img {
 	margin-bottom: 0 !important;
 }

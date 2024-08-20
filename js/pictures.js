@@ -811,6 +811,7 @@ function move_picture() {
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
 		a.push($(this).val())
 	});
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -843,9 +844,12 @@ function mv_img() {
 	b = decodeURI(b);
 	$("#img_edit").contents().find("h2").html(rcmail.gettext("move_image", "pictures"));
 	$("#album_name_img").attr("placeholder", rcmail.gettext("new_album", "pictures"));
+	let mvp = document.getElementById('mvp');
+
 	document.getElementById('album_name_img').addEventListener('input', function() {
-		document.getElementById('rpath').innerText = document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value
+		mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
 	});
+
 	$("#album_org_img").val(b); - 1 !== document.getElementById("mv_target_img").innerHTML.indexOf("div") && $.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -855,13 +859,13 @@ function mv_img() {
 		success: function(a) {
 			$("#mv_target_img").html(a);
 			document.getElementById('target').addEventListener('change', function() {
-				let mvp = document.getElementById('mvp');
+				
 				mvp.classList.remove('disabled');
 				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
 			});
 		}
 	});
-	document.getElementById("rpath").innerHTML = "&nbsp;";
+
 	if(document.getElementById("target")) document.getElementById("target").selectedIndex = 0;
 	document.getElementById("album_name_img").value = "";
 	document.getElementById("img_edit").style.display = "block";

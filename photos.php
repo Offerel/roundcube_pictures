@@ -143,12 +143,14 @@ if(isset($_POST['img_action'])) {
 						if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
 
 						foreach($images as $image) {
+							chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.$image);
 						}
 						die(true);
 						break;
 		case 'delete':	foreach($images as $image) {
+							delSymLink($pictures_path.$org_path.'/'.$image);
 							delimg($pictures_path.$org_path.'/'.$image);
 							rmdb($org_path.'/'.$image, $user_id);
 						}
@@ -218,7 +220,8 @@ function delSymLink($src) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$query = "DELETE FROM `pic_symlink_map` WHERE `symlink` LIKE '$src%';";
-	$dbh->query($query);
+	error_log($query);
+	//$dbh->query($query);
 }
 
 function chSymLink($src, $target) {
