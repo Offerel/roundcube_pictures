@@ -100,7 +100,7 @@ if(isset($_FILES['galleryfiles'])) {
 }
 
 if(isset($_POST['alb_action'])) {
-	$action = $_POST['alb_action'];	
+	$action = $_POST['alb_action'];
 	$src = rtrim($pictures_path,'/').'/'.filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 	$target = isset($_POST['target']) ? urldecode(dirname($src).'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
 	$mtarget =isset($_POST['target']) ?  $pictures_path.$_POST['target']:'';
@@ -109,7 +109,7 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
+		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); break; //mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
 		case 'rename':	chSymLink($src, $pictures_path.$newPath); mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
@@ -226,7 +226,9 @@ function delSymLink($src) {
 function chSymLink($src, $target) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
-	$query = "UPDATE `pic_symlink_map` SET `symlink` = REPLACE(symlink, '$src', '$target');";
+	$query = "UPDATE `pic_symlink_map` SET `symlink` = REPLACE(`symlink`, '$src', '$target');";
+	$dbh->query($query);
+	$query = "UPDATE `pic_symlink_map` SET `target` = REPLACE(`target`, '$src', '$target');";
 	$dbh->query($query);
 }
 
