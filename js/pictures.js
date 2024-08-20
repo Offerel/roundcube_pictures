@@ -599,9 +599,9 @@ function edit_album() {
 function btn_title() {
 	let title = '';
 	switch (this.id) {
-		case 'dalb': title = rcmail.gettext('DelAlbum','pictures') + " " + document.getElementById('album_org').value; break;
-		case 'mvb': title = rcmail.gettext('MovAlbum','pictures') + " '" + document.getElementById('album_org').value + "' " + rcmail.gettext('to','pictures') + " '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value + "'"; break;
-		case 'rnb': title = rcmail.gettext('RenAlbum','pictures') + " '" + document.getElementById('album_org').value + "' " + rcmail.gettext('to','pictures') + " '" + document.getElementById('album_name').value + "'"; break;
+		case 'dalb': title = rcmail.gettext('DelAlbum','pictures') + " '" + document.getElementById('album_org').value.split('/').pop() + "'"; break;
+		case 'mvb': title = rcmail.gettext('MovAlbum','pictures') + " '" + document.getElementById('album_org').value.split('/').pop() + "' " + rcmail.gettext('to','pictures') + " '" + document.getElementById('target').value + "/" + document.getElementById('album_org').value.split('/').pop() + "'"; break;
+		case 'rnb': title = rcmail.gettext('RenAlbum','pictures') + " '" + document.getElementById('album_org').value.split('/').pop() + "' " + rcmail.gettext('to','pictures') + " '" +document.getElementById('album_org').value.split('/').pop() + "'"; break;
 		default: break;
 	}
 
@@ -855,8 +855,9 @@ function mv_img() {
 		success: function(a) {
 			$("#mv_target_img").html(a);
 			document.getElementById('target').addEventListener('change', function() {
-				document.getElementById('mvp').classList.remove('disabled');
-				document.getElementById('rpath').innerText = document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value
+				let mvp = document.getElementById('mvp');
+				mvp.classList.remove('disabled');
+				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
 			});
 		}
 	});

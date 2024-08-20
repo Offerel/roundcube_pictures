@@ -102,16 +102,16 @@ if(isset($_FILES['galleryfiles'])) {
 if(isset($_POST['alb_action'])) {
 	$action = $_POST['alb_action'];	
 	$src = rtrim($pictures_path,'/').'/'.filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = urldecode(dirname($src).'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-	$mtarget = $pictures_path.$_POST['target'];
+	$target = isset($_POST['target']) ? urldecode(dirname($src).'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
+	$mtarget =isset($_POST['target']) ?  $pictures_path.$_POST['target']:'';
 	$oldpath = str_replace($pictures_path,'',$src);
 	$newPath = html_entity_decode(str_replace($pictures_path,'',$target));
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'move':	mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
-		case 'rename':	mvdb($oldpath, $newPath); die(rename($src, $target)); break;
-		case 'delete':	die(removeDirectory($src, $rcmail->user->ID)); break;
+		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
+		case 'rename':	chSymLink($src, $pictures_path.$newPath); mvdb($oldpath, $newPath); die(rename($src, $target)); break;
+		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
 			if (!@mkdir($target, 0755, true)) {
 				$error = error_get_last();
@@ -212,6 +212,20 @@ if( isset($_GET['g']) ) {
 	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
 	$thumbnails = showGallery($dir, $offset);
 	die($thumbnails);
+}
+
+function delSymLink($src) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$query = "DELETE FROM `pic_symlink_map` WHERE `symlink` LIKE '$src%';";
+	$dbh->query($query);
+}
+
+function chSymLink($src, $target) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$query = "UPDATE `pic_symlink_map` SET `symlink` = REPLACE(symlink, '$src', '$target');";
+	$dbh->query($query);
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {
