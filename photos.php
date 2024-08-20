@@ -109,7 +109,7 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); break; //mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
+		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
 		case 'rename':	chSymLink($src, $pictures_path.$newPath); mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
@@ -221,6 +221,8 @@ function delSymLink($src) {
 	$dbh = rcmail_utils::db();
 	$query = "DELETE FROM `pic_symlink_map` WHERE `symlink` LIKE '$src%';";
 	$dbh->query($query);
+	//$query = "DELETE FROM `pic_symlink_map` WHERE `target` LIKE '$src%';";
+	//$dbh->query($query);
 }
 
 function chSymLink($src, $target) {
