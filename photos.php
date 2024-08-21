@@ -178,7 +178,7 @@ if(isset($_POST['img_action'])) {
 						$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` IN ('".implode("','", $images)."') AND `user_id` = $user_id";
 						$ret = $dbh->query($query);
 
-						$query = "INSERT INTO `pic_shared_pictures` (`share_id`, `user_id`, `pic_id`) VALUES ";
+						$query = "INSERT IGNORE INTO `pic_shared_pictures` (`share_id`, `user_id`, `pic_id`) VALUES ";
 
 						$rows = $dbh->num_rows();
 						for ($i=0; $i < $rows; $i++) { 

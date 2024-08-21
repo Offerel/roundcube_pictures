@@ -221,7 +221,7 @@ window.onload = function(){
 		});
 	}
 
-	document.getElementById('suser').addEventListener('blur', function(e) {
+	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('blur', function(e) {
 		checkUser(this.value);
 	});
 };
