@@ -50,10 +50,11 @@ CREATE TABLE IF NOT EXISTS `pic_tags` (
 );
 
 CREATE TABLE IF NOT EXISTS `pic_symlink_map` (
+  `smid` INTEGER NOT NULL,
   `user_id` INTEGER NOT NULL,
   `symlink` TEXT NOT NULL,
   `target` TEXT NOT NULL,
+  PRIMARY KEY (`smid` AUTOINCREMENT),
   UNIQUE KEY `symlink` (`symlink`,`target`,`user_id`),
-  KEY `user_id` (`user_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 );

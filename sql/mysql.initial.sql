@@ -55,10 +55,12 @@ CREATE TABLE IF NOT EXISTS `pic_tags` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `pic_symlink_map` (
+  `smid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `symlink` text NOT NULL,
   `target` text NOT NULL,
+  PRIMARY KEY (`smid`),
   UNIQUE KEY `symlink` (`symlink`,`target`,`user_id`) USING HASH,
   KEY `user_id` (`user_id`),
   CONSTRAINT `pic_symlink_map_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
