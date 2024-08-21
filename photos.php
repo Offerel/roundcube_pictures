@@ -221,8 +221,8 @@ function delSymLink($src) {
 	$dbh = rcmail_utils::db();
 	$query = "DELETE FROM `pic_symlink_map` WHERE `symlink` LIKE '$src%';";
 	$dbh->query($query);
-	//$query = "DELETE FROM `pic_symlink_map` WHERE `target` LIKE '$src%';";
-	//$dbh->query($query);
+	$query = "DELETE FROM `pic_symlink_map` WHERE `target` LIKE '$src%';";
+	$dbh->query($query);
 }
 
 function chSymLink($src, $target) {
