@@ -20,8 +20,14 @@ class pictures extends rcube_plugin {
 				$line = $dtime." FolderSync ".$fsdata['folderPairName']." ".$fsdata['syncStatus']."\n";
 				file_put_contents($logfile, $line, FILE_APPEND);
 			}
-
-			die(http_response_code(204));
+			$code = 202;
+			$array = array(
+				'code' => $code,
+				'logfile' => $logfile
+			);
+			http_response_code($code);
+			echo json_encode($array);
+			die();
 		}
 
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {

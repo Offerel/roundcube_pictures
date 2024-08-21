@@ -144,7 +144,7 @@ if(isset($_POST['img_action'])) {
 						foreach($images as $image) {
 							chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
-							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.$image);
+							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.'/'.$image);
 						}
 						die(true);
 						break;
@@ -235,11 +235,14 @@ function chSymLink($src, $target) {
 
 	$query = "SELECT `symlink`, `target` FROM `pic_symlink_map` WHERE `target` = '$target';";
 	$res = $dbh->query($query);
-	$links = $dbh->fetch_assoc($res);
-	if(file_exists($links['symlink'])) unlink($links['symlink']);
-	symlink($links['target'], $links['symlink']);
-	$otime = filemtime($org_path);
-	touch($links['symlink'], $otime);
+	$rows = $dbh->affected_rows($res);
+	if($rows > 0) {
+		$links = $dbh->fetch_assoc($res);
+		if(file_exists($links['symlink'])) unlink($links['symlink']);
+		symlink($links['target'], $links['symlink']);
+		$otime = filemtime($org_path);
+		touch($links['symlink'], $otime);
+	}
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {
@@ -1103,7 +1106,7 @@ function showGallery($requestedDir, $offset = 0) {
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
-				$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):NULL;
+				$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):'';
 				$taken = $pdata[$key]['pic_taken'];
 
 				checkpermissions("$current_dir/$file");

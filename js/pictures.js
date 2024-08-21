@@ -484,7 +484,7 @@ function lazyload(slide = false) {
 
 function uploadpicture() {
 	let ufrm = document.createElement('input');
-	const folder = decodeURI(new URL(document.getElementById("picturescontentframe").contentWindow.document.getElementById('header').lastElementChild.href).search.substring(3));
+	const folder = new URL(document.getElementById("picturescontentframe").contentWindow.location.href).searchParams.get("p");
 	ufrm.type = 'file';
 	ufrm.multiple = 'multiple';
 	ufrm.accept = 'image/webp, image/jpeg, image/png';
@@ -802,8 +802,8 @@ function copyLink() {
 }
 
 function move_picture() {
-	let button = document.getElementById('mvp');
-	dloader('#img_edit', button, 'add');
+	let mvp = document.getElementById('mvp');
+	dloader('#img_edit', mvp, 'add');
 	var a = [],
 		b = document.getElementById("album_org_img").value,
 		c = document.getElementById("album_name_img").value,
@@ -824,7 +824,7 @@ function move_picture() {
 		},
 		success: function(a) {
 			1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0))
-			dloader('#img_edit', button, 'remove');
+			dloader('#img_edit', mvp, 'remove');
 		}
 	})
 }
@@ -847,7 +847,9 @@ function mv_img() {
 	let mvp = document.getElementById('mvp');
 
 	document.getElementById('album_name_img').addEventListener('input', function() {
-		mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
+		let nfolder = document.getElementById('album_name_img').value;
+		nfolder = (nfolder.length > 0) ? nfolder + '/':nfolder;
+		mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + nfolder + "'";
 	});
 
 	$("#album_org_img").val(b); - 1 !== document.getElementById("mv_target_img").innerHTML.indexOf("div") && $.ajax({
@@ -859,8 +861,10 @@ function mv_img() {
 		success: function(a) {
 			$("#mv_target_img").html(a);
 			document.getElementById('target').addEventListener('change', function() {
+				let nfolder = document.getElementById('album_name_img').value;
+				nfolder = (nfolder.length > 0) ? nfolder + '/':nfolder;
 				mvp.classList.remove('disabled');
-				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
+				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + nfolder + "'";
 			});
 		}
 	});
