@@ -859,7 +859,6 @@ function mv_img() {
 		success: function(a) {
 			$("#mv_target_img").html(a);
 			document.getElementById('target').addEventListener('change', function() {
-				
 				mvp.classList.remove('disabled');
 				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + document.getElementById('album_name_img').value + "'";
 			});

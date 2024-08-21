@@ -141,7 +141,6 @@ if(isset($_POST['img_action'])) {
 	switch($action) {
 		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):"";
 						if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
-
 						foreach($images as $image) {
 							chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
 							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
@@ -230,8 +229,17 @@ function chSymLink($src, $target) {
 	$dbh = rcmail_utils::db();
 	$query = "UPDATE `pic_symlink_map` SET `symlink` = REPLACE(`symlink`, '$src', '$target');";
 	$dbh->query($query);
+
 	$query = "UPDATE `pic_symlink_map` SET `target` = REPLACE(`target`, '$src', '$target');";
 	$dbh->query($query);
+
+	$query = "SELECT `symlink`, `target` FROM `pic_symlink_map` WHERE `target` = '$target';";
+	$res = $dbh->query($query);
+	$links = $dbh->fetch_assoc($res);
+	if(file_exists($links['symlink'])) unlink($links['symlink']);
+	symlink($links['target'], $links['symlink']);
+	$otime = filemtime($org_path);
+	touch($links['symlink'], $otime);
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {
