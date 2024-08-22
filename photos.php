@@ -513,12 +513,13 @@ function showPage($thumbnails, $dir) {
 	$page.= "</head>
 	\t\t<body class='picbdy'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
+	\t\t\t<div id='upl' class='dropzone'><div id='progress' class='progress'><div class='progressbar'></div></div></div>
 	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
 	\t\t\t\t\t$albumnav
 	\t\t\t\t</ul>
 	\t\t\t</div>
-	\t\t\t<div id=\"galdiv\">";
+	\t\t\t<div id='galdiv'>";
 	$page.= $thumbnails;
 	$page.="
 	<script>
@@ -796,16 +797,9 @@ function showPage($thumbnails, $dir) {
 			event.stopPropagation();
 			event.preventDefault();
 			this.classList.remove('mmn-drop');
-			var url_parameters = this.parentElement.href.split('?')[1];
-			var params_arr = url_parameters.split('&');
-			var folder = '';
-			for (var i = 0; i < params_arr.length; i++) {
-				var tmparr = params_arr[i].split('=');
-				if(tmparr[0]=='p') {
-					folder = tmparr[1];
-					break;
-				}
-			}
+			
+			let url = (this.parentElement.href) ? this.parentElement.href:location.href;
+			let folder = new URL(url).searchParams.get('p');
 			startUpload(event.dataTransfer.files, folder);
 		}
 		
@@ -815,7 +809,7 @@ function showPage($thumbnails, $dir) {
 			var maxfiles = $maxfiles;
 			var mimeTypes = ['image/jpeg', 'video/mp4'];
 			folder = decodeURIComponent((folder + '').replace(/\+/g, '%20'));
-			var progressBar = document.getElementById('' + folder + '').getElementsByClassName('progress')[0];
+			var progressBar = document.getElementById('progress');
 			if (files.length > maxfiles) {
 				console.log('You try to upload more than the max count of allowed files(' + maxfiles + ')');
 				return false;
@@ -842,7 +836,6 @@ function showPage($thumbnails, $dir) {
 						data = JSON.parse(xhr.responseText);
 						var message = '';
 						for (var i = 0; i < data.length; i++) {
-							
 							if(data[i].type == 'error') {
 								progressBar.style.background = 'red';
 								console.log(data[i].message);
@@ -866,6 +859,11 @@ function showPage($thumbnails, $dir) {
 						window.parent.document.getElementById('mheader').innerHTML = 'Upload Messages';
 						window.parent.document.getElementById('modal-body').classList.add('modal-body-text');
 						window.parent.document.getElementById('modal-body').innerHTML = message;
+						setTimeout(function() {
+							progressBar.style.visibility = 'hidden';
+							progressBar.style.width = 0;
+							progressBar.style.background = 'revert-layer';
+						}, 5000);
 					}
 				}
 				
@@ -1086,7 +1084,7 @@ function showGallery($requestedDir, $offset = 0) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span><div class='progress'><div class='progressbar'></div></div></a>"
+								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span></a>"
 								);
 				}
 			}
@@ -1317,7 +1315,7 @@ function exiftool($image) {
 		$joutput = implode("", $output);
 		$mdarr = json_decode($joutput, true);
 	} else {
-		logm("Exiftool seems to be not installed. Database cant be updated.", 1);
+		error_log("Exiftool seems to be not installed. Database can't be updated.");
 	}
 	return $mdarr[0];
 }
@@ -1389,10 +1387,10 @@ function createthumb($image, $mimetype) {
 
 	if(file_exists($thumbnailpath)) {
 		if($otime == $ttime) {
-			logm("Ignore $image", 4);
+			error_log("Ignore $image");
 			return false;
 		} else {
-			logm("ReParse $image", 4);
+			error_log("ReParse $image");
 		}
 	}
 
@@ -1424,9 +1422,9 @@ function createthumb($image, $mimetype) {
 			case 2: $exif = exiftool($image); break;
 		}
 
-		unset($arr['SourceFile']);
-		if(strlen($arr['ImageDescription']) < 1) unset($arr['ImageDescription']);
-		if(strlen($arr['Copyright']) < 1) unset($arr['Copyright']);
+		unset($exif['SourceFile']);
+		if(isset($exif['ImageDescription']) && strlen($exif['ImageDescription']) < 1) unset($exif['ImageDescription']);
+		if(isset($exif['Copyright']) && strlen($exif['Copyright']) < 1) unset($exif['Copyright']);
 		
 		if(is_writable($thumbpath)) {
 			imagewebp($target, $thumbnailpath, 60);
@@ -1485,13 +1483,13 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	$dbh = rcmail_utils::db();
 	$ppath = trim(str_replace($pictures_basepath, '', $file),'/');
 	$result = $dbh->query("SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user");
-	$rarr = $db->fetch_array($result);
+	$rarr = $dbh->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
 
 	$type = explode('/',$exif['MIMEType'])[0];
 	if($type == 'image') {
-		$taken = (is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
+		$taken = (isset($exif['DateTimeOriginal']) && is_int($exif['DateTimeOriginal'])) ? $exif['DateTimeOriginal']:filemtime($file);
 	} else {
 		if(isset($exif['DateTimeOriginal']) && $exif['DateTimeOriginal'] > 0 && is_int($exif['DateTimeOriginal'])) {
 			$taken = $exif['DateTimeOriginal'];
@@ -1506,7 +1504,7 @@ function todb($file, $user, $pictures_basepath, $exif) {
 	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";
 
 	if($count == 0) {
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exif,$user)";
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exifj,$user)";
 	} else {
 		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
 	}
