@@ -77,7 +77,7 @@ if(isset($_FILES['galleryfiles'])) {
 
 	for($i = 0; $i < $cFiles; $i++) {
 		$fname = $_FILES['galleryfiles']['name'][$i];
-		if($_FILES['galleryfiles']['size'][$i] > 0 && in_array($_FILES['galleryfiles']['type'][$i], $aAllowedMimeTypes) && !file_exists($pictures_path.$folder."/$fname")) {
+		if($_FILES['galleryfiles']['size'][$i] > 0 && in_array($_FILES['galleryfiles']['type'][$i], $aAllowedMimeTypes)) {
 			if(move_uploaded_file($_FILES['galleryfiles']['tmp_name'][$i], "$pictures_path$folder/$fname")) {
 				if($fname == 'folder.jpg') {
 					rsfolderjpg("$pictures_path$folder/$fname");
@@ -92,7 +92,7 @@ if(isset($_FILES['galleryfiles'])) {
 				$test[] = array('message' => 'Upload failed. Permission error', 'type' => 'error');
 			}
 		} else {
-			error_log("Uploaded picture internal error (size, mimetype, already existing");
+			error_log("Uploaded picture internal error (size, mimetype)");
 			$test[] = array('message' => 'Upload failed. Internal Error', 'type' => 'error');
 		}
 	}
@@ -1372,9 +1372,8 @@ function createthumb($image, $mimetype) {
 	$idir = str_replace($pictures_path, '', $image);
 	$otime = filemtime($image);
 	$thumb_parts = pathinfo($idir);
-	$thumbnailpath = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
-	$ttime = filemtime($thumbnailpath);
-
+	$thumbnailpath = $thumb_path.$thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
+	$ttime = @filemtime($thumbnailpath);
 	if(file_exists($thumbnailpath) && $otime == $ttime) return false;
 
 	$thumbpath = $thumb_parts['dirname'];
