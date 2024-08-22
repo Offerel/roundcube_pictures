@@ -513,12 +513,13 @@ function showPage($thumbnails, $dir) {
 	$page.= "</head>
 	\t\t<body class='picbdy'>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
-	\t\t\t<div id='upl' class='dropzone'><div id='progress' class='progress'><div class='progressbar'></div></div></div>
+	
 	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
 	\t\t\t\t\t$albumnav
 	\t\t\t\t</ul>
 	\t\t\t</div>
+	\t\t\t<div id='progress' class='progress'><div class='progressbar'></div></div>
 	\t\t\t<div id='galdiv'>";
 	$page.= $thumbnails;
 	$page.="
@@ -833,37 +834,27 @@ function showPage($thumbnails, $dir) {
 
 				xhr.onload = function() {
 					if (xhr.status === 200) {
-						data = JSON.parse(xhr.responseText);
-						var message = '';
+						let data = JSON.parse(xhr.responseText);
+						let bg = '';
+
 						for (var i = 0; i < data.length; i++) {
-							if(data[i].type == 'error') {
-								progressBar.style.background = 'red';
-								console.log(data[i].message);
-								message+='<span style=\'text-transform: capitalize; color: red;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: red;\'>' + data[i].message + '</span></br>';
-								window.parent.document.getElementById('info').style.display = 'block';
-								return false;
+							switch(data[i].type) {
+								case 'error': bg = 'red'; break;
+								case 'warning': bg = 'orange'; break;
+								default: bg = 'green';
 							}
-							if(data[i].type == 'warning') {
-								progressBar.style.background = 'orange';
-								message+='<span style=\'text-transform: capitalize; color: orange;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: orange;\'>' + data[i].message + '</span></br>';
-								window.parent.document.getElementById('info').style.display = 'block';
-								console.log(data[i].message);
-							}
-							else {
-								message+='<span style=\'text-transform: capitalize; color: green;\'>' + data[i].type + ':&nbsp;</span><span style=\'color: green;\'>' + data[i].message + '</span></br>';
-								progressBar.style.background = 'green';
-								console.log(data[i].message);
-							}
-								
+
+							progressBar.style.background = bg;
+							console.log(data[i].message);
 						}
-						window.parent.document.getElementById('mheader').innerHTML = 'Upload Messages';
-						window.parent.document.getElementById('modal-body').classList.add('modal-body-text');
-						window.parent.document.getElementById('modal-body').innerHTML = message;
+
 						setTimeout(function() {
 							progressBar.style.visibility = 'hidden';
 							progressBar.style.width = 0;
 							progressBar.style.background = 'revert-layer';
 						}, 5000);
+
+						location.reload();
 					}
 				}
 				
@@ -1376,7 +1367,8 @@ function createthumb($image, $mimetype) {
 	$ttime = @filemtime($thumbnailpath);
 	if(file_exists($thumbnailpath) && $otime == $ttime) return false;
 
-	$thumbpath = $thumb_parts['dirname'];
+	$thumbparts = pathinfo($thumbnailpath);
+	$thumbpath = $thumbparts['dirname'];
 		
 	if (!is_dir($thumbpath)) {
 		if(!mkdir($thumbpath, 0755, true)) {

@@ -134,7 +134,7 @@ window.onload = function(){
 		if(this.checked != true){
 			document.getElementById('expiredate').disabled = false;
 			let someDate = new Date();
-			document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 60));
+			document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 		} else {
 			document.getElementById('expiredate').disabled = true;
 			document.getElementById('expiredate').value = '';
@@ -161,7 +161,7 @@ window.onload = function(){
 				document.getElementById('never').checked = false;
 				document.getElementById('link').value = '';
 				let someDate = new Date();
-				document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 60));
+				document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 				return false;
 			}
 		})
@@ -528,7 +528,7 @@ function selectShare() {
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
 	let someDate = new Date();
-	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + 60));
+	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 	sbtn.tabIndex = 5;
 	sbtn.title = rcmail.gettext('extlinktitle','pictures');
 	document.getElementById('sname').focus();
@@ -650,7 +650,7 @@ function getshares() {
 					document.getElementById('never').checked = false;
 					document.getElementById('expiredate').disabled = false;
 					let someDate = new Date();
-					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + 60)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
+					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
 				} else {
 					document.getElementById('never').checked = true;
 					document.getElementById('expiredate').value = '';

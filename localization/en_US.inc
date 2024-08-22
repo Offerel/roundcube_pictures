@@ -80,6 +80,7 @@ $labels['theme_dark'] = "Dark";
 $labels['theme_dynamic'] = "Dynamic";
 $labels['thumbs_pr_page'] = "Thumbnail Count";
 $labels['pmargins'] = "Margin";
+$labels['sharedays'] = "Default Shareduration in Days";
 
 $labels['wb_auto'] = "Auto";
 $labels['wb_daylight'] = "Daylight";

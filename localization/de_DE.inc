@@ -80,6 +80,7 @@ $labels['pthemedark'] = "Dunkel";
 $labels['pthemedynamic'] = "Dynamisch";
 $labels['thumbs_pr_page'] = "Anzahl Thumbnails";
 $labels['pmargins'] = "Abstand";
+$labels['sharedays'] = "Standard Sharedauer in Tagen";
 
 $labels['wb_auto'] = "Auto";
 $labels['wb_daylight'] = "Tageslicht";

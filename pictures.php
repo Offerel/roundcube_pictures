@@ -113,6 +113,8 @@ class pictures extends rcube_plugin {
 			$this->register_action('index', array($this, 'action'));
 			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
+			
+			$rcmail->output->set_env('sdays', $rcmail->config->get('sharedays', 60));
 			$this->include_script('js/glightbox/glightbox.min.js');
 			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
 			$this->include_stylesheet('js/tagify/tagify.css');
@@ -160,6 +162,14 @@ class pictures extends rcube_plugin {
 														'title'=> html::label($field_id, $this->gettext('pmargins')),
 														'content'=> $input->show($rcmail->config->get('pmargins')));
 
+		$days = $rcmail->config->get('sharedays');
+		$days = ($days) ? $days:60;
+		$field_id='sharedays';
+		$input = new html_inputfield(array('name' => 'sharedays', 'id' => $field_id));
+		$p['blocks']['main']['options']['sharedays'] = array(
+														'title'=> html::label($field_id, $this->gettext('sharedays')),
+														'content'=> $input->show($days));
+
 		return $p;
 	}
 
@@ -169,7 +179,8 @@ class pictures extends rcube_plugin {
             $p['prefs'] = array(
                 'ptheme'		=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
 				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
-				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST))
+				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
+				'sharedays'	=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST))
             );
 		}
 
