@@ -2,6 +2,13 @@
 - Updated Tagify 4.27.0 (https://yaireo.github.io/tagify/)
 - CSS Fixes
 - Move Info Button
+- Fix Upload
+- Fix path gerneration
+- Fix moving images between album
+- Add pin Infobox
+- Add faster Sharing
+- Add OpenGraph Support
+- Add share with internal users
 
 ### v1.5.0
 - Add webp thumbnails
