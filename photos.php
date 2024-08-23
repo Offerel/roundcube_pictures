@@ -805,12 +805,12 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		function startUpload(files, folder) {
-			var formdata = new FormData();
+			let formdata = new FormData();
 			xhr = new XMLHttpRequest();
-			var maxfiles = $maxfiles;
-			var mimeTypes = ['image/jpeg', 'video/mp4'];
+			let maxfiles = $maxfiles;
+			let mimeTypes = ['image/jpeg', 'video/mp4'];
 			folder = decodeURIComponent((folder + '').replace(/\+/g, '%20'));
-			var progressBar = document.getElementById('progress');
+			let progressBar = document.getElementById('progress');
 			if (files.length > maxfiles) {
 				console.log('You try to upload more than the max count of allowed files(' + maxfiles + ')');
 				return false;
@@ -826,10 +826,10 @@ function showPage($thumbnails, $dir) {
 				}
 				
 				xhr.upload.addEventListener('progress', function(event) {
-					var percentComplete = Math.ceil(event.loaded / event.total * 100);
-					progressBar.style.width = percentComplete + '%';
+					let percentComplete = Math.ceil(event.loaded / event.total * 100);
 					progressBar.style.visibility = 'visible';
 					progressBar.firstChild.innerHTML = percentComplete + '%';
+					progressBar.firstChild.style.width = percentComplete + '%';
 				});
 
 				xhr.onload = function() {
@@ -839,22 +839,21 @@ function showPage($thumbnails, $dir) {
 
 						for (var i = 0; i < data.length; i++) {
 							switch(data[i].type) {
-								case 'error': bg = 'red'; break;
-								case 'warning': bg = 'orange'; break;
-								default: bg = 'green';
+								case 'error': bg = '#dc3545'; break;
+								case 'warning': bg = '#ffc107'; break;
+								default: bg = '#28a745';
 							}
 
-							progressBar.style.background = bg;
+							progressBar.firstChild.style.backgroundColor = bg;
 							console.log(data[i].message);
 						}
 
 						setTimeout(function() {
 							progressBar.style.visibility = 'hidden';
-							progressBar.style.width = 0;
-							progressBar.style.background = 'revert-layer';
+							progressBar.firstChild.style.width = 0;
+							progressBar.firstChild.style.backgroundColor = '#007bff';
+							location.reload();
 						}, 5000);
-
-						location.reload();
 					}
 				}
 				
