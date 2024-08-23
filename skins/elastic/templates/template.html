@@ -29,6 +29,7 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
+						<label for="album_name"><roundcube:label name="pictures.album" quoting="html" /></label>
 						<input type="text" name="album_name" id="album_name" value="" onInput="$('#rnb').removeClass('disabled'); $('#addb').removeClass('disabled');">
 						<input type="hidden" name="album_org" id="album_org" value="">
 						<div id="mv_target"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
@@ -52,6 +53,7 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
+						<label for="album_name_img"><roundcube:label name="pictures.album" quoting="html" /></label>
 						<input type="text" name="album_name_img" id="album_name_img">
 						<input type="hidden" name="album_org_img" id="album_org_img">
 						<div id="mv_target_img"><div class="mv_target"><roundcube:label name="loading" quoting="html" /></div></div>
@@ -69,14 +71,14 @@
 				<div id="modal-body" class="modal-body sebody">
 					<form>		
 						<label for="sname"><roundcube:label name="pictures.ShareName" quoting="html" /></label>
-						<input type="text" id="sname" tabindex="1"><button id="rsh" disabled></button>
+						<input type="text" id="sname" tabindex="1"><button id="rsh" title="Delete Share" disabled></button>
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<label for="suser"><roundcube:label name="pictures.IntUser" quoting="html" /></label>
 						<input type="text" id="suser" placeholder="Username" tabindex="2">
 						<input type="hidden" id="sid"><input type="hidden" id="uid">
 						<label for="expiredate"><roundcube:label name="pictures.ExpDate" quoting="html" /></label>
 						<input type="date" tabindex="3" id="expiredate" style="width: calc(100% - 35px) !important"><input type="checkbox" tabindex="3" title="never" id="never" style="width: 20px;right: -15px;position: relative;">
-						<div id="link">&nbsp;</div><button id="btnclp"></button>
+						<div id="link">&nbsp;</div><button title="Copy to Clipboard" id="btnclp"></button>
 						<div id="shareedit">
 							<roundcube:button command="sharepic" id="sbtn" type="link"  class="btn btn-primary" label="pictures.share">
 						</div>
@@ -92,6 +94,7 @@
 				</div>
 				<div id="modal-body" class="modal-body">
 					<form>
+						<label for="skeywords"><roundcube:label name="pictures.searchfor" quoting="html" /></label>
 						<input type="text" name="skeywords" id="skeywords" value="" />
 						<div id="sphoto">
 							<roundcube:button command="psearch" id="spb" type="link" class="btn btn-primary" label="search">
