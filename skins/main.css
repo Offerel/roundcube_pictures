@@ -64,19 +64,48 @@ html {
 	color: aliceblue;
 }
 .exinfo {
-	position: fixed;
-	overflow: auto;
-	right: 60px;
-	background: #00000045;
-	text-align: left;
-	padding: 10px;
-	white-space: nowrap;
-	z-index: 0;
-	top: 50px;
-	border-radius: 5px;
-	color: #fff;
-	font-weight: 400;
-	visibility: hidden;
+    position: fixed;
+    overflow: hidden;
+    right: 0;
+    background: #0000008a;
+    padding: 10px;
+    white-space: nowrap;
+    z-index: 0;
+    top: 50px;
+    color: #fff;
+    visibility: hidden;
+    bottom: 0;
+    width: 270px;
+    text-overflow: ellipsis;
+    line-height: 20px;
+}
+.infotable {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+.infotable th {
+    padding: 0 0 10px 0;
+    border: 0;
+    font-size: 1.3em;
+}
+.infotable td {
+    border: 0;
+    padding: 0;
+}
+td.tvar {
+    overflow: hidden;
+    width: 110px;
+}
+td.tvalue {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 160px;
+}
+.infotable tbody tr {
+    line-height: 24px;
+}
+.mvbtn {
+    margin-right: 260px;
 }
 .eshow {
 	z-index: 1000000;
@@ -549,6 +578,9 @@ footer a {
 	padding-left: 20px;
 	padding-right: 20px;
 	margin-right: auto !important;
+}
+.sshare {
+    background-color: #212121;
 }
 #header {
 	top: 0;

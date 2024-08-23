@@ -295,30 +295,36 @@ function getEXIFSpan($json, $imgid, $lang) {
 		if($exifArray[3] != "-") $exifHTML.= $labels['exif_fstop'].": ".$exifArray[3]."<br>";
 		if($exifArray[11] != "-") $exifHTML.= $labels['exif_flash'].": ".gv($exifArray[11], 'fl', $lang)."<br>";
 	} elseif (array_key_exists('Model', $exifArray)) {
-		if(array_key_exists('Make', $exifArray) && array_key_exists('Model', $exifArray)) 
+		$exifHTML = "<table class='infotable'>\n\t<thead>\n\t\t<tr>\n\t\t\t<th colspan='2'>Bilddetails</th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t";
+
+		if(array_key_exists('Make', $exifArray) && array_key_exists('Model', $exifArray))
 			$camera = (strpos($exifArray['Model'], explode(" ",$exifArray['Make'])[0]) !== false) ? $exifArray['Model']:$exifArray['Make']." - ".$exifArray['Model'];			
 		elseif(array_key_exists('Model', $exifArray))
 			$camera = $exifArray['Model'];
-
-		$exifHTML = (array_key_exists('Model', $exifArray)) ? $labels['exif_camera'].": $camera<br>":"";
-		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? $labels['exif_lens'].": ".$exifArray['LensID']."<br>":"";
-		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? $labels['exif_expos'].": ".gv($exifArray['ExposureProgram'], 'ep', $lang)."<br>":"";
-		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? $labels['exif_meter'].": ".gv($exifArray['MeteringMode'], 'mm', $lang)."<br>":"";
-		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? $labels['exif_exptime'].": ".$exifArray['ExposureTime']."s<br>":"";
-		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? $labels['exif_texptime'].": ".$exifArray['TargetExposureTime']."s<br>":"";
-		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? $labels['exif_ISO'].": ".$exifArray['ISO']."<br>":"";
-		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? $labels['exif_focalength'].": ".$exifArray['FocalLength']."mm<br>":"";
-		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? $labels['exif_whiteb'].": ".gv($exifArray['WhiteBalance'], 'wb', $lang)."<br>":"";
-		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? $labels['exif_fstop'].": f".$exifArray['FNumber']."<br>":"";
-		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? $labels['exif_flash'].": ".gv($exifArray['Flash'], 'fl', $lang)."<br>":"";
+		
+		$exifHTML.= (array_key_exists('DateTimeOriginal', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_date'].":</td><td class='tvalue' title='".date(DATE_RFC822, $exifArray['DateTimeOriginal'])."'>".date(DATE_RFC822, $exifArray['DateTimeOriginal'])."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('Model', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_camera'].":</td><td class='tvalue' title='$camera'>$camera</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_lens'].":</td><td class='tvalue' title='".$exifArray['LensID']."'>".$exifArray['LensID']."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_expos'].":</td><td class='tvalue' title='".gv($exifArray['ExposureProgram'], 'ep', $lang)."'>".gv($exifArray['ExposureProgram'], 'ep', $lang)."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_meter'].":</td><td class='tvalue' title='".gv($exifArray['MeteringMode'], 'mm', $lang)."'>".gv($exifArray['MeteringMode'], 'mm', $lang)."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_exptime'].":</td><td class='tvalue' title='".$exifArray['ExposureTime']."s'>".$exifArray['ExposureTime']."s</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_texptime'].":</td><td class='tvalue' title='".$exifArray['TargetExposureTime']."s'>".$exifArray['TargetExposureTime']."s</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_ISO'].":</td><td class='tvalue' title='".$exifArray['ISO']."'>".$exifArray['ISO']."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_focalength'].":</td><td class='tvalue' title='".$exifArray['FocalLength']."mm'>".$exifArray['FocalLength']."mm</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_whiteb'].":</td><td class='tvalue' title='".gv($exifArray['WhiteBalance'], 'wb', $lang)."'>".gv($exifArray['WhiteBalance'], 'wb', $lang)."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_fstop'].":</td><td class='tvalue' title='ƒ / ".$exifArray['FNumber']."'>ƒ / ".$exifArray['FNumber']."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_flash'].":</td><td class='tvalue' title='".gv($exifArray['Flash'], 'fl', $lang)."'>".gv($exifArray['Flash'], 'fl', $lang)."</td>\n\t\t</tr>":"";
 
 		if(isset($exifArray['Subject']) && is_array($exifArray['Subject'])) {
-			$exifHTML.= $labels['exif_keywords'].": ".implode(", ", $exifArray['Subject'])."<br>";
+			$exifHTML.= "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_keywords'].":</td><td class='tvalue' title='".implode(", ", $exifArray['Subject'])."'>".implode(", ", $exifArray['Subject'])."</td>\n\t\t</tr>";
 		} elseif (isset($exifArray['Subject']) && !is_array($exifArray['Subject'])) {
-			$exifHTML.= $labels['exif_keywords'].": ".$exifArray['Subject']."<br>";
+			$exifHTML.= "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_keywords'].":</td><td class='tvalue' title='".$exifArray['Subject']."'>".$exifArray['Subject']."</td>\n\t\t</tr>";
 		}
+		// CaptureDate, Keywords, Location
 		
-		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? $labels['exif_copyright'].": ".str_replace("u00a9","&copy;",$exifArray['Copyright'])."<br>":"";
+		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_copyright'].":</td><td class='tvalue' title='".str_replace("u00a9","&copy;",$exifArray['Copyright'])."'>".str_replace("u00a9","&copy;",$exifArray['Copyright'])."</td>\n\t\t</tr>":"";
+
+		$exifHTML.= "\n\t</tbody>\n\t</table>";
 		
 	}
 	$exifSpan = (strlen($exifHTML > 0)) ? "<span id='exif_$imgid' class='exinfo'>$exifHTML</span>":"";
@@ -447,7 +453,7 @@ function showShare($thumbnails, $share) {
 			<script src='plugins/pictures/js/plyr/plyr.js'></script>
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
-	$page.= "\n\t\t</head>\n\t\t<body class='picbdy'>";
+	$page.= "\n\t\t</head>\n\t\t<body class='picbdy sshare'>";
 	$page.= "\n\t\t\t<div id='header' style='position: fixed; padding-left: 0; width: 100%'><h2 style='align-items: center; display: inline-flex; padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$head</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;

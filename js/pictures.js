@@ -68,6 +68,7 @@ window.onload = function(){
 		});
 	
 		lightbox.on('slide_changed', (data) => {
+			document.querySelector('.gnext').classList.remove('mvbtn');
 			document.querySelectorAll('.exinfo').forEach(element => {
 				element.classList.remove('eshow');
 			});
@@ -88,8 +89,6 @@ window.onload = function(){
 				infobtn.id = 'infbtn';
 				infobtn.dataset.iid = exinfo;
 				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-				infobtn.addEventListener('mouseover', iBoxShow, true);
-				infobtn.addEventListener('mouseout', iBoxShow, true);
 				infobtn.addEventListener('click', iBoxShow, true);
 				closebtn.before(infobtn);
 			}
@@ -268,16 +267,16 @@ function checkUser(value) {
 function iBoxShow(e) {
 	let iid = document.getElementById('infbtn').dataset.iid;
 	let iBox = document.getElementById(iid);
+	let gnext = document.querySelector('.gnext');
 	
 	if(e.type == 'click') {
 		clicks += 1;
 		if(clicks % 2 != 0) {
 			iBox.classList.add('eshow')
-			this.removeEventListener('mouseover', iBoxShow, true);
-			this.removeEventListener('mouseout', iBoxShow, true);
+			gnext.classList.add('mvbtn');
 		} else {
-			this.addEventListener('mouseover', iBoxShow, true);
-			this.addEventListener('mouseout', iBoxShow, true);
+			iBox.classList.remove('eshow');
+			gnext.classList.remove('mvbtn');
 		}
 	} else {
 		iBox.classList.toggle('eshow');
