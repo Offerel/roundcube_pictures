@@ -86,7 +86,7 @@ if(isset($_FILES['galleryfiles'])) {
 					todb("$pictures_path$folder/".$fname, $rcmail->user->ID, $pictures_path, $exif);
 				}
 				
-				$test[] = array('message' => 'Upload successful.', 'type' => 'info');
+				$test[] = array('message' => "$fname uploaded", 'type' => 'info');
 			} else {
 				error_log("Uploaded picture could not moved into target folder");
 				$test[] = array('message' => 'Upload failed. Permission error', 'type' => 'error');
@@ -853,6 +853,7 @@ function showPage($thumbnails, $dir) {
 							progressBar.firstChild.style.width = 0;
 							progressBar.firstChild.style.backgroundColor = '#007bff';
 							location.reload();
+							count_checks();
 						}, 5000);
 					}
 				}

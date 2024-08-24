@@ -484,12 +484,12 @@ function lazyload(slide = false) {
 function uploadpicture() {
 	let ufrm = document.createElement('input');
 	const folder = new URL(document.getElementById("picturescontentframe").contentWindow.location.href).searchParams.get("p");
+	let progressBar = document.getElementById("picturescontentframe").contentWindow.document.getElementById('progress');
 	ufrm.type = 'file';
 	ufrm.multiple = 'multiple';
 	ufrm.accept = 'image/webp, image/jpeg, image/png';
 	ufrm.id = 'ufrm';
 	ufrm.addEventListener('change', function() {
-		document.getElementById("picturescontentframe").contentWindow.document.getElementById('loader').style.visibility = 'visible';
 		xhr = new XMLHttpRequest();
 		let formdata = new FormData();
 		const files = ufrm.files;
@@ -498,11 +498,40 @@ function uploadpicture() {
 			formdata.append('galleryfiles[]', file, file.name);
 		}
 		formdata.append('folder',folder);
+
+		xhr.upload.addEventListener('progress', function(event) {
+			let percentComplete = Math.ceil(event.loaded / event.total * 100);
+			progressBar.style.visibility = 'visible';
+			progressBar.firstChild.innerHTML = percentComplete + '%';
+			progressBar.firstChild.style.width = percentComplete + '%';
+		});
+
 		xhr.onload = function () {
 			if(xhr.status === 200) {
-				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(folder);
+				let data = JSON.parse(xhr.responseText);
+				let bg = '';
+
+				for (var i = 0; i < data.length; i++) {
+					switch(data[i].type) {
+						case 'error': bg = '#dc3545'; break;
+						case 'warning': bg = '#ffc107'; break;
+						default: bg = '#28a745';
+					}
+
+					progressBar.firstChild.style.backgroundColor = bg;
+					console.log(data[i].message);
+				}
+
+				setTimeout(function() {
+					progressBar.style.visibility = 'hidden';
+					progressBar.firstChild.style.width = 0;
+					progressBar.firstChild.style.backgroundColor = '#007bff';
+					document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(folder);
+					count_checks();
+				}, 5000);
 			}
 		}
+
 		xhr.open('POST', './plugins/pictures/photos.php');
 		xhr.send(formdata);
 	})
@@ -559,6 +588,7 @@ function create_album() {
 		success: function(b) {
 			if(b == 1 && (document.getElementById("album_edit").style.display = "none")) {
 				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a);
+				count_checks();
 				getsubs();
 			} else {
 				alert(b);
@@ -690,7 +720,7 @@ function move_album() {
 			src: a
 		},
 		success: function(a) {
-			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(b), getsubs())
+			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(b), getsubs(), count_checks())
 		}
 	})
 }
@@ -709,7 +739,7 @@ function delete_album() {
 			},
 			success: function(a) {
 				dloader('#album_edit', dalb, 'remove');
-				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs())
+				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs(), count_checks())
 			}
 		})
 	}
@@ -747,7 +777,6 @@ function sharepicture() {
 				document.getElementById('expiredate').style.color = 'black';
 				document.getElementById('never').disabled = false;
 				document.getElementById('share_edit').style.display='none';
-				window.parent.document.getElementById('info').style.display = 'none';
 				dloader('#share_edit', sbtn, 'remove');
 				return false;
 			}
@@ -759,13 +788,13 @@ function sharepicture() {
 				e.preventDefault();
 				copyPageUrl(nurl);
 				document.getElementById('share_edit').style.display='none';
-				window.parent.document.getElementById('info').style.display = 'none';
 				return false;
 			});
 			clpbtn.style.visibility = "visible";
 			link.style.visibility = "visible";
 			dloader('#share_edit', sbtn, 'remove');
 			sbtn.style.visibility = "hidden";
+			count_checks();
 		}
 	});
 }
@@ -796,7 +825,6 @@ function copyLink() {
 	let link = document.getElementById('link').innerText;
 	navigator.clipboard.writeText(link);
 	document.getElementById('share_edit').style.display='none';
-	window.parent.document.getElementById('info').style.display = 'none';
 	return false;
 }
 
@@ -822,7 +850,7 @@ function move_picture() {
 			newPath: c
 		},
 		success: function(a) {
-			1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0))
+			1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0), count_checks())
 			dloader('#img_edit', mvp, 'remove');
 		}
 	})
@@ -871,6 +899,7 @@ function mv_img() {
 	if(document.getElementById("target")) document.getElementById("target").selectedIndex = 0;
 	document.getElementById("album_name_img").value = "";
 	document.getElementById("img_edit").style.display = "block";
+	count_checks();
 }
 
 function delete_picture() {
@@ -903,10 +932,13 @@ function delete_picture() {
 				orgPath: c
 			},
 			success: function(a) {
-				1 == a && document.getElementById("picturescontentframe").contentWindow.location.reload(!0)
+				1 == a && document.getElementById("picturescontentframe").contentWindow.location.reload(!0), count_checks();
+
 			}
 		})
 	} else {
 		return false;
 	}
+
+	count_checks();
 };

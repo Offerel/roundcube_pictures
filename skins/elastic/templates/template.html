@@ -5,7 +5,6 @@
 	<div id="messagelist-header" class="header">
 		<a class="button icon task-menu-button" href="#menu" style="z-index: 1; left: 0; position: absolute;"><span class="inner"><roundcube:label name="menu" /></span></a>
 		<div id="picturestoolbar" class="toolbar" role="toolbar" aria-labelledby="aria-label-toolbar">
-			<div id="info" onClick="document.getElementById('album_edit').style.display = 'block';"></div>
 			<roundcube:button command="addalbum" type="link" class="button create" label="pictures.new_album" title="pictures.new_album" innerclass="inner" id="addalbum" />
 			<roundcube:button command="movepicture" type="link" class="button move disabled" label="pictures.move" title="pictures.move" innerclass="inner" id="movepicture" />
 			<roundcube:button command="edit_meta" type="link" class="button edit disabled" label="edit" title="edit" innerclass="inner" id="editmeta" />
@@ -24,7 +23,7 @@
 		<div id="album_edit" class="modal">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" onClick="document.getElementById('album_edit').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<span class="close" onClick="document.getElementById('album_edit').style.display='none'; return false;">&times;</span>
 					<h2 id="mheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body">
@@ -65,7 +64,7 @@
 		<div id="share_edit" class="modal">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" onClick="document.getElementById('share_edit').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<span class="close" onClick="document.getElementById('share_edit').style.display='none'; return false;">&times;</span>
 					<h2 id="sheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body sebody">
@@ -89,7 +88,7 @@
 		<div id="searchphotof" class="modal">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" onClick="document.getElementById('searchphotof').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<span class="close" onClick="document.getElementById('searchphotof').style.display='none'; return false;">&times;</span>
 					<h2 id="mheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body">
@@ -107,7 +106,7 @@
 		<div id="metadata" class="modal">
 			<div class="modal-content">
 				<div class="modal-header">
-					<span class="close" onClick="document.getElementById('metadata').style.display='none'; window.parent.document.getElementById('info').style.display = 'none'; return false;">&times;</span>
+					<span class="close" onClick="document.getElementById('metadata').style.display='none'; return false;">&times;</span>
 					<h2 id="mheader"></h2>
 				</div>
 				<div id="modal-body" class="modal-body">
