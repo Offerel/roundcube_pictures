@@ -305,10 +305,10 @@ function getEXIFSpan($json, $imgid, $lang) {
 		$exifHTML.= (array_key_exists('DateTimeOriginal', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_date'].":</td><td class='tvalue' title='".date(DATE_RFC822, $exifArray['DateTimeOriginal'])."'>".date(DATE_RFC822, $exifArray['DateTimeOriginal'])."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('Model', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_camera'].":</td><td class='tvalue' title='$camera'>$camera</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('LensID', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_lens'].":</td><td class='tvalue' title='".$exifArray['LensID']."'>".$exifArray['LensID']."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('Software', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_sw'].":</td><td class='tvalue' title='".$exifArray['Software']."'>".$exifArray['Software']."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('ExposureProgram', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_expos'].":</td><td class='tvalue' title='".gv($exifArray['ExposureProgram'], 'ep', $lang)."'>".gv($exifArray['ExposureProgram'], 'ep', $lang)."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('MeteringMode', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_meter'].":</td><td class='tvalue' title='".gv($exifArray['MeteringMode'], 'mm', $lang)."'>".gv($exifArray['MeteringMode'], 'mm', $lang)."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('ExposureTime', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_exptime'].":</td><td class='tvalue' title='".$exifArray['ExposureTime']."s'>".$exifArray['ExposureTime']."s</td>\n\t\t</tr>":"";
-		$exifHTML.= (array_key_exists('TargetExposureTime', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_texptime'].":</td><td class='tvalue' title='".$exifArray['TargetExposureTime']."s'>".$exifArray['TargetExposureTime']."s</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_ISO'].":</td><td class='tvalue' title='".$exifArray['ISO']."'>".$exifArray['ISO']."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_focalength'].":</td><td class='tvalue' title='".$exifArray['FocalLength']."mm'>".$exifArray['FocalLength']."mm</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_whiteb'].":</td><td class='tvalue' title='".gv($exifArray['WhiteBalance'], 'wb', $lang)."'>".gv($exifArray['WhiteBalance'], 'wb', $lang)."</td>\n\t\t</tr>":"";
@@ -320,7 +320,19 @@ function getEXIFSpan($json, $imgid, $lang) {
 		} elseif (isset($exifArray['Subject']) && !is_array($exifArray['Subject'])) {
 			$exifHTML.= "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_keywords'].":</td><td class='tvalue' title='".$exifArray['Subject']."'>".$exifArray['Subject']."</td>\n\t\t</tr>";
 		}
-		// CaptureDate, Keywords, Location
+
+		if(isset($exifArray['Keywords']) && is_array($exifArray['Keywords'])) {
+			$keywords = implode(", ", $exifArray['Keywords']);
+			$keywords = str_replace('u00','\u00',$keywords);
+			$keywords = json_decode('"' . $keywords . '"');
+		} elseif (isset($exifArray['Keywords']) && !is_array($exifArray['Keywords'])) {
+			$keywords = $exifArray['Keywords'];
+			$keywords = str_replace('u00','\u00',$keywords);
+			$keywords = json_decode('"' . $keywords . '"');
+		}
+		$exifHTML.= "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_keywords'].":</td><td class='tvalue' title='$keywords'>$keywords</td>\n\t\t</tr>";
+
+		// , , Location
 		
 		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_copyright'].":</td><td class='tvalue' title='".str_replace("u00a9","&copy;",$exifArray['Copyright'])."'>".str_replace("u00a9","&copy;",$exifArray['Copyright'])."</td>\n\t\t</tr>":"";
 

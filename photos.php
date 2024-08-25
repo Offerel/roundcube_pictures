@@ -591,6 +591,7 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('slide_changed', (data) => {
+			document.querySelector('.gnext').classList.remove('mvbtn');
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
 			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
@@ -628,8 +629,6 @@ function showPage($thumbnails, $dir) {
 
 			if(document.getElementById(file)) {
 				infobtn.dataset.iid = file;
-				infobtn.addEventListener('mouseover', iBoxShow, true);
-				infobtn.addEventListener('mouseout', iBoxShow, true);
 				infobtn.addEventListener('click', iBoxShow, true);
 			} else {
 				infobtn.disabled = true;
@@ -682,16 +681,16 @@ function showPage($thumbnails, $dir) {
 		function iBoxShow(e) {
 			let iid = document.getElementById('infbtn').dataset.iid;
 			let iBox = document.getElementById(iid);
+			let gnext = document.querySelector('.gnext');
 			
 			if(e.type == 'click') {
 				clicks += 1;
 				if(clicks % 2 != 0) {
-					iBox.classList.add('eshow')
-					this.removeEventListener('mouseover', iBoxShow, true);
-					this.removeEventListener('mouseout', iBoxShow, true);
+					iBox.classList.add('eshow');
+					gnext.classList.add('mvbtn');
 				} else {
-					this.addEventListener('mouseover', iBoxShow, true);
-					this.addEventListener('mouseout', iBoxShow, true);
+				 	iBox.classList.remove('eshow');
+				 	gnext.classList.remove('mvbtn');
 				}
 			} else {
 				iBox.classList.toggle('eshow');
@@ -929,20 +928,23 @@ function parseEXIF($jarr) {
 		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
 		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
 		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
-		$exifInfo.= (array_key_exists('TargetExposureTime', $jarr)) ? $rcmail->gettext('exif_texptime','pictures').": ".$jarr['TargetExposureTime']."s<br>":"";
 		$exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
 		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
 		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
-		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": f".$jarr['FNumber']."<br>":"";
+		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ƒ / ".$jarr['FNumber']."<br>":"";
 		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (array_key_exists('Title', $jarr)) ? $rcmail->gettext('exif_title','pictures').": ".$jarr['Title']."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
 		
 		if(isset($jarr['Keywords']) && is_array($jarr['Keywords'])) {
-			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".implode(", ", $jarr['Keywords'])."<br>";
+			$keywords = str_replace('u00','\u00', implode(", ", $jarr['Keywords']));
+			$keywords = json_decode('"' . $keywords . '"');
 		} elseif (isset($jarr['Keywords']) && !is_array($jarr['Keywords'])) {
-			$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": ".$jarr['Keywords']."<br>";
+			$keywords = str_replace('u00','\u00',$jarr['Keywords']);
+			$keywords = json_decode('"' . $keywords . '"');
 		}
+
+		$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": $keywords<br>";
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
 		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
