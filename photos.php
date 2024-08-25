@@ -265,6 +265,44 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 	$line = $dtime." SharedPictures Pictures SyncOK\n";
 	file_put_contents($logfile, $line, FILE_APPEND);
 
+	$SENDMAIL = new rcmail_sendmail(
+		[],
+		[
+			'sendmail' => true,
+			'error_handler' => function (...$args) use ($rcmail) {
+				call_user_func_array(
+					[$rcmail->output, 'show_message'],
+					$args
+				);
+				$rcmail->output->send('iframe');
+			},
+			'charset' => 'UTF-8',
+			'keepformatting' => false,
+			'from' => 'sebastian@pfohlnet.de',
+			'mailto' => 'sebastian@pfohlnet.de'
+		]
+	);
+
+	$headers = [
+		'Subject' => 'Test programmatic email send 3',
+		'Message-ID' => $rcmail->gen_message_id('sebastian@pfohlnet.de'),
+	];
+
+	$body = "
+            <html>
+                <head>
+                    <title>A test HTML title</title>
+                </head>
+                <body>
+                    <p>A test programmatic send</p>
+                </body>
+                </html>
+        ";
+
+		$MAIL_MIME = $SENDMAIL->create_message($headers, $body, false, []);
+		$sendStatus = $SENDMAIL->deliver_message($MAIL_MIME);
+		error_log($sendStatus);
+
 	die('intern');
 }
 
