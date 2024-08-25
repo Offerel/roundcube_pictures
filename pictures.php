@@ -111,9 +111,7 @@ class pictures extends rcube_plugin {
 
 		if ($rcmail->task == 'pictures') {
 			$this->register_action('index', array($this, 'action'));
-			$this->register_action('gallery', array($this, 'change_requestdir'));
 			$rcmail->output->set_env('refresh_interval', 0);
-			
 			$rcmail->output->set_env('sdays', $rcmail->config->get('sharedays', 60));
 			$this->include_script('js/glightbox/glightbox.min.js');
 			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
@@ -187,25 +185,18 @@ class pictures extends rcube_plugin {
         return $p;
 	}
 	
-	function change_requestdir() {
-		$rcmail = rcmail::get_instance();
-		if(isset($_GET['dir'])) {
-			$dir = $_GET['dir'];
-		}
-		$rcmail->output->send('pictures.template');
-	}
-	
 	function action() {
 		$rcmail = rcmail::get_instance();	
-		$rcmail->output->add_handlers(array('picturescontent' => array($this, 'content'),));
+		$rcmail->output->add_handlers(array('picturescontent' => array($this, 'content')));
 		$rcmail->output->set_pagetitle($this->gettext('pictures'));
 		$rcmail->output->send('pictures.template');
 	}
 	
 	function content($attrib) {
 		$rcmail = rcmail::get_instance();
+		$gallery = trim(rcube_utils::get_input_string('_gallery', rcube_utils::INPUT_GPC));
+		$attrib['src'] = (strlen($gallery > 0)) ? 'plugins/pictures/photos.php?p='.$gallery:'plugins/pictures/photos.php';
 		$this->include_script('js/pictures.js');
-		$attrib['src'] = 'plugins/pictures/photos.php';
 		if (empty($attrib['id']))
 			$attrib['id'] = 'rcmailpicturescontent';
 		$attrib['name'] = $attrib['id'];

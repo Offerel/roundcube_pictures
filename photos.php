@@ -942,6 +942,8 @@ function parseEXIF($jarr) {
 		} elseif (isset($jarr['Keywords']) && !is_array($jarr['Keywords'])) {
 			$keywords = str_replace('u00','\u00',$jarr['Keywords']);
 			$keywords = json_decode('"' . $keywords . '"');
+		} else {
+			$keywords = '';
 		}
 
 		$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": $keywords<br>";
