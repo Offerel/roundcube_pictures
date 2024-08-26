@@ -220,8 +220,12 @@ window.onload = function(){
 		});
 	}
 
-	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('blur', function(e) {
-		checkUser(this.value);
+	let checkUserTimer;
+	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('input', function(e) {
+		clearTimeout(checkUserTimer);
+		checkUserTimer = setTimeout(() => {
+			checkUser(document.getElementById('suser').value);
+		}, 400);
 	});
 };
 

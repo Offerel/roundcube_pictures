@@ -323,10 +323,24 @@ function getEXIFSpan($json, $imgid, $lang) {
 		}
 		$exifHTML.= "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_keywords'].":</td><td class='tvalue' title='$keywords'>$keywords</td>\n\t\t</tr>";
 
-		// , , Location
+		if(array_key_exists('GPSLatitude', $exifArray) && array_key_exists('GPSLongitude', $exifArray)) {
+			$osm_params = http_build_query(array(
+				'mlat' => str_replace(',','.',$exifArray['GPSLatitude']),
+				'mlon' => str_replace(',','.',$exifArray['GPSLongitude'])
+			),'','&amp;');
+			$gm_params = http_build_query(array(
+				'api' => 1,
+				'query' => str_replace(',','.',$exifArray['GPSLatitude']) . ',' . str_replace(',','.',$exifArray['GPSLongitude']),
+				'z' => 13
+			),'','&amp;');
+			$gpslink ="<img src='plugins/pictures/images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$exifArray['GPSLatitude']."/".$exifArray['GPSLongitude']."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
+		} else {
+			$osm_params = "";
+			$gm_params = "";
+		}
 		
 		$exifHTML.= (array_key_exists('Copyright', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_copyright'].":</td><td class='tvalue' title='".str_replace("u00a9","&copy;",$exifArray['Copyright'])."'>".str_replace("u00a9","&copy;",$exifArray['Copyright'])."</td>\n\t\t</tr>":"";
-
+		$exifHTML.= (strlen($osm_params) > 20) ? "<tr>\n\t\t\t<td colspan=2 style='text-align: center'>$gpslink</td>\n\t\t</tr>":"";
 		$exifHTML.= "\n\t</tbody>\n\t</table>";
 		
 	}

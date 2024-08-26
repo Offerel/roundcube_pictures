@@ -256,7 +256,7 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 		@symlink($org_path, $sym_path);
 		$otime = filemtime($org_path);
 		touch($sym_path, $otime);
-		$query = "INSERT INTO `pic_symlink_map` (`user_id`,`symlink`,`target`) VALUES ($uid, '$sym_path', '$org_path')";
+		$query = "INSERT IGNORE INTO `pic_symlink_map` (`user_id`,`symlink`,`target`) VALUES ($uid, '$sym_path', '$org_path')";
 		$dbh->query($query);
 	}
 
@@ -265,10 +265,17 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 	$line = $dtime." SharedPictures Pictures SyncOK\n";
 	file_put_contents($logfile, $line, FILE_APPEND);
 
+	$identity = $rcmail->user->get_identity();
+	$to = $sUser;
+	$from = $identity['name']."<$username>";
+
 	$SENDMAIL = new rcmail_sendmail(
 		[],
 		[
 			'sendmail' => true,
+			'savedraft' => false,
+			'saveonly' => false,
+			'dsn_enabled' => $rcmail->config->get('dsn_default'),
 			'error_handler' => function (...$args) use ($rcmail) {
 				call_user_func_array(
 					[$rcmail->output, 'show_message'],
@@ -278,31 +285,57 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 			},
 			'charset' => 'UTF-8',
 			'keepformatting' => false,
-			'from' => 'sebastian@pfohlnet.de',
-			'mailto' => 'sebastian@pfohlnet.de'
+			'from' => $username,
+			'mailto' => $to
 		]
 	);
 
 	$headers = [
-		'Subject' => 'Test programmatic email send 3',
-		'Message-ID' => $rcmail->gen_message_id('sebastian@pfohlnet.de'),
+		'Date' => $rcmail->user_date(),
+		'From' => $SENDMAIL->email_input_format($from, true),
+		'To' => $SENDMAIL->email_input_format($to, true),
+		'Subject' => $rcmail->gettext('ShareSubject','pictures'),
+		'Message-ID' => $rcmail->gen_message_id($username),
+		'X-Sender' => $SENDMAIL->email_input_format($username, true)
 	];
 
-	$body = "
-            <html>
-                <head>
-                    <title>A test HTML title</title>
-                </head>
-                <body>
-                    <p>A test programmatic send</p>
-                </body>
-                </html>
-        ";
+	$ShareText = str_replace('%s', $sharename, str_replace('%u', $identity['name'], $rcmail->gettext('ShareText','pictures')));
 
-		$MAIL_MIME = $SENDMAIL->create_message($headers, $body, false, []);
+	$data = array(
+		'_task' => 'pictures',
+		'_gallery' => 'Incoming/'.$sharename
+	);
+
+	$actual_link = str_replace('plugins/pictures/photos.php', '', "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]").'?'.http_build_query($data);
+	$ShareOpen = "<a class='ogal' href='$actual_link' target='_top'>".$rcmail->gettext('ShareOpen','pictures')."</a>";
+	$ShareText = str_replace('%o', $ShareOpen, $ShareText);
+
+	$body = "<html>
+				<head>
+					<style>
+						a.v1ogal {
+							display: block;
+							margin: 1em auto;
+							position: relative;
+							width: fit-content;
+							padding: 10px;
+							border-radius: 7px;
+							background-color: #00acff;
+							color: white;
+							font-weight: 600;
+							text-decoration: none;
+						}
+					</style>
+					<title>Shared Gallery</title>
+				</head>
+				<body>
+					<p>$ShareText</p>
+				</body>
+			</html>";
+		$isHtml = true;
+
+		$MAIL_MIME = $SENDMAIL->create_message($headers, $body, $isHtml, []);
 		$sendStatus = $SENDMAIL->deliver_message($MAIL_MIME);
-		error_log($sendStatus);
-
 	die('intern');
 }
 

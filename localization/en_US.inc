@@ -34,6 +34,9 @@ $labels['DelAlbum'] = "Delete Album";
 $labels['MovAlbum'] = "Move";
 $labels['RenAlbum'] = "Rename";
 $labels['to'] = "to";
+$labels['ShareSubject'] = "A image gallery was shared to you";
+$labels['ShareText'] = "%u has shared the album <strong>'%s'</strong> with you. %o You can now sort, edit, share the album at any time and treat it as if it were your own album. If the original album is deleted, you will no longer be able to access it.";
+$labels['ShareOpen'] = "Open Gallery";
 
 $labels['em_undefined'] = "Undefined";
 $labels['em_manual'] = "Manual";
