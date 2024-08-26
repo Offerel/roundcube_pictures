@@ -1002,7 +1002,7 @@ function parseEXIF($jarr) {
 		$exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
 		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
 		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
-		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ƒ / ".$jarr['FNumber']."<br>":"";
+		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ƒ/".$jarr['FNumber']."<br>":"";
 		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		$exifInfo.= (array_key_exists('Title', $jarr)) ? $rcmail->gettext('exif_title','pictures').": ".$jarr['Title']."<br>":"";
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
@@ -1167,7 +1167,7 @@ function showGallery($requestedDir, $offset = 0) {
 			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$filename_caption = "";
 				$requestedDir = trim($requestedDir,'/').'/';
-				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir/$file");
+				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir$file").'&w=5&t=0';
 				$dbpath = str_replace($pictures_path, '', $fullpath);
 				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
 				$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):'';

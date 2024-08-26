@@ -97,7 +97,9 @@ if(file_exists($file)) {
 
 	if($m == "Thumbnail") $type = 1;
 
-	$webpfile = str_replace(str_replace('%u', $username, $pictures_path), "$workpath/$username/webp/", $file).".webp";
+	$webpfile = str_replace(str_replace('%u', $username, $pictures_path), "$workpath/$username/webp/", $file);
+	$webp_parts = pathinfo($webpfile);
+	$webpfile = $webp_parts['dirname'].'/'.$webp_parts['filename'].'.webp';
 	
 	if((!$type && file_exists($webpfile)) || $type == 5) {
 		$type = 5;

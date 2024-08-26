@@ -877,6 +877,8 @@ function mv_img() {
 	$("#album_name_img").attr("placeholder", rcmail.gettext("new_album", "pictures"));
 	let mvp = document.getElementById('mvp');
 
+	mvp.classList.remove('disabled');
+
 	document.getElementById('album_name_img').addEventListener('input', function() {
 		let nfolder = document.getElementById('album_name_img').value;
 		nfolder = (nfolder.length > 0) ? nfolder + '/':nfolder;

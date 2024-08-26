@@ -303,7 +303,7 @@ function getEXIFSpan($json, $imgid, $lang) {
 		$exifHTML.= (array_key_exists('ISO', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_ISO'].":</td><td class='tvalue' title='".$exifArray['ISO']."'>".$exifArray['ISO']."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('FocalLength', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_focalength'].":</td><td class='tvalue' title='".$exifArray['FocalLength']."mm'>".$exifArray['FocalLength']."mm</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('WhiteBalance', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_whiteb'].":</td><td class='tvalue' title='".gv($exifArray['WhiteBalance'], 'wb', $lang)."'>".gv($exifArray['WhiteBalance'], 'wb', $lang)."</td>\n\t\t</tr>":"";
-		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_fstop'].":</td><td class='tvalue' title='ƒ / ".$exifArray['FNumber']."'>ƒ / ".$exifArray['FNumber']."</td>\n\t\t</tr>":"";
+		$exifHTML.= (array_key_exists('FNumber', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_fstop'].":</td><td class='tvalue' title='ƒ / ".$exifArray['FNumber']."'>ƒ/".$exifArray['FNumber']."</td>\n\t\t</tr>":"";
 		$exifHTML.= (array_key_exists('Flash', $exifArray)) ? "<tr>\n\t\t\t<td class='tvar'>".$labels['exif_flash'].":</td><td class='tvalue' title='".gv($exifArray['Flash'], 'fl', $lang)."'>".gv($exifArray['Flash'], 'fl', $lang)."</td>\n\t\t</tr>":"";
 
 		if(isset($exifArray['Subject']) && is_array($exifArray['Subject'])) {
