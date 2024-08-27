@@ -269,21 +269,19 @@ function checkUser(value) {
 }
 
 function iBoxShow(e) {
-	let iid = document.getElementById('infbtn').dataset.iid;
-	let iBox = document.getElementById(iid);
 	let gnext = document.querySelector('.gnext');
+	let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
+	let infobox = info.cloneNode(true);
+	if(document.getElementById('infobox')) document.getElementById('infobox').remove();
+	infobox.id = 'infobox';
 	
-	if(e.type == 'click') {
-		clicks += 1;
-		if(clicks % 2 != 0) {
-			iBox.classList.add('eshow')
-			gnext.classList.add('mvbtn');
-		} else {
-			iBox.classList.remove('eshow');
-			gnext.classList.remove('mvbtn');
-		}
+	clicks += 1;
+	if(clicks % 2 != 0) {
+		infobox.classList.add('eshow')
+		document.querySelector('.gcontainer').append(infobox);
+		gnext.classList.add('mvbtn');
 	} else {
-		iBox.classList.toggle('eshow');
+		gnext.classList.remove('mvbtn');
 	}
 }
 

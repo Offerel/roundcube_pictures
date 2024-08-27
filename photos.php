@@ -507,7 +507,7 @@ function search_photos($kwstr) {
 		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
 		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true)):NULL;
 		$caption = (strlen($exifInfo) > 10) ? "<div id='".$path_parts['basename']."' class='exinfo'>$exifInfo</div>":"";
-		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>$caption";
 	}
 	return $html;
 }
@@ -750,21 +750,19 @@ function showPage($thumbnails, $dir) {
 		checkboxes();
 
 		function iBoxShow(e) {
-			let iid = document.getElementById('infbtn').dataset.iid;
-			let iBox = document.getElementById(iid);
 			let gnext = document.querySelector('.gnext');
+			let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
+			let infobox = info.cloneNode(true);
+			if(document.getElementById('infobox')) document.getElementById('infobox').remove();
+			infobox.id = 'infobox';
 			
-			if(e.type == 'click') {
-				clicks += 1;
-				if(clicks % 2 != 0) {
-					iBox.classList.add('eshow');
-					gnext.classList.add('mvbtn');
-				} else {
-				 	iBox.classList.remove('eshow');
-				 	gnext.classList.remove('mvbtn');
-				}
+			clicks += 1;
+			if(clicks % 2 != 0) {
+				infobox.classList.add('eshow')
+				document.querySelector('.gcontainer').append(infobox);
+				gnext.classList.add('mvbtn');
 			} else {
-				iBox.classList.toggle('eshow');
+				gnext.classList.remove('mvbtn');
 			}
 		}
 		

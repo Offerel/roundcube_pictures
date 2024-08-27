@@ -68,18 +68,14 @@ html {
     overflow: hidden;
     right: 0;
     background: #0000008a;
-    padding: 10px;
-    z-index: 0;
-    top: 70px;
+    padding: 55px 10px 0;
+    top: 0;
     color: #fff;
-    visibility: hidden;
-    bottom: 0;
     width: 270px;
     text-overflow: ellipsis;
-    line-height: 20px;
-    bottom: 70px;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
+    bottom: 0;
+    font-size: .95em;
+    visibility: hidden;
 }
 .infotable {
     border-collapse: collapse;
@@ -112,7 +108,7 @@ td.tvalue {
     margin-right: 260px;
 }
 .eshow {
-	z-index: 1000000;
+	/* z-index: 1000000; */
 	visibility: visible;
 }
 .exname {
@@ -551,6 +547,7 @@ footer a {
 	border-radius: 4px;
 	cursor: pointer;
 	border: none;
+	z-index: 10000;
 }
 #infbtn:disabled {
     cursor: default;
