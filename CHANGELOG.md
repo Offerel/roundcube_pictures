@@ -5,10 +5,15 @@
 - Fix Upload
 - Fix path gerneration
 - Fix moving images between album
+- Fix CheckCounts
+- Fix upload issue
+- Fix webp path issue
 - Add pin Infobox
 - Add faster Sharing
 - Add OpenGraph Support
 - Add share with internal users
+- Add option for default share expire
+- Add directlink to gallery
 
 ### v1.5.0
 - Add webp thumbnails
