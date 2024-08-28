@@ -19,8 +19,11 @@ class pictures extends rcube_plugin {
 			if(isset($fsdata['syncStatus'])) {
 				$line = $dtime." FolderSync ".$fsdata['folderPairName']." ".$fsdata['syncStatus']."\n";
 				file_put_contents($logfile, $line, FILE_APPEND);
+				$code = ($fsdata['syncStatus'] == 'SyncOK') ? 202:500;
+			} else {
+				die();
 			}
-			$code = 202;
+
 			$array = array(
 				'code' => $code,
 				'logfile' => $logfile
