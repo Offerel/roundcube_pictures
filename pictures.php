@@ -12,26 +12,27 @@ class pictures extends rcube_plugin {
 	public function onload() {
 		$rcmail = rcmail::get_instance();
 
-		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['fsync'])) {
-			$dtime = date("d.m.Y H:i:s");
-			$fsdata = json_decode(file_get_contents('php://input'), true);
-			$logfile = $rcmail->config->get('log_dir', false)."/fssync.log";
-			if(isset($fsdata['syncStatus'])) {
-				$line = $dtime." FolderSync ".$fsdata['folderPairName']." ".$fsdata['syncStatus']."\n";
-				file_put_contents($logfile, $line, FILE_APPEND);
-				$code = ($fsdata['syncStatus'] == 'SyncOK') ? 202:500;
-			} else {
-				die();
-			}
+		if (isset($_GET['_task']) && $_GET['_task'] == 'pictures') {
+			$json = json_decode(file_get_contents('php://input'), true);
 
-			$array = array(
-				'code' => $code,
-				'logfile' => $logfile
-			);
-			http_response_code($code);
-			header('Content-Type: application/json');
-			echo json_encode($array);
-			die();
+			if(json_last_error() == JSON_ERROR_NONE) {
+				$logfile = $rcmail->config->get('log_dir', false)."/fssync.log";
+
+				if(isset($json['syncStatus'])) {
+					$line = date("d.m.Y H:i:s")." FolderSync ".$json['folderPairName']." ".$json['syncStatus']."\n";
+					file_put_contents($logfile, $line, FILE_APPEND);
+					$code = ($json['syncStatus'] == 'SyncOK') ? 202:500;
+
+					$response = [
+						'code' => $code,
+						'logfile' => $logfile
+					];
+
+					http_response_code($code);
+					header('Content-Type: application/json');
+					die(json_encode($response));
+				}
+			}
 		}
 
 		if (count($_GET) == 2 && isset($_GET['_task']) && $_GET['_task'] == 'pictures' && isset($_GET['slink'])) {
