@@ -1161,9 +1161,9 @@ function showGallery($requestedDir, $offset = 0) {
 			$path_parts = pathinfo($tpath);
 			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
 			$gis = (is_file($tpath)) ? getimagesize($tpath)[3]:"";
+			$shared = (is_link("$current_dir/$file")) ? " is_shared":"";
 
-			if ($file != "." && $file != ".." && $file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
-				$filename_caption = "";
+			if ($file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
 				$requestedDir = trim($requestedDir,'/').'/';
 				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir$file").'&w=5&t=0';
 				$dbpath = str_replace($pictures_path, '', $fullpath);
@@ -1178,12 +1178,12 @@ function showGallery($requestedDir, $offset = 0) {
 				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
-					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox$shared\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
 					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
-					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				$files[] = array(

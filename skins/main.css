@@ -48,8 +48,18 @@ html {
 .icheckbox:checked {
 	visibility: visible;
 }
+.is_shared:after {
+    content: " ";
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    background: #00b3ff;
+    border-radius: 50%;
+}
 .video {
-	background: url(../images/video-play.png) no-repeat center center;
+	background: url("../images/video-play.png") no-repeat center center;
 	position: absolute;
 	height: 100%;
 	width: 100%;
