@@ -356,7 +356,6 @@ body {
 	margin: 7px;
 	overflow-y: scroll;
 	height: calc(100% - 64px);
-	background-color: white;
 }
 a {
 	color: #333333;
