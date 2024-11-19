@@ -56,6 +56,7 @@ foreach($users as $user) {
 	$thumb_basepath = $basepath."/".$username."/photos";
 	$webp_basepath =  $basepath."/".$username."/webp";
 	$broken = array();
+	$media = array();
 	logm("Search media for $username");
 	scanGallery($pictures_basepath, $pictures_basepath, $thumb_basepath, $webp_basepath, $uid);
 	$bcount = count($broken);
@@ -82,6 +83,7 @@ foreach($users as $user) {
 }
 
 $message = "Maintenance finished in ".etime($starttime);
+$message.= "\nNew files: ".count($media);
 $message.= "\nSource: ".$logpieces[2]." (".$logpieces[3].")";
 $message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
@@ -90,7 +92,7 @@ if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy
 
 
 function scanGallery($dir, $base, $thumb, $webp, $user) {
-	global $supported, $svideos, $etags, $eoptions, $exif_mode, $basepath, $mtime;
+	global $supported, $media, $svideos, $etags, $eoptions, $exif_mode, $basepath, $mtime;
 	$images = array();
 	foreach (new DirectoryIterator($dir) as $fileInfo) {
 		if (!$fileInfo->isDot()) {
@@ -145,6 +147,8 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 				continue;
 			}
 		}
+		
+		$media = array_merge($media,  $images);
 
 		$chunks = array_chunk($images, 1000, true);
 		if(count($chunks) > 0) {
@@ -614,8 +618,11 @@ function logm($message, $mmode = 3) {
 }
 
 function pntfy($user, $password, $purl, $message) {
+	global $media;
 	$authHeader = base64_encode("$user:$password");
 	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
+	$imgc = count($media);
+	$priority = ($imgc < 1) ? 1:3;
 	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 		'http' => [
 			'method' => 'POST',
@@ -623,7 +630,7 @@ function pntfy($user, $password, $purl, $message) {
 				"Content-Type: text/plain\r\n".
 				$authHeader.
 				"Title: Roundcube Pictures\r\n".
-				"Priority: 3\r\n".
+				"Priority: $priority\r\n".
 				"Tags: Roundcube,Pictures",
 			'content' => $message."\r\n\r\nFor details please check maintenance.log"
 		]
