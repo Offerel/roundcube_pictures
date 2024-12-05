@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `pic_shares` (
 	`share_link`	TEXT NOT NULL,
 	`expire_date`	INTEGER,
 	`user_id`	INTEGER NOT NULL,
+	`share_down` tinyint(1) DEFAULT NULL,
 	PRIMARY KEY(`share_id` AUTOINCREMENT),
 	FOREIGN KEY(`user_id`) REFERENCES `users`(`user_id`) ON UPDATE CASCADE ON DELETE CASCADE
 );

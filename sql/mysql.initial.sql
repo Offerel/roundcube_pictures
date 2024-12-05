@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `pic_shares` (
   `share_link` text NOT NULL,
   `expire_date` int(11) DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL,
+  `share_down` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`share_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `pic_shares_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE

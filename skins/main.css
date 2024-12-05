@@ -533,6 +533,9 @@ footer a {
 	border: none;
 	height: 35px;
 }
+#dlbtn.ex {
+    right: 100px;
+}
 #fbtn {
 	position: absolute;
 	top: 15px;

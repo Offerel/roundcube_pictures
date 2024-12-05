@@ -23,6 +23,7 @@ $rcmail = rcmail::get_instance();
 if($rcmail->config->get('debug', false)) error_log(print_r($_GET, true));
 
 $picture = isset($_GET['p']) ? filter_var($_GET['p'], FILTER_SANITIZE_NUMBER_INT):NULL;
+$spicture = isset($_GET['i']) ? filter_var($_GET['i'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $mode = isset($_GET['t']) ? filter_var($_GET['t'], FILTER_SANITIZE_NUMBER_INT):NULL;
 $file = isset($_GET['file']) ? filter_var($_GET['file'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):NULL;
 $type = isset($_GET['w']) ? filter_var($_GET['w'], FILTER_SANITIZE_NUMBER_INT):0;
@@ -32,6 +33,16 @@ $workpath = $config['work_path'];
 $pictures_path = $config['pictures_path'];
 
 $m = ($mode == 1) ? "Thumbnail":"Picture";
+
+if(isset($spicture) && !empty($spicture)) {
+	$dbh = $rcmail->get_dbh();
+	$res = $dbh->query("SELECT b.`pic_path`, c.`username` FROM `pic_shared_pictures` a INNER JOIN `pic_pictures` b ON a.`pic_id` = b.`pic_id` INNER JOIN `users` c on a.`user_id` = c.`user_id` WHERE a.`shared_pic_id` = $spicture;");
+	$data = $dbh->fetch_assoc($res);
+	$username = $data['username'];
+	$image_basepath = rtrim(str_replace("%u", $username, $config['pictures_path']), '/');
+	$imagepath = $image_basepath."/".$data['pic_path'];
+	$file = $imagepath;
+}
 
 if(isset($file) && !empty($file)) {
 	if (!empty($rcmail->user->ID)) {
@@ -47,6 +58,8 @@ if(isset($file) && !empty($file)) {
 				$file = $pictures_basepath.$file;
 				break;
 		}
+	} elseif(isset($spicture)) {
+		//
 	} else {
 		error_log('Login failed. User is not logged in.');
 		die();
@@ -117,7 +130,7 @@ if(file_exists($file)) {
 		case 4:
 			$source = @imagecreatefromjpeg($file);
 			sendHeaders($file, 'application/octet-stream', $pathparts['filename'].'.jpg', 'attachment');
-			imagejpeg($source, null, 95);
+			imagejpeg($source, null, 87);
 			imagedestroy($source);
 			break;
 		case 5:

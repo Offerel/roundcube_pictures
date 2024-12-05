@@ -40,13 +40,14 @@ class pictures extends rcube_plugin {
 			include_once('config.inc.php');
 			$link = filter_var($_GET['slink'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 			$dbh = $rcmail->get_dbh();
-			$query = "SELECT a.`share_id`, a.`share_name`, a.`expire_date`, b.`username` FROM `pic_shares` a INNER JOIN `users` b ON a.`user_id` = b.`user_id` WHERE a.`share_link` = '$link'";
+			$query = "SELECT a.`share_id`, a.`share_name`, a.`expire_date`, a.`share_down`, b.`username` FROM `pic_shares` a INNER JOIN `users` b ON a.`user_id` = b.`user_id` WHERE a.`share_link` = '$link'";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
 			$shares = $dbh->fetch_assoc($res);
 			$basepath = rtrim(str_replace("%u", $shares['username'], $config['pictures_path']), '/');
 			$thumbbase = $config['work_path'].'/'.$shares['username'].'/photos';
 			$shareID = $shares['share_id'];
+			$dlpic= ($shares['share_down'] == 1) ? 'dl':'';
 			$query = "SELECT b.`pic_path`, b.`pic_EXIF`, a.`shared_pic_id` FROM `pic_shared_pictures` a INNER JOIN `pic_pictures` b ON a.`pic_id`= b.`pic_id` WHERE a.`share_id` = $shareID ORDER BY b.`pic_taken` ASC";
 			$res = $dbh->query($query);
 			$rc = $dbh->num_rows($res);
@@ -55,7 +56,7 @@ class pictures extends rcube_plugin {
 				$pictures[] = $dbh->fetch_array($res);
 			}
 
-			$thumbnails = "\n\t\t\t<div id='images' class='justified-gallery shared'>";
+			$thumbnails = "\n\t\t\t<div id='images' class='justified-gallery shared $dlpic'>";
 
 			$x = isset($_POST['s']) ? filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT):0;
 			$mthumbs = isset($_POST['s']) ? $x + $config['thumbs_pr_page']:$config['thumbs_pr_page'];

@@ -160,6 +160,7 @@ if(isset($_POST['img_action'])) {
 						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_UNSAFE_RAW);
 						$sharelink = bin2hex(random_bytes(25));
 						$edate = filter_var($_POST['expiredate'], FILTER_SANITIZE_NUMBER_INT);
+						$share_down = filter_var($_POST['download'], FILTER_SANITIZE_NUMBER_INT);
 						$expiredate = ($edate > 0) ? $edate:"NULL";
 
 						if(filter_var($_POST['intern'], FILTER_VALIDATE_BOOLEAN)) {
@@ -167,7 +168,7 @@ if(isset($_POST['img_action'])) {
 						}
 
 						if(empty($shareid)) {
-							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
+							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`, `share_down`, `expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$expiredate,$user_id)";
 							$ret = $dbh->query($query);
 							$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
 						} else {
