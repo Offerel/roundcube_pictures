@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.1
+ * @version 1.5.2
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -29,6 +29,7 @@ $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
 $arg = (isset($argv[1])) ? $argv[1]:"manual";
+$media = array();
 
 if($arg === "trigger") {
 	$lines = file("$logdir/fssync.log");
@@ -56,7 +57,7 @@ foreach($users as $user) {
 	$thumb_basepath = $basepath."/".$username."/photos";
 	$webp_basepath =  $basepath."/".$username."/webp";
 	$broken = array();
-	$media = array();
+	
 	logm("Search media for $username");
 	scanGallery($pictures_basepath, $pictures_basepath, $thumb_basepath, $webp_basepath, $uid);
 	$bcount = count($broken);

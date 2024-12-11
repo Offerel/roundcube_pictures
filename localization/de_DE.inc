@@ -37,6 +37,11 @@ $labels['to'] = "nach";
 $labels['ShareSubject'] = "Ein Album wurde mit dir geteilt";
 $labels['ShareText'] = "%u hat das Album <strong>'%s'</strong> mit dir geteilt. %o Du kannst nun das Album jederzeit einsortieren, bearbeiten, teilen und so behandeln, als wäre es dein eigenes Album. Wird das Album am Original gelöscht, steht es für dich nicht mehr zur Verfügung.";
 $labels['ShareOpen'] = "Album öffnen";
+$labels['ch_sharetype'] = "Share Type auswählen";
+$labels['public'] = "Öffentlich";
+$labels['intern'] = "Intern";
+$labels['downloadable'] = "Herunterladbare Medien";
+$labels['noexpire'] = "Kein Endedatum";
 
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";

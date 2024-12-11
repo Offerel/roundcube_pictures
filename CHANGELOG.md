@@ -1,3 +1,7 @@
+### v1.5.2
+- Add optional downloads for public shares
+- Only ntfy on new media
+
 ### v1.5.1
 - Updated Tagify 4.27.0 (https://yaireo.github.io/tagify/)
 - CSS Fixes

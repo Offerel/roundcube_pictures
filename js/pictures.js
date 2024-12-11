@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.1
+ * @version 1.5.2
  * @author Offerel
  * @copyright Copyright (c) 2024, Offerel
  * @license GNU General Public License, version 3
@@ -239,6 +239,21 @@ window.onload = function(){
 			checkUser(document.getElementById('suser').value);
 		}, 400);
 	});
+
+	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
+		elem.addEventListener("input", (event) => {
+			console.log(event.target.id);
+			if(event.target.id == 'public') {
+				document.getElementById('spublic').style.visibility = 'visible';
+				document.getElementById('sintern').style.visibility = 'hidden';
+			}
+
+			if(event.target.id == 'intern') {
+				document.getElementById('spublic').style.visibility = 'hidden';
+				document.getElementById('sintern').style.visibility = 'visible';
+			}
+		});
+	}
 };
 
 function checkUser(value) {
@@ -565,7 +580,7 @@ function selectShare() {
 	document.getElementById('rsh').disabled = true;
 	document.getElementById('never').checked = false;
 	document.getElementById('link').value = '';
-	document.getElementById('link').style.visibility = "hidden";
+	document.getElementById('link').style.display = "none";
 	sbtn.style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
@@ -766,7 +781,7 @@ function sharepicture() {
 	let sbtn = document.getElementById('sbtn');
 	dloader('#share_edit', sbtn, 'add');
 	let link = document.getElementById('link');
-	link.style.visibility = "hidden";
+	link.style.display = 'none';
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
 		const urlParams = new URL($(this)[0].previousElementSibling.firstChild.src).searchParams;
 		pictures.push(urlParams.get('file'));
@@ -780,6 +795,7 @@ function sharepicture() {
 			images: pictures,
 			shareid: document.getElementById('sid').value,
 			sharename: document.getElementById('sname').value,
+			download: document.getElementById('download').value,
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
 			intern: internal,
 			suser: suser,
@@ -804,10 +820,11 @@ function sharepicture() {
 				document.getElementById('share_edit').style.display='none';
 				return false;
 			});
-			clpbtn.style.visibility = "visible";
+			clpbtn.style.display = "block";
 			link.style.visibility = "visible";
+			link.style.display = 'block';
 			dloader('#share_edit', sbtn, 'remove');
-			sbtn.style.visibility = "hidden";
+			sbtn.style.display = 'none';
 			count_checks();
 		}
 	});
