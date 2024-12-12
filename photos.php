@@ -62,7 +62,8 @@ if(isset($_POST['getshares'])) {
 		$name = $share['share_name'];
 		$id = $share['share_id'];
 		$expd = $share['expire_date'];
-		$select.= "<option value='$id' data-ep='$expd'>$name</option>";
+		$down = $share['share_down'];
+		$select.= "<option value='$id' data-ep='$expd' data-dn='$down'>$name</option>";
 	}
 	$select.="</select>";
 	die($select);
@@ -1271,7 +1272,7 @@ function getExistingShares() {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$query = "SELECT `share_id`, `share_name`, `expire_date` FROM `pic_shares` WHERE `user_id` = 1 ORDER BY `share_name` ASC";
+	$query = "SELECT `share_id`, `share_name`, `expire_date`, `share_down` FROM `pic_shares` WHERE `user_id` = 1 ORDER BY `share_name` ASC";
 	$erg = $dbh->query($query);
 	$rowc = $dbh->num_rows();
 	$shares = [];

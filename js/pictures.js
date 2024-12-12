@@ -485,6 +485,15 @@ function count_checks() {
 	}
 }
 
+function rm_checks() {
+	let checked = document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
+	for(let i = 0; i < checked.length; i++){
+		if(checked[i].checked){
+            checked[i].checked = false;
+        }
+	}
+}
+
 function lazyload(slide = false) {
 	$.ajax({
 		type: 'POST',
@@ -570,11 +579,13 @@ function uploadpicture() {
 }
 
 function selectShare() {
-	getshares();
-	document.getElementById('sid').value = '';
 	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
+	let currentName = url.searchParams.get('p').split('/').pop();
+	getshares(currentName);
+	document.getElementById('sid').value = '';
+	
 	let sbtn = document.getElementById('sbtn');
-	document.getElementById('sname').value = url.searchParams.get('p').split('/').pop();
+	document.getElementById('sname').value = currentName;
 	document.getElementById('expiredate').value = '';
 	document.getElementById('expiredate').disabled = false;
 	document.getElementById('rsh').disabled = true;
@@ -686,9 +697,11 @@ function mvbtncl() {
 	document.getElementById('rnb').classList.add('disabled');
 }
 
-function getshares() {
+function getshares(current = '') {
 	document.getElementById('suser').value = "";
 	document.getElementById('suser').style.borderColor = "#b2b2b2";
+	document.getElementById('sbtn').style.display = 'inline-block';
+	document.getElementById('btnclp').style.display = 'none';	
 
 	$.ajax({
 		type: "POST",
@@ -698,11 +711,44 @@ function getshares() {
 		},
 		success: function(a) {
 			$("#share_target").html(a);
-			document.getElementById('shares').addEventListener('change', function(name){
+			let sselect = document.getElementById('shares');
+
+			for (let i=0; i < sselect.options.length; i++){
+				if (sselect.options[i].text == current) {
+					sselect.options[i].selected = true;
+					document.getElementById('sid').value = parseInt(sselect.options[i].value) ? sselect.options[i].value:''
+					document.getElementById('link').value = '';
+					if(sselect.options[i].dataset.ep == undefined || sselect.options[i].dataset.ep) {
+						document.getElementById('never').checked = false;
+						document.getElementById('expiredate').disabled = false;
+						document.getElementById('expiredate').valueAsDate = (sselect.options[i].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(sselect.options[i].dataset.ep * 1000);
+					} else {
+						document.getElementById('never').checked = true;
+						document.getElementById('expiredate').value = '';
+						document.getElementById('expiredate').disabled = true;
+					}
+
+					if(sselect.options[i].dataset.dn == undefined || sselect.options[i].dataset.dn) {
+						document.getElementById('download').checked = true;
+					} else {
+						document.getElementById('download').checked = false;
+					}
+
+					break;
+				}
+			}
+
+			sselect.addEventListener('change', function(name){
 				document.getElementById('sname').value = name.target.selectedOptions[0].text;
 				document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
 				document.getElementById('link').value = '';
 				document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
+
+				if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
+					document.getElementById('download').checked = true;
+				} else {
+					document.getElementById('download').checked = false;
+				}
 
 				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
 					document.getElementById('never').checked = false;

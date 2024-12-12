@@ -5,7 +5,7 @@
 	width: 100%;
 }
 #stype .stype {
-    left: 75px;
+    left: 100px;
     position: absolute;
     height: 100px;
     right: 0;
@@ -29,12 +29,11 @@
     width: revert;
 }
 #stype .sch {
-    width: 50px;
+    width: 80px;
     position: absolute;
 }
 .sch label {
     cursor: pointer;
-    text-align: right!important;
     width: 100%!important;
     opacity: .4;
     transition: opacity .4s ease-in-out;
