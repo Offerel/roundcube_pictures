@@ -1,7 +1,5 @@
 <?php
-$labels = array();
 $labels['pictures'] = 'Fotos';
-
 $labels['home'] = "Start";
 $labels['create'] = "Erstellen";
 $labels['page'] = "Seite";
@@ -42,7 +40,6 @@ $labels['public'] = "Öffentlich";
 $labels['intern'] = "Intern";
 $labels['downloadable'] = "Herunterladbare Medien";
 $labels['noexpire'] = "Kein Endedatum";
-
 $labels['em_undefined'] = "Undefiniert";
 $labels['em_manual'] = "Manuell";
 $labels['em_auto'] = "Automatik";
@@ -54,7 +51,6 @@ $labels['em_action_auto'] = "Action (High speed)";
 $labels['em_portrait_auto'] = "Portrait";
 $labels['em_landscape_auto'] = "Landschaft";
 $labels['em_bulb'] = "Bulb-Modus";
-
 $labels['mm_unkown'] = "Unknown";
 $labels['mm_average'] = "Integralmessung";
 $labels['mm_middle'] = "Mittenbetont";
@@ -63,7 +59,6 @@ $labels['mm_multi-spot'] = "Multi-Spot";
 $labels['mm_multi'] = "Mehrfeldmessung";
 $labels['mm_partial'] = "Partial";
 $labels['mm_other'] = "Anderer";
-
 $labels['exif_camera'] = "Kamera";
 $labels['exif_focalength'] = "Brennweite";
 $labels['exif_fstop'] = "Blende";
@@ -82,14 +77,12 @@ $labels['exif_texptime'] = "Verschlusszeit";
 $labels['exif_copyright'] = "Copyright";
 $labels['exif_keywords'] = "Schlagworte";
 $labels['exif_title'] = "Titel";
-
 $labels['ptheme'] = "Theme";
 $labels['pthemedark'] = "Dunkel";
 $labels['pthemedynamic'] = "Dynamisch";
 $labels['thumbs_pr_page'] = "Anzahl Thumbnails";
 $labels['pmargins'] = "Abstand";
 $labels['sharedays'] = "Standard Sharedauer in Tagen";
-
 $labels['wb_auto'] = "Auto";
 $labels['wb_daylight'] = "Tageslicht";
 $labels['wb_fluorescent'] = "Neonlicht";
@@ -98,7 +91,6 @@ $labels['wb_flash'] = "Blitz";
 $labels['wb_fineWeather'] = "Sonne";
 $labels['wb_cloudy'] = "Bewölkt";
 $labels['wb_shade'] = "Schatten";
-
 $labels['NotFired'] = "Nicht ausgelöst";
 $labels['Fired'] = "Ausgelöst";
 $labels['StrobeReturnLightNotDetected'] = "Ausgelöst, Kein Rücklauf erkannt";
@@ -121,4 +113,5 @@ $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'] = "Ausgelöst, Ob
 $labels['Fired-AutoMode-RedEyeMode'] = "Ausgelöst, Auto, Rote Augen Modus";
 $labels['Fired-AutoMode-NoReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, Kein Rücklauf erkannt, Rote Augen Modus";
 $labels['Fired-AutoMode-ReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, Rücklauf erkannt, Rote Augen Modus";
-?>
+$labels['theme_dark'] = "Dunkel";
+$labels['theme_dynamic'] = "Dynamisch";
