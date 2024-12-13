@@ -113,3 +113,5 @@ $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'] = "Ausgelöst, Ob
 $labels['Fired-AutoMode-RedEyeMode'] = "Ausgelöst, Auto, Rote Augen Modus";
 $labels['Fired-AutoMode-NoReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, Kein Rücklauf erkannt, Rote Augen Modus";
 $labels['Fired-AutoMode-ReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, Rücklauf erkannt, Rote Augen Modus";
+$labels['theme_dark'] = "Dunkel";
+$labels['theme_dynamic'] = "Dynamisch";
