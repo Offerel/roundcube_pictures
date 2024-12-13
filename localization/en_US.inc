@@ -39,7 +39,7 @@ $labels['ShareText'] = "%u has shared the album <strong>'%s'</strong> with you. 
 $labels['ShareOpen'] = "Open Gallery";
 $labels['ch_sharetype'] = "Choose Share Type";
 $labels['public'] = "Public";
-$labels['intern'] = "Intern";
+$labels['intern'] = "Internal";
 $labels['downloadable'] = "Downloadable Media";
 $labels['noexpire'] = "No Expiredate";
 
