@@ -3,6 +3,12 @@ This is a simple pictures/gallery plugin for Roundcube. You can view your person
 
 I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to show the thumbnails on the page in a way i personally like it and [GLightbox](https://biati-digital.github.io/glightbox/) to display the pictures. Videos are integrated via [Plyr](https://github.com/sampotts/plyr). Please see the license details on the page of this projects.
 
+# Contribution
+If you would like to support this WebApp, you have various options. You can report bugs via the [Issue Tracker](https://codeberg.org/Offerel/Roundcube_Pictures/issues). This helps me to fix these bugs as quickly as possible.
+
+Another option is to help translate the app into other languages. This is relatively easy to do via Weblate. The following languages are currently available:
+[![Status](https://translate.codeberg.org/widget/roundcube-pictures/multi-auto.svg)](https://translate.codeberg.org/engage/roundcube-pictures/)
+
 # Issues
 Please create issues in the [Codeberg.org](https://codeberg.org/Offerel/roundcube_pictures/issues) issue tracker. I have disabled the issue tracker in GitHub.com because the repo there is only used as a workaround and for compatibility reasons.
 
