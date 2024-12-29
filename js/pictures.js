@@ -242,7 +242,6 @@ window.onload = function(){
 
 	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
 		elem.addEventListener("input", (event) => {
-			console.log(event.target.id);
 			if(event.target.id == 'public') {
 				document.getElementById('spublic').style.visibility = 'visible';
 				document.getElementById('sintern').style.visibility = 'hidden';
@@ -821,8 +820,6 @@ function delete_album() {
 }
 
 function sharepicture() {
-	let suser = document.getElementById('suser').value;
-	let internal = document.getElementById('expiredate').disabled;
 	var pictures = [];
 	let sbtn = document.getElementById('sbtn');
 	dloader('#share_edit', sbtn, 'add');
@@ -843,8 +840,8 @@ function sharepicture() {
 			sharename: document.getElementById('sname').value,
 			download: document.getElementById('download').value,
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
-			intern: internal,
-			suser: suser,
+			intern: document.getElementById('intern').checked,
+			suser: document.getElementById('suser').value,
 			uid: document.getElementById('uid').value
 		},
 		success: function(a) {
