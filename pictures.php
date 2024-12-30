@@ -30,7 +30,7 @@ class pictures extends rcube_plugin {
 
 					http_response_code($code);
 					header('Content-Type: application/json');
-					die(json_encode($response));
+					die(json_encode($response, JSON_UNESCAPED_SLASHES));
 				}
 			}
 		}
