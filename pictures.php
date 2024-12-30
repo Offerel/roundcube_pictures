@@ -17,14 +17,22 @@ class pictures extends rcube_plugin {
 
 			if(json_last_error() == JSON_ERROR_NONE) {
 				$logfile = $rcmail->config->get('log_dir', false)."/fssync.log";
+				$pidfile = $rcmail->config->get('log_dir', false)."/maintenance.pid";
 
 				if(isset($json['syncStatus'])) {
 					$line = date("d.m.Y H:i:s")." FolderSync ".$json['folderPairName']." ".$json['syncStatus']."\n";
 					file_put_contents($logfile, $line, FILE_APPEND);
 					$code = ($json['syncStatus'] == 'SyncOK') ? 202:500;
+					$message = $json['syncStatus'];
+
+					if(file_exists($pidfile)) {
+						$code = 300;
+						$message = 'Maintenance already running';
+					}
 
 					$response = [
 						'code' => $code,
+						'message' => $message,
 						'logfile' => $logfile
 					];
 

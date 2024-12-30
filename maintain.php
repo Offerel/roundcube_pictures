@@ -18,6 +18,9 @@ $ccmd = $rcmail->config->get('ffmpeg_cmd');
 $pictures_path = $rcmail->config->get('pictures_path');
 $basepath = rtrim($rcmail->config->get('work_path'), '/');
 $logdir = $rcmail->config->get('log_dir');
+define('PIDFILE', "$logdir/maintenance.pid");
+file_put_contents(PIDFILE, posix_getpid());
+register_shutdown_function('removePidFile'); 
 $exif_mode = $rcmail->config->get('exif');
 $pntfy = $rcmail->config->get('pntfy_sec');
 $mtime = $rcmail->config->get('dummy_time', false);
@@ -91,6 +94,9 @@ $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 logm($message);
 if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
 
+function removePidFile() {
+	unlink(PIDFILE);
+}
 
 function scanGallery($dir, $base, $thumb, $webp, $user) {
 	global $supported, $media, $svideos, $etags, $eoptions, $exif_mode, $basepath, $mtime;
