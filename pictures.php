@@ -33,12 +33,12 @@ class pictures extends rcube_plugin {
 					$response = [
 						'code' => $code,
 						'message' => $message,
-						'logfile' => $logfile
+						'logfile' => "$logfile"
 					];
 
 					http_response_code($code);
 					header('Content-Type: application/json');
-					die(json_encode($response, JSON_UNESCAPED_SLASHES));
+					die(json_encode($response, JSON_NUMERIC_CHECK|JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
 				}
 			}
 		}
