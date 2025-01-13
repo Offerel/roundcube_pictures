@@ -40,7 +40,8 @@ $labels['ShareOpen'] = "Open Gallery";
 $labels['ch_sharetype'] = "Choose Share Type";
 $labels['public'] = "Public";
 $labels['intern'] = "Internal";
-$labels['pixelfed'] = "Pixelfed"; 
+$labels['pixelfed'] = "Pixelfed";
+$labels['pixelfed_instance'] = "Pixelfed Instance";
 $labels['downloadable'] = "Downloadable Media";
 $labels['noexpire'] = "No Expiredate";
 

@@ -182,6 +182,12 @@ class pictures extends rcube_plugin {
 														'title'=> html::label($field_id, $this->gettext('sharedays')),
 														'content'=> $input->show($days));
 
+		$field_id='pixelfed_instance';
+		$input = new html_inputfield(array('name' => 'pixelfed_instance', 'id' => $field_id, 'placeholder' => 'https://pixelfed.social'));
+		$p['blocks']['main']['options']['pixelfed_instance'] = array(
+														'title'=> html::label($field_id, $this->gettext('pixelfed_instance')),
+														'content'=> $input->show($rcmail->config->get('pixelfed_instance')));
+
 		return $p;
 	}
 
