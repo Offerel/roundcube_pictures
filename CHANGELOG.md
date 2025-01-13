@@ -1,5 +1,7 @@
 ### v1.5.2
 - Add optional downloads for public shares
+- Added Simplified Chinese translation by Outbreak2096
+- Added Dutch translation by Vistaus
 - Only ntfy on new media
 
 ### v1.5.1
