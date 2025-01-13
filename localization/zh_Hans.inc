@@ -113,3 +113,4 @@ $labels['StrobeReturnLightNotDetected'] = "闪光，未检测到反射光";
 $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'] = "闪光灯，强制，红眼，频闪返回";
 $labels['rename'] = "重命名";
 $labels['galdconfirm'] = "是否要删除已标记的相册？";
+$labels['pixelfed'] = "Pixelfed";
