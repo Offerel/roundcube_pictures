@@ -38,6 +38,7 @@ $labels['ShareOpen'] = "Album öffnen";
 $labels['ch_sharetype'] = "Share Typ auswählen";
 $labels['public'] = "Öffentlich";
 $labels['intern'] = "Intern";
+$labels['pixelfed'] = "Pixelfed"; 
 $labels['downloadable'] = "Herunterladbare Medien";
 $labels['noexpire'] = "Kein Endedatum";
 $labels['em_undefined'] = "Undefiniert";

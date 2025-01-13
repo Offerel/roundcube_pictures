@@ -3,7 +3,7 @@
  *
  * @version 1.5.2
  * @author Offerel
- * @copyright Copyright (c) 2024, Offerel
+ * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
 var lightbox, tagify, clicks;
@@ -245,11 +245,19 @@ window.onload = function(){
 			if(event.target.id == 'public') {
 				document.getElementById('spublic').style.visibility = 'visible';
 				document.getElementById('sintern').style.visibility = 'hidden';
+				document.getElementById('spixelfed').style.visibility = 'hidden';
 			}
 
 			if(event.target.id == 'intern') {
 				document.getElementById('spublic').style.visibility = 'hidden';
 				document.getElementById('sintern').style.visibility = 'visible';
+				document.getElementById('spixelfed').style.visibility = 'hidden';
+			}
+
+			if(event.target.id == 'pixelfed') {
+				document.getElementById('spublic').style.visibility = 'hidden';
+				document.getElementById('sintern').style.visibility = 'hidden';
+				document.getElementById('spixelfed').style.visibility = 'visible';
 			}
 		});
 	}
@@ -842,7 +850,11 @@ function sharepicture() {
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
 			intern: document.getElementById('intern').checked,
 			suser: document.getElementById('suser').value,
-			uid: document.getElementById('uid').value
+			uid: document.getElementById('uid').value,
+			pf_text: 'Test Description for Pixelfed',
+			pf_sens: false,
+			pf_vis: 'public', // unlisted, private
+			pf_spoil: 'Some spoiler if sensitive is true'
 		},
 		success: function(a) {
 			if(a == 'intern') {

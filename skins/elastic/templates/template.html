@@ -77,6 +77,7 @@
 							<div class="sch">
 								<input type="radio" id="public" name="stab" class="rdo" checked="checked"><label for="public"><roundcube:label name="pictures.public" quoting="html" /></label>
 								<input type="radio" id="intern" name="stab" class="rdo"><label for="intern"><roundcube:label name="pictures.intern" quoting="html" /></label>
+								<input type="radio" id="pixelfed" name="stab" class="rdo"><label for="pixelfed"><roundcube:label name="pictures.pixelfed" quoting="html" /></label>
 							</div>
 							<div class="stype" id="spublic" style="visibility: visible;">
 								<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
@@ -88,6 +89,14 @@
 							<div class="stype" id="sintern">
 								<label for="suser"><roundcube:label name="pictures.IntUser" quoting="html" /></label>
 								<input type="text" id="suser" placeholder="Username" tabindex="2">
+							</div>
+							<!-- https://beta-preview.pixelfed.io/resources/statuses#create-a-single-media-status -->
+							<div class="stype" id="spixelfed">
+								<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
+								<input type="hidden" id="sid"><input type="hidden" id="uid">
+								<br /><label for="never"><roundcube:label name="pictures.noexpire" quoting="html" /></label><input type="checkbox" tabindex="4" title="never" id="never">
+								<br /><label for="expiredate" style="float: revert;"><roundcube:label name="pictures.ExpDate" quoting="html" /></label>
+								<input type="date" tabindex="5" id="expiredate" >
 							</div>
 						</fieldset>
 						

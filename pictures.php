@@ -4,7 +4,7 @@
  *
  * @version 1.5.2
  * @author Offerel
- * @copyright Copyright (c) 2024, Offerel
+ * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
 class pictures extends rcube_plugin {
