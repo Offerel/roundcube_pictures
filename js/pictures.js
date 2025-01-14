@@ -21,7 +21,67 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("delpicture", delete_picture, !0);
 	rcmail.register_command("searchphoto", searchform, !0);
 	rcmail.register_command("edit_meta", metaform, !0);
+	if(document.getElementById('pixelfed_instance')) {
+		let instance = document.getElementById('pixelfed_instance');
+		instance.addEventListener('change', checkInstance);
+		let token = document.getElementById('pixelfed_token').parentElement.parentElement;
+		let hint_tr = document.createElement('tr');
+		let hint_td = document.createElement('td');
+		hint_td.colSpan = 2;
+		hint_td.classList.add('tdhint');
+		let hint = rcmail.gettext('pfapphint','pictures');
+		let url = instance.value;
+		url = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
+		url = url + '/settings/applications';
+		hint_td.innerHTML = hint.replace('%link%', "<a href='" + url + "' target='_blank' id='aplink'>Applications</a>");
+		hint_tr.appendChild(hint_td);
+		token.parentNode.insertBefore(hint_tr, token);
+	}
 });
+/*
+function chLink() {
+	let aplink = document.getElementById('aplink');
+	let instance = document.getElementById('pixelfed_instance');
+	let color = getComputedStyle(instance).getPropertyValue("border-color");
+	console.log(color);
+	let url = instance.value;
+	url = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
+	url = url + '/settings/applications';
+	aplink.href = url;
+}
+*/
+function checkInstance() {
+	let field = this;
+	let url = field.value;
+	let aplink = document.getElementById('aplink');
+	url = url.endsWith('/') ? url.substr(0, url.length - 1):url;
+
+	fetch(url + '/api/v2/instance', {
+		method: "GET",
+		headers: {
+			'Accept': 'application/json',
+		},
+		referrerPolicy: "no-referrer"
+	}).then(response => {
+		return response.json();
+	}).then(responseData => {
+		if(responseData.version) {
+			let version = responseData.version;
+			version = version.split('; ')[1];
+			version = version.substr(0, version.length - 1).split(' ')[1];
+			field.classList.add('success');
+			field.classList.remove('error');
+			aplink.href = url;
+		} else {
+			field.classList.add('error');
+			field.classList.remove('success');
+		}
+	}).catch(err => {
+		console.warn(err);
+		field.classList.add('error');
+		field.classList.remove('success');
+	});
+}
 
 window.onload = function(){
 	if( $('#images').length ) {

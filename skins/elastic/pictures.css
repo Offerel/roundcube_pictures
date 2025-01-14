@@ -1,6 +1,20 @@
 .iframebox.pictures_{
 	height:100%
 }
+.success {
+    background-color: honeydew;
+    border-color: limegreen;
+    color: green;
+}
+.error {
+    background-color: bisque;
+    border-color: orangered;
+    color: red;
+}
+.tdhint {
+    text-align: center;
+    font-size: .9em;
+}
 #content {
 	width: 100%;
 }

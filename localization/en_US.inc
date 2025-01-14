@@ -47,6 +47,7 @@ $labels['pstatusm'] = "Status message";
 $labels['pfvisibility'] = "Visibility";
 $labels['pfsensitive'] = "Sensitive Media";
 $labels['pftomuch'] = "Only the first of the selected images will be published on the Pixelfed instance";
+$labels['pfapphint'] = "A new token can be created at %link%. This token needs the privileges 'read' and 'write'";
 $labels['unlisted'] = "Unlisted";
 $labels['private'] = "Private";
 $labels['downloadable'] = "Downloadable Media";

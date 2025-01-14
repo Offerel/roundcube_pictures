@@ -113,6 +113,7 @@ class pictures extends rcube_plugin {
 		$this->include_stylesheet($this->local_skin_path().'/pictures.css');
 		$this->register_task('pictures');
 		checkDB();
+		$this->include_script('js/pictures.js');
 		$this->add_button(array(
 			'label'	=> 'pictures.pictures',
 			'command'	=> 'pictures',
