@@ -114,3 +114,4 @@ $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'] = "闪光灯，�
 $labels['rename'] = "重命名";
 $labels['galdconfirm'] = "是否要删除已标记的相册？";
 $labels['pixelfed'] = "Pixelfed";
+$labels['pixelfed_instance'] = "Pixelfed 实例";
