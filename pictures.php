@@ -187,6 +187,11 @@ class pictures extends rcube_plugin {
 		$p['blocks']['main']['options']['pixelfed_instance'] = array(
 														'title'=> html::label($field_id, $this->gettext('pixelfed_instance')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_instance')));
+		$field_id='pixelfed_token';
+		$input = new html_inputfield(array('name' => 'pixelfed_token', 'id' => $field_id, 'type' => 'password'));
+		$p['blocks']['main']['options']['pixelfed_token'] = array(
+														'title'=> html::label($field_id, $this->gettext('pixelfed_token')),
+														'content'=> $input->show($rcmail->config->get('pixelfed_token')));
 
 		return $p;
 	}
@@ -198,7 +203,9 @@ class pictures extends rcube_plugin {
                 'ptheme'		=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
 				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
 				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
-				'sharedays'	=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST))
+				'sharedays'	=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
+				'pixelfed_instance'		=> rcube_utils::get_input_value('pixelfed_instance', rcube_utils::INPUT_POST),
+				'pixelfed_token'		=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST)
             );
 		}
 

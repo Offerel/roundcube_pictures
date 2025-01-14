@@ -42,9 +42,16 @@ $labels['public'] = "Public";
 $labels['intern'] = "Internal";
 $labels['pixelfed'] = "Pixelfed";
 $labels['pixelfed_instance'] = "Pixelfed Instance";
+$labels['pixelfed_token'] = "Token";
+$labels['pstatusm'] = "Status message";
+$labels['pfvisibility'] = "Visibility";
+$labels['pfsensitive'] = "Sensitive Media";
+$labels['pftomuch'] = "Only the first of the selected images will be published on the Pixelfed instance";
+$labels['unlisted'] = "Unlisted";
+$labels['private'] = "Private";
 $labels['downloadable'] = "Downloadable Media";
 $labels['noexpire'] = "No Expiredate";
-
+$labels['empty_status'] = "Please provide a status message, without this your image cannot be shared on Pixelfed";
 $labels['em_undefined'] = "Undefined";
 $labels['em_manual'] = "Manual";
 $labels['em_auto'] = "Auto";

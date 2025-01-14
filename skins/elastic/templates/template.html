@@ -90,13 +90,15 @@
 								<label for="suser"><roundcube:label name="pictures.IntUser" quoting="html" /></label>
 								<input type="text" id="suser" placeholder="Username" tabindex="2">
 							</div>
-							<!-- https://beta-preview.pixelfed.io/resources/statuses#create-a-single-media-status -->
 							<div class="stype" id="spixelfed">
-								<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
-								<input type="hidden" id="sid"><input type="hidden" id="uid">
-								<br /><label for="never"><roundcube:label name="pictures.noexpire" quoting="html" /></label><input type="checkbox" tabindex="4" title="never" id="never">
-								<br /><label for="expiredate" style="float: revert;"><roundcube:label name="pictures.ExpDate" quoting="html" /></label>
-								<input type="date" tabindex="5" id="expiredate" >
+								<label for="pstatus"><roundcube:label name="pictures.pstatusm" quoting="html" /></label><textarea id="pstatus" name="pstatus"></textarea>
+								<label for="pfvisibility"><roundcube:label name="pictures.pfvisibility" quoting="html" /></label>
+								<select tabindex="4" title="pfvisibility" id="pfvisibility">									
+									<option value="public"><roundcube:label name="pictures.public" quoting="text" /></option>
+									<option value="unlisted"><roundcube:label name="pictures.unlisted" quoting="text" /> </option>
+									<option value="private"><roundcube:label name="pictures.private" quoting="text" /></option>
+								</select>
+								<label for="pfsensitive"><roundcube:label name="pictures.pfsensitive" quoting="html" /></label><input type="checkbox" title="pfsensitive" id="pfsensitive">
 							</div>
 						</fieldset>
 						

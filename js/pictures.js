@@ -252,12 +252,16 @@ window.onload = function(){
 				document.getElementById('spublic').style.visibility = 'hidden';
 				document.getElementById('sintern').style.visibility = 'visible';
 				document.getElementById('spixelfed').style.visibility = 'hidden';
+				document.getElementById('sname').focus();
 			}
 
 			if(event.target.id == 'pixelfed') {
 				document.getElementById('spublic').style.visibility = 'hidden';
 				document.getElementById('sintern').style.visibility = 'hidden';
 				document.getElementById('spixelfed').style.visibility = 'visible';
+				document.getElementById('pstatus').focus();
+
+				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 1) rcmail.display_message(rcmail.gettext('pftomuch','pictures'), 'warning');
 			}
 		});
 	}
@@ -499,6 +503,14 @@ function rm_checks() {
             checked[i].checked = false;
         }
 	}
+
+	checked = document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
+	if(checked.length < 1) {
+		document.getElementById("sharepicture").classList.add('disabled');
+		document.getElementById("delpicture").classList.add('disabled');
+		document.getElementById("editmeta").classList.add('disabled');
+		document.getElementById("movepicture").classList.add('disabled');
+	}
 }
 
 function lazyload(slide = false) {
@@ -599,6 +611,9 @@ function selectShare() {
 	document.getElementById('never').checked = false;
 	document.getElementById('link').value = '';
 	document.getElementById('link').style.display = "none";
+	document.getElementById('pstatus').value = '';
+	document.getElementById('pfvisibility').selectedIndex = 0;
+	document.getElementById('pfsensitive').checked = false;
 	sbtn.style.visibility = "visible";
 	$("#share_edit").contents().find("h2").html(rcmail.gettext("share", "pictures"));
 	document.getElementById("share_edit").style.display = "block";
@@ -606,7 +621,8 @@ function selectShare() {
 	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 	sbtn.tabIndex = 5;
 	sbtn.title = rcmail.gettext('extlinktitle','pictures');
-	document.getElementById('sname').focus();
+
+	document.getElementById('public').click();
 }
 
 function add_album() {
@@ -828,6 +844,17 @@ function delete_album() {
 }
 
 function sharepicture() {
+	let type = '';
+	if(document.getElementById('intern').checked) type = 'intern';
+	if(document.getElementById('public').checked) type = 'public';
+	if(document.getElementById('pixelfed').checked) type = 'pixelfed';
+
+	if(type === 'pixelfed' && document.getElementById('pstatus').value == '') {
+		document.getElementById('pstatus').style.borderColor = 'red';
+		rcmail.display_message(rcmail.gettext('empty_status','pictures'), 'error')
+		return false;
+	}
+	
 	var pictures = [];
 	let sbtn = document.getElementById('sbtn');
 	dloader('#share_edit', sbtn, 'add');
@@ -848,13 +875,12 @@ function sharepicture() {
 			sharename: document.getElementById('sname').value,
 			download: document.getElementById('download').value,
 			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
-			intern: document.getElementById('intern').checked,
 			suser: document.getElementById('suser').value,
 			uid: document.getElementById('uid').value,
-			pf_text: 'Test Description for Pixelfed',
-			pf_sens: false,
-			pf_vis: 'public', // unlisted, private
-			pf_spoil: 'Some spoiler if sensitive is true'
+			type: type,
+			pf_text: document.getElementById('pstatus').value,
+			pf_sens: document.getElementById('pfsensitive').checked,
+			pf_vis: document.getElementById('pfvisibility').value
 		},
 		success: function(a) {
 			if(a == 'intern') {
@@ -864,6 +890,12 @@ function sharepicture() {
 				document.getElementById('share_edit').style.display='none';
 				dloader('#share_edit', sbtn, 'remove');
 				return false;
+			}
+
+			if(typeof a === "object") {
+				if(a.uri) console.log('Shared to Pixelfed', a.uri);
+				document.getElementById('share_edit').style.display='none';
+				dloader('#share_edit', sbtn, 'remove');
 			}
 			const url = new URL(location.href);
 			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;

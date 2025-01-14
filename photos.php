@@ -164,8 +164,13 @@ if(isset($_POST['img_action'])) {
 						$share_down = filter_var($_POST['download'], FILTER_SANITIZE_NUMBER_INT);
 						$share_down = ($share_down > 0) ? 1:"NULL";
 						$expiredate = ($edate > 0) ? $edate:"NULL";
+						$type = filter_var($_POST['type'], FILTER_UNSAFE_RAW);
 
-						if(filter_var($_POST['intern'], FILTER_VALIDATE_BOOLEAN)) {
+						if($type === 'pixelfed') {
+							sharePixelfed(filter_var($_POST['pf_text'], FILTER_UNSAFE_RAW), filter_var($_POST['pf_sens'], FILTER_VALIDATE_BOOLEAN), filter_var($_POST['pf_vis'], FILTER_UNSAFE_RAW), $images);
+						}
+
+						if($type === 'intern') {
 							shareIntern($sharename, $images, filter_var($_POST['suser'], FILTER_UNSAFE_RAW), filter_var($_POST['uid'], FILTER_SANITIZE_NUMBER_INT));
 						}
 
@@ -246,6 +251,76 @@ function chSymLink($src, $target) {
 		$otime = filemtime($org_path);
 		touch($links['symlink'], $otime);
 	}
+}
+
+function sharePixelfed($status, $sensitive, $visibility, $images) {
+	global $rcmail;
+	$pictures_path = rtrim(str_replace("%u", $rcmail->user->get_username(), $rcmail->config->get('pictures_path', false)), '/');
+	$imagepath = $pictures_path.'/'.$images[0];
+
+	$mime = mime_content_type($imagepath);
+
+	switch($mime) {
+		case 'image/gif':
+			$image = @imagecreatefromgif($imagepath);
+			break;
+		case 'image/jpeg':
+			$image = @imagecreatefromjpeg($imagepath);
+			break;
+		case 'image/png':
+			$image = @imagecreatefrompng($imagepath);
+			break;
+		case 'image/webp':
+			$image = @imagecreatefrompng($imagepath);
+			break;
+	}
+
+	$image = @imagecreatefromjpeg($imagepath);
+	$exif = exif_read_data($imagepath);
+
+	switch($exif['Orientation']) {
+		case '3':
+			$image = imagerotate($image, 180, 0);
+			break;
+		case '6':
+			$image = imagerotate($image, 270, 0);
+			break;
+		case '8':
+			$image = imagerotate($image, 90, 0);
+			break;
+	}
+
+	$iname = basename($imagepath);
+	$tmpname = sys_get_temp_dir().'/'.$iname;
+	imagewebp($image, $tmpname, 60);
+
+	$headers = array(
+		'Content-Type: multipart/form-data',
+		'Authorization: Bearer '.$rcmail->config->get('pixelfed_token'),
+		'Accept: application/json'
+	);
+
+	$curl_session = curl_init();
+
+	curl_setopt($curl_session, CURLOPT_URL, rtrim($rcmail->config->get('pixelfed_instance'), '/').'/api/v1.1/status/create');
+	curl_setopt($curl_session, CURLOPT_POST, true);
+	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+	curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($curl_session, CURLOPT_POSTFIELDS, [
+		'status' => $status,
+		'sensitive' => $sensitive,
+		'visibility' => $visibility,
+		'file' => new CURLFile($tmpname, $iname, 'image/webp')
+	]);
+
+	$result = curl_exec($curl_session);
+
+	curl_close($curl_session);
+	imagedestroy($image);
+	unlink($tmpname);
+	header("Content-Type: application/json");
+	die($result);
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {

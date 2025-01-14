@@ -15,11 +15,28 @@
 #stype {
     width: 100%;
     position: relative;
-    height: 125px;
+    height: 150px;
     border: 2px groove;
     margin: revert;
     padding: revert;
     margin-bottom: 10px;
+}
+#pstatus {
+    width: 100%;
+    resize: none;
+    border: 1px solid #b2b2b2;
+    border-radius: .25rem;
+    outline: 0;
+}
+#pfvisibility {
+    width: -webkit-fill-available !important;
+    display: flex;
+    width: -moz-available !important;
+    margin-bottom: 0 !important;
+}
+.stype label {
+    width: fit-content !important;
+    margin-right: 10px;
 }
 .stype input[type="checkbox"] {
     vertical-align: middle;
