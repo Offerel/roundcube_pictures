@@ -1,15 +1,19 @@
 .iframebox.pictures_{
 	height:100%
 }
-.success {
+input.success {
     background-color: honeydew;
     border-color: limegreen;
     color: green;
 }
-.error {
-    background-color: bisque;
+input.error {
+    background-color: bisque !important;
     border-color: orangered;
-    color: red;
+    color: red !important;
+}
+a.disabled {
+    pointer-events: none;
+    color: black;
 }
 .tdhint {
     text-align: center;
