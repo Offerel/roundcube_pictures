@@ -246,6 +246,7 @@ window.onload = function(){
 				document.getElementById('spublic').style.visibility = 'visible';
 				document.getElementById('sintern').style.visibility = 'hidden';
 				document.getElementById('spixelfed').style.visibility = 'hidden';
+				document.getElementById('sbtn').classList.remove('disabled');
 			}
 
 			if(event.target.id == 'intern') {
@@ -253,6 +254,7 @@ window.onload = function(){
 				document.getElementById('sintern').style.visibility = 'visible';
 				document.getElementById('spixelfed').style.visibility = 'hidden';
 				document.getElementById('sname').focus();
+				document.getElementById('sbtn').classList.remove('disabled');
 			}
 
 			if(event.target.id == 'pixelfed') {
@@ -261,6 +263,28 @@ window.onload = function(){
 				document.getElementById('spixelfed').style.visibility = 'visible';
 				document.getElementById('pstatus').focus();
 
+				xhr = new XMLHttpRequest();
+				let json = JSON.stringify({
+					action: 'pixelfed_verify'
+				});
+
+				xhr.onload = function () {
+					console.log(this.response);
+					if(this.status == 200 && this.response.base_url != null) {
+						document.getElementById('sbtn').classList.remove('disabled');
+					} else {
+						document.getElementById('pstatus').disabled = true;
+						document.getElementById('pfvisibility').disabled = true;
+						document.getElementById('pfsensitive').disabled = true;
+						document.getElementById('sbtn').classList.add('disabled');
+						rcmail.display_message('Configuration error. Please check Pixelfed configuration in "Pictures" settings', 'error');
+					}
+				}
+				
+				xhr.responseType = 'json';
+				xhr.open('POST', './plugins/pictures/photos.php');
+				xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+				xhr.send(json);
 				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 1) rcmail.display_message(rcmail.gettext('pftomuch','pictures'), 'warning');
 			}
 		});

@@ -47,9 +47,8 @@ a.disabled {
 	outline: 0;
 }
 #pfvisibility {
-	width: -webkit-fill-available !important;
-	display: flex;
-	width: -moz-available !important;
+	display: block;
+	width: 150px !important;
 	margin-bottom: 0 !important;
 }
 .stype label {

@@ -223,6 +223,34 @@ if( isset($_GET['g']) ) {
 	die($thumbnails);
 }
 
+$jarr  = json_decode(file_get_contents('php://input'), true);
+if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
+	switch($jarr['action']) {
+		case 'pixelfed_verify':
+			$base_url = $rcmail->config->get('pixelfed_instance');
+			$token = $rcmail->config->get('pixelfed_token');
+
+			if(!$base_url || !$token) {
+				$code = 300;
+				$response = [];
+			} else {
+				$code = 200;
+				$response = [
+					'base_url' => $base_url,
+					'token' => 'tokenset',
+				];
+			}
+			break;
+		default:
+			$code = 500;
+			$response = [];
+	}
+
+	http_response_code($code);
+	header('Content-Type: application/json; charset=utf-8');
+	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_UNICODE));
+}
+
 function delSymLink($src) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
