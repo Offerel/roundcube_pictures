@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.2
+ * @version 1.5.3
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -113,7 +113,7 @@ class pictures extends rcube_plugin {
 		$this->include_stylesheet($this->local_skin_path().'/pictures.css');
 		$this->register_task('pictures');
 		checkDB();
-		$this->include_script('js/pictures.js');
+		$this->include_script('js/settings.js');
 		$this->add_button(array(
 			'label'	=> 'pictures.pictures',
 			'command'	=> 'pictures',

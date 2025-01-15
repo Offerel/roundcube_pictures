@@ -1,3 +1,6 @@
+### v1.5.3
+- Fix change sharetype
+
 ### v1.5.2
 - Add optional downloads for public shares
 - Added Simplified Chinese translation by Outbreak2096
