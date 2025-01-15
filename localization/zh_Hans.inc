@@ -123,3 +123,4 @@ $labels['unlisted'] = "不公开列出";
 $labels['pfvisibility'] = "公开范围";
 $labels['pftomuch'] = "在所选图片中，仅第一张图片会发布在 Pixelfed 实例上";
 $labels['empty_status'] = "请提供状态信息，否则您的图片将无法在 Pixelfed 上共享";
+$labels['pfapphint'] = "可以在 %link% 创建新令牌。此令牌需要“读取”和“写入”权限";
