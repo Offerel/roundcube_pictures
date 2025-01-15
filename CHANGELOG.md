@@ -2,8 +2,8 @@
 - Add optional downloads for public shares
 - Added Simplified Chinese translation by Outbreak2096
 - Added Dutch translation by Vistaus
+- Added Sharing to Pixelfed instances
 - Only ntfy on new media
-- Pixelfed Test
 
 ### v1.5.1
 - Updated Tagify 4.27.0 (https://yaireo.github.io/tagify/)
