@@ -239,24 +239,20 @@ function getshares() {
 	global $rcmail;
 	$shares = getExistingShares();
 
-	$element = [
+	$sarray = array([
 		'id' => 0,
 		'name' => $rcmail->gettext('selshr','pictures'),
 		'exp' => null,
 		'down' => null
-	];
-
-	$sarray = array($element);
+	]);
 
 	foreach ($shares as $share) {
-		$element = [
+		$sarray[] = [
 			'id' => $share['share_id'],
 			'name' => $share['share_name'],
 			'exp' => $share['expire_date'],
 			'down' => $share['share_down']
 		];
-
-		$sarray[] = $element;
 	}
 
 	$response = [

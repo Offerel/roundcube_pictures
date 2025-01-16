@@ -787,7 +787,6 @@ function getshares(response) {
 			document.getElementById('link').value = '';
 
 			if(share.exp) {
-				console.log(share.name, share.exp);
 				document.getElementById('never').checked = false;
 				document.getElementById('expiredate').disabled = false;
 				document.getElementById('expiredate').valueAsDate = new Date(share.exp * 1000)
