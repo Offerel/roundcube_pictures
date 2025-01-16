@@ -163,7 +163,8 @@ window.onload = function(){
 				share: document.getElementById('shares').selectedOptions[0].value
 			},
 			success: function(response) {
-				getshares();
+				getshares_o();
+				sendRequest(getshares);
 				document.getElementById('sid').value = '';
 				document.getElementById('sname').value = '';
 				document.getElementById('expiredate').value = '';
@@ -623,7 +624,8 @@ function uploadpicture() {
 function selectShare() {
 	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
 	let currentName = url.searchParams.get('p').split('/').pop();
-	getshares(currentName);
+	getshares_o(currentName);
+	sendRequest(getshares);
 	document.getElementById('sid').value = '';
 	
 	let sbtn = document.getElementById('sbtn');
@@ -760,7 +762,77 @@ function mvbtncl() {
 	document.getElementById('rnb').classList.add('disabled');
 }
 
-function getshares(current = '') {
+function getshares(response, current = '') {
+	console.log(response);
+	document.getElementById('suser').value = "";
+	document.getElementById('suser').style.borderColor = "#b2b2b2";
+	document.getElementById('sbtn').style.display = 'inline-block';
+	document.getElementById('btnclp').style.display = 'none';	
+	/*
+	$.ajax({
+		type: "POST",
+		url: "plugins/pictures/photos.php",
+		data: {
+			getshares: "1"
+		},
+		success: function(a) {
+			$("#share_target").html(a);
+			let sselect = document.getElementById('shares');
+
+			for (let i=0; i < sselect.options.length; i++){
+				if (sselect.options[i].text == current) {
+					sselect.options[i].selected = true;
+					document.getElementById('sid').value = parseInt(sselect.options[i].value) ? sselect.options[i].value:''
+					document.getElementById('link').value = '';
+					if(sselect.options[i].dataset.ep == undefined || sselect.options[i].dataset.ep) {
+						document.getElementById('never').checked = false;
+						document.getElementById('expiredate').disabled = false;
+						document.getElementById('expiredate').valueAsDate = (sselect.options[i].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(sselect.options[i].dataset.ep * 1000);
+					} else {
+						document.getElementById('never').checked = true;
+						document.getElementById('expiredate').value = '';
+						document.getElementById('expiredate').disabled = true;
+					}
+
+					if(sselect.options[i].dataset.dn == undefined || sselect.options[i].dataset.dn) {
+						document.getElementById('download').checked = true;
+					} else {
+						document.getElementById('download').checked = false;
+					}
+
+					break;
+				}
+			}
+
+			sselect.addEventListener('change', function(name){
+				document.getElementById('sname').value = name.target.selectedOptions[0].text;
+				document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
+				document.getElementById('link').value = '';
+				document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
+
+				if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
+					document.getElementById('download').checked = true;
+				} else {
+					document.getElementById('download').checked = false;
+				}
+
+				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
+					document.getElementById('never').checked = false;
+					document.getElementById('expiredate').disabled = false;
+					let someDate = new Date();
+					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
+				} else {
+					document.getElementById('never').checked = true;
+					document.getElementById('expiredate').value = '';
+					document.getElementById('expiredate').disabled = true;
+				}
+			});
+		}
+	})
+	*/
+}
+
+function getshares_o(current = '') {
 	document.getElementById('suser').value = "";
 	document.getElementById('suser').style.borderColor = "#b2b2b2";
 	document.getElementById('sbtn').style.display = 'inline-block';

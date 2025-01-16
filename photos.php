@@ -39,21 +39,8 @@ $messages = "";
 $comment = "";
 $requestedDir = null;
 $label_max_length = $rcmail->config->get('label_max_length', false);
-$skip_objects = $rcmail->config->get('skip_objects', false);
 $ccmd = $rcmail->config->get('ffmpeg_cmd');
 $exif_mode = $rcmail->config->get('exif');
-
-if(isset($_POST['getsubs'])) {
-	$subdirs = getAllSubDirectories($pictures_path);
-	$select = "<select name='target' id='target'><option selected='true' disabled='disabled'>".$rcmail->gettext('selalb','pictures')."</option>";
-	foreach ($subdirs as $dir) {
-		$dir = trim(substr($dir,strlen($pictures_path)),'/');
-		if(!strposa($dir, $skip_objects))
-			$select.= "<option>$dir</option>";
-	}
-	$select.="</select>";
-	die($select);
-}
 
 if(isset($_POST['getshares'])) {
 	$shares = getExistingShares();
@@ -232,6 +219,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'getSubs':
 			$response = getSubs();
 			break;
+		case 'getshares':
+			$response = getshares();
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -243,6 +233,38 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function getshares() {
+	global $rcmail;
+	$shares = getExistingShares();
+
+	$element = [
+		'id' => 0,
+		'name' => $rcmail->gettext('selshr','pictures'),
+		'exp' => null,
+		'down' => null
+	];
+
+	$sarray = array($element);
+
+	foreach ($shares as $share) {
+		$element = [
+			'id' => $share['share_id'],
+			'name' => $share['share_name'],
+			'exp' => $share['expire_date'],
+			'down' => $share['share_down']
+		];
+
+		$sarray[] = $element;
+	}
+
+	$response = [
+		'code' => 200,
+		'shares' => $sarray
+	];
+
+	return $response;
 }
 
 function getSubs() {
