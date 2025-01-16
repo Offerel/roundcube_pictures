@@ -163,7 +163,6 @@ window.onload = function(){
 				share: document.getElementById('shares').selectedOptions[0].value
 			},
 			success: function(response) {
-				getshares_o();
 				sendRequest(getshares);
 				document.getElementById('sid').value = '';
 				document.getElementById('sname').value = '';
@@ -624,7 +623,6 @@ function uploadpicture() {
 function selectShare() {
 	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
 	let currentName = url.searchParams.get('p').split('/').pop();
-	getshares_o(currentName);
 	sendRequest(getshares);
 	document.getElementById('sid').value = '';
 	
@@ -762,142 +760,77 @@ function mvbtncl() {
 	document.getElementById('rnb').classList.add('disabled');
 }
 
-function getshares(response, current = '') {
-	console.log(response);
+function getshares(response) {
+	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
+	let current = url.searchParams.get('p').split('/').pop();
+
 	document.getElementById('suser').value = "";
 	document.getElementById('suser').style.borderColor = "#b2b2b2";
 	document.getElementById('sbtn').style.display = 'inline-block';
-	document.getElementById('btnclp').style.display = 'none';	
-	/*
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			getshares: "1"
-		},
-		success: function(a) {
-			$("#share_target").html(a);
-			let sselect = document.getElementById('shares');
+	document.getElementById('btnclp').style.display = 'none';
 
-			for (let i=0; i < sselect.options.length; i++){
-				if (sselect.options[i].text == current) {
-					sselect.options[i].selected = true;
-					document.getElementById('sid').value = parseInt(sselect.options[i].value) ? sselect.options[i].value:''
-					document.getElementById('link').value = '';
-					if(sselect.options[i].dataset.ep == undefined || sselect.options[i].dataset.ep) {
-						document.getElementById('never').checked = false;
-						document.getElementById('expiredate').disabled = false;
-						document.getElementById('expiredate').valueAsDate = (sselect.options[i].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(sselect.options[i].dataset.ep * 1000);
-					} else {
-						document.getElementById('never').checked = true;
-						document.getElementById('expiredate').value = '';
-						document.getElementById('expiredate').disabled = true;
-					}
+	let sselect = document.createElement('select');
+	sselect.id = 'shares';
+	sselect.tabIndex = -1;
+	sselect.style.width = "calc(100% - 20px)";
 
-					if(sselect.options[i].dataset.dn == undefined || sselect.options[i].dataset.dn) {
-						document.getElementById('download').checked = true;
-					} else {
-						document.getElementById('download').checked = false;
-					}
+	response.shares.forEach(share => {
+		let opt = document.createElement('option');
+		opt.value = share.id;
+		opt.dataset.ep = share.exp;
+		opt.dataset.dn = share.down;
+		opt.text = share.name;
 
-					break;
-				}
+		if(share.name === current) {
+			opt.selected = true;
+			document.getElementById('sid').value = parseInt(share.id);
+			document.getElementById('link').value = '';
+
+			if(share.exp) {
+				console.log(share.name, share.exp);
+				document.getElementById('never').checked = false;
+				document.getElementById('expiredate').disabled = false;
+				document.getElementById('expiredate').valueAsDate = new Date(share.exp * 1000)
+			} else {
+				document.getElementById('never').checked = true;
+				document.getElementById('expiredate').disabled = true;
+				document.getElementById('expiredate').value = '';
 			}
 
-			sselect.addEventListener('change', function(name){
-				document.getElementById('sname').value = name.target.selectedOptions[0].text;
-				document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
-				document.getElementById('link').value = '';
-				document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
-
-				if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
-					document.getElementById('download').checked = true;
-				} else {
-					document.getElementById('download').checked = false;
-				}
-
-				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
-					document.getElementById('never').checked = false;
-					document.getElementById('expiredate').disabled = false;
-					let someDate = new Date();
-					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
-				} else {
-					document.getElementById('never').checked = true;
-					document.getElementById('expiredate').value = '';
-					document.getElementById('expiredate').disabled = true;
-				}
-			});
+			document.getElementById('download').checked = share.down;
 		}
+
+		sselect.appendChild(opt);
 	})
-	*/
-}
 
-function getshares_o(current = '') {
-	document.getElementById('suser').value = "";
-	document.getElementById('suser').style.borderColor = "#b2b2b2";
-	document.getElementById('sbtn').style.display = 'inline-block';
-	document.getElementById('btnclp').style.display = 'none';	
+	sselect.selectedIndex = 0;
+	sselect.options[0].disabled = true;
+	
+	sselect.addEventListener('change', function(name){
+		document.getElementById('sname').value = name.target.selectedOptions[0].text;
+		document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
+		document.getElementById('link').value = '';
+		document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			getshares: "1"
-		},
-		success: function(a) {
-			$("#share_target").html(a);
-			let sselect = document.getElementById('shares');
-
-			for (let i=0; i < sselect.options.length; i++){
-				if (sselect.options[i].text == current) {
-					sselect.options[i].selected = true;
-					document.getElementById('sid').value = parseInt(sselect.options[i].value) ? sselect.options[i].value:''
-					document.getElementById('link').value = '';
-					if(sselect.options[i].dataset.ep == undefined || sselect.options[i].dataset.ep) {
-						document.getElementById('never').checked = false;
-						document.getElementById('expiredate').disabled = false;
-						document.getElementById('expiredate').valueAsDate = (sselect.options[i].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(sselect.options[i].dataset.ep * 1000);
-					} else {
-						document.getElementById('never').checked = true;
-						document.getElementById('expiredate').value = '';
-						document.getElementById('expiredate').disabled = true;
-					}
-
-					if(sselect.options[i].dataset.dn == undefined || sselect.options[i].dataset.dn) {
-						document.getElementById('download').checked = true;
-					} else {
-						document.getElementById('download').checked = false;
-					}
-
-					break;
-				}
-			}
-
-			sselect.addEventListener('change', function(name){
-				document.getElementById('sname').value = name.target.selectedOptions[0].text;
-				document.getElementById('sid').value = parseInt(name.target.selectedOptions[0].value) ? name.target.selectedOptions[0].value:'';
-				document.getElementById('link').value = '';
-				document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
-
-				if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
-					document.getElementById('download').checked = true;
-				} else {
-					document.getElementById('download').checked = false;
-				}
-
-				if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
-					document.getElementById('never').checked = false;
-					document.getElementById('expiredate').disabled = false;
-					let someDate = new Date();
-					document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
-				} else {
-					document.getElementById('never').checked = true;
-					document.getElementById('expiredate').value = '';
-					document.getElementById('expiredate').disabled = true;
-				}
-			});
+		if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
+			document.getElementById('download').checked = true;
+		} else {
+			document.getElementById('download').checked = false;
 		}
-	})
+
+		if (name.target.selectedOptions[0].dataset.ep == undefined || name.target.selectedOptions[0].dataset.ep) {
+			document.getElementById('never').checked = false;
+			document.getElementById('expiredate').disabled = false;
+			let someDate = new Date();
+			document.getElementById('expiredate').valueAsDate = (name.target.selectedOptions[0].dataset.ep == undefined) ? new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays)):new Date(name.target.selectedOptions[0].dataset.ep * 1000);
+		} else {
+			document.getElementById('never').checked = true;
+			document.getElementById('expiredate').value = '';
+			document.getElementById('expiredate').disabled = true;
+		}
+	});
+
+	document.getElementById('share_target').firstChild.replaceWith(sselect);
 }
 
 function rename_album() {
