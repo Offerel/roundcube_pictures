@@ -269,7 +269,6 @@ window.onload = function(){
 				});
 
 				xhr.onload = function () {
-					console.log(this.response);
 					if(this.status == 200 && this.response.base_url != null) {
 						document.getElementById('sbtn').classList.remove('disabled');
 					} else {
@@ -676,7 +675,7 @@ function create_album() {
 			if(b == 1 && (document.getElementById("album_edit").style.display = "none")) {
 				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a);
 				count_checks();
-				getsubs();
+				sendRequest(getSubs)
 			} else {
 				alert(b);
 			}
@@ -696,7 +695,7 @@ function edit_album() {
 	var a = album.split("/");
 	$("#album_edit").contents().find("h2").html("Album: " + a[a.length - 1]);
 	$("#album_name").val(a[a.length - 1]);
-	$("#album_org").val(album); - 1 !== document.getElementById("mv_target").innerHTML.indexOf("div") && getsubs();
+	$("#album_org").val(album) - 1 !== document.getElementById("mv_target").innerHTML.indexOf("div") && sendRequest(getSubs);
 	document.getElementById("albedit").style.display = "block";
 	document.getElementById("albadd").style.display = "none";
 	document.getElementById("mv_target").style.display = "block";
@@ -724,18 +723,35 @@ function btn_title() {
 	this.title = title;
 }
 
-function getsubs() {
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			getsubs: "1"
-		},
-		success: function(a) {
-			$("#mv_target").html(a);
-			setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
-		}
-	})
+function sendRequest(action, data = {}) {
+	xhr = new XMLHttpRequest();
+	data.action = action.name;
+	data = JSON.stringify(data);
+	xhr.onload = function() {
+		action(this.response);		
+	}
+	xhr.open('POST', './plugins/pictures/photos.php');
+	xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+	xhr.responseType = 'json';
+	xhr.send(data);
+}
+
+function getSubs(response) {
+	let select = document.createElement('select');
+	select.id = 'target';
+
+	response.dirs.forEach(element => {
+		let opt = document.createElement('option');
+		opt.value = element;
+		opt.text = element;
+		select.appendChild(opt);
+	});
+
+	select.selectedIndex = 0;
+	select.options[0].disabled = true;
+
+	document.getElementById('mv_target').firstChild.replaceWith(select);
+	setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
 }
 
 function mvbtncl() {
@@ -825,7 +841,7 @@ function rename_album() {
 			src: a
 		},
 		success: function(b) {
-			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), getsubs())
+			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), sendRequest(getSubs))
 		}
 	})
 }
@@ -842,7 +858,7 @@ function move_album() {
 			src: a
 		},
 		success: function(a) {
-			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(b), getsubs(), count_checks())
+			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(b), sendRequest(getSubs), count_checks())
 		}
 	})
 }
@@ -861,7 +877,7 @@ function delete_album() {
 			},
 			success: function(a) {
 				dloader('#album_edit', dalb, 'remove');
-				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", getsubs(), count_checks())
+				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", sendRequest(getSubs), count_checks())
 			}
 		})
 	}

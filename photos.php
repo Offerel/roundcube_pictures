@@ -227,28 +227,62 @@ $jarr  = json_decode(file_get_contents('php://input'), true);
 if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	switch($jarr['action']) {
 		case 'pixelfed_verify':
-			$base_url = $rcmail->config->get('pixelfed_instance');
-			$token = $rcmail->config->get('pixelfed_token');
-
-			if(!$base_url || !$token) {
-				$code = 300;
-				$response = [];
-			} else {
-				$code = 200;
-				$response = [
-					'base_url' => $base_url,
-					'token' => 'tokenset',
-				];
-			}
+			$response = pixelfed_verify();
+			break;
+		case 'getSubs':
+			$response = getSubs();
 			break;
 		default:
-			$code = 500;
-			$response = [];
+			error_log('Unknown action \''.$jarr['action'].'\'');
+			$response = [
+				'code' => 500,
+				'message' => 'Unknow task'
+			];
 	}
 
-	http_response_code($code);
+	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
-	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_UNICODE));
+	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function getSubs() {
+	global $rcmail;
+	$skip_objects = $rcmail->config->get('skip_objects');
+	$pictures_path = str_replace("%u", $rcmail->user->get_username(), $rcmail->config->get('pictures_path'));
+	$subdirs = getAllSubDirectories($pictures_path);
+
+	$dirs = array($rcmail->gettext('selalb','pictures'));
+	foreach ($subdirs as $dir) {
+		$dir = trim(substr($dir,strlen($pictures_path)),'/');
+		if(!strposa($dir, $skip_objects)) $dirs[] = $dir;
+	}
+
+	$response = [
+		'code' => 200,
+		'dirs' => $dirs,
+	];
+	
+	return $response;
+}
+
+function pixelfed_verify() {
+	global $rcmail;
+	$base_url = $rcmail->config->get('pixelfed_instance');
+	$token = $rcmail->config->get('pixelfed_token');
+
+	if(!$base_url || !$token) {
+		$response = [
+			'code' => 300,
+		];
+	} else {
+		$response = [
+			'code' => 200,
+			'base_url' => $base_url,
+			'token' => 'tokenset',
+		];
+	}
+
+	return $response;
 }
 
 function delSymLink($src) {
