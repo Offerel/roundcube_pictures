@@ -353,6 +353,8 @@ function dosearch() {
 		return false;
 	}
 
+	sendRequest(search, keywords);
+
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -396,6 +398,10 @@ function dosearch() {
 			}, 50);
 		}
 	});
+}
+
+function search(response) {
+	console.log(response);
 }
 
 function searchform() {
@@ -723,10 +729,13 @@ function btn_title() {
 	this.title = title;
 }
 
-function sendRequest(action, data = {}) {
+function sendRequest(action, dat = {}) {
+	const data = JSON.stringify({
+		action: action.name,
+		data: dat
+	});
+
 	xhr = new XMLHttpRequest();
-	data.action = action.name;
-	data = JSON.stringify(data);
 	xhr.onload = function() {
 		action(this.response);		
 	}

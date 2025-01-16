@@ -42,20 +42,6 @@ $label_max_length = $rcmail->config->get('label_max_length', false);
 $ccmd = $rcmail->config->get('ffmpeg_cmd');
 $exif_mode = $rcmail->config->get('exif');
 
-if(isset($_POST['getshares'])) {
-	$shares = getExistingShares();
-	$select = "<select id='shares' tabindex='-1' style='width: calc(100% - 20px);'><option selected='true'>".$rcmail->gettext('selshr','pictures')."</option>";
-	foreach ($shares as $share) {
-		$name = $share['share_name'];
-		$id = $share['share_id'];
-		$expd = $share['expire_date'];
-		$down = $share['share_down'];
-		$select.= "<option value='$id' data-ep='$expd' data-dn='$down'>$name</option>";
-	}
-	$select.="</select>";
-	die($select);
-}
-
 if(isset($_FILES['galleryfiles'])) {
 	$files = $_FILES['galleryfiles'];
 	$folder = $_POST['folder'];
@@ -109,7 +95,7 @@ if(isset($_POST['alb_action'])) {
 				die(1);
 			}
 			break;
-		case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
+		//case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
 		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
 		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
@@ -221,6 +207,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			break;
 		case 'getshares':
 			$response = getshares();
+			break;
+		case 'search':
+			$response = search_photos($jarr['data']);
 			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
@@ -627,10 +616,10 @@ function get_mdata($files) {
 	return $mdata;
 }
 
-function search_photos($kwstr) {
+function search_photos($keywords) {
 	global $rcmail, $pictures_path, $thumb_path, $exif_mode;
 	$dbh = rcmail_utils::db();
-	$keywords = json_decode($kwstr);
+	//$keywords = json_decode($kwstr);
 	$wcond = "";
 	foreach($keywords as $keyword) {
 		$wcond.= " `pic_EXIF` LIKE '%$keyword%' AND";
@@ -642,6 +631,8 @@ function search_photos($kwstr) {
 	for ($i = 0; $i < $rows; $i++) {
 		array_push($pdata, $dbh->fetch_assoc());
 	}
+
+	$images = [];
 
 	$html = '<span id=\"last\"></span>';
 	foreach($pdata as $image) {
@@ -662,11 +653,24 @@ function search_photos($kwstr) {
 		} else {
 			$alt = $file;
 		}
+		$alt2 = $alt;
 		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
+
 		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true)):NULL;
+		$exifInfo2 = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? json_decode($image['pic_EXIF']):NULL;
 		$caption = (strlen($exifInfo) > 10) ? "<div id='".$path_parts['basename']."' class='exinfo'>$exifInfo</div>":"";
 		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>$caption";
+
+		$images[] = [
+			'path' => $image['pic_path'],
+			'alt' => $alt2,
+			'dim' => array(getimagesize($thumbnail)[0],getimagesize($thumbnail)[1]),
+			'exif' => $exifInfo2
+		];
 	}
+
+	file_put_contents('/tmp/search.json', json_encode($images, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE));
+	file_put_contents('/tmp/search.html', $html);
 	return $html;
 }
 
