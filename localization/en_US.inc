@@ -131,4 +131,7 @@ $labels['Fired-CompulsoryMode-RedEyeMode-ReturnLightDetected'] = "Flash, Compuls
 $labels['Fired-AutoMode-RedEyeMode'] = "Flash, Auto, Red-eye";
 $labels['Fired-AutoMode-NoReturnLightDetected-RedEyeMode'] = "Flash, Auto, No Strobe Return, Red-eye";
 $labels['Fired-AutoMode-ReturnLightDetected-RedEyeMode'] = "Flash, Auto, Strobe Return, Red-eye";
+$labels['alb_move_ok'] = "The gallery '%s%' is moved to '%t%'";
+$labels['alb_move_image'] = "The images of the gallery '%s%' could not be moved to '%t%'";
+$labels['alb_move_thumb'] = "The thumbnails of the gallery '%s%' could not be moved to '%t%'";
 ?>

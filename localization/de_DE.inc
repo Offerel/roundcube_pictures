@@ -126,3 +126,6 @@ $labels['Fired-AutoMode-NoReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, 
 $labels['Fired-AutoMode-ReturnLightDetected-RedEyeMode'] = "Ausgelöst, Auto, Rücklauf erkannt, Rote Augen Modus";
 $labels['theme_dark'] = "Dunkel";
 $labels['theme_dynamic'] = "Dynamisch";
+$labels['alb_move_ok'] = "Das Album '%s%' wurde nach '%t%' verschoben";
+$labels['alb_move_image'] = "Die Bilder des Albums '%s%' konnten nicht nach '%t%' verschoben werden";
+$labels['alb_move_thumb'] = "Die Thumbnails des Albums '%s%' konnten nicht nach '%t%' verschoben werden";

@@ -83,7 +83,6 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'move':	chSymLink($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); mvdb($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME)); rename($thumb_path.$oldpath, $thumb_path.$nnewPath); die(rename($src, $mtarget."/".pathinfo($src, PATHINFO_BASENAME))); break;
 		case 'rename':	chSymLink($src, $pictures_path.$newPath); mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
@@ -210,6 +209,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'search':
 			$response = search_photos($jarr['data']);
 			break;
+		case 'albMove':
+			$response = albMove($array);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -221,6 +223,27 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function albMove($array) {
+	$source = rtrim($pictures_path,'/').'/'.filter_var($array['data']['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$target = isset($array['data']['target']) ?  $pictures_path.$array['data']['target']:'';
+	$bsrc = pathinfo($source, PATHINFO_BASENAME);
+	chSymLink($source, "$target/$bsrc");
+	mvdb($source, "$target/$bsrc");
+	$thumbnail = rename($thumb_path.str_replace($pictures_path,'',$source), $thumb_path.str_replace($pictures_path,'',$target)."/".$bsrc);
+	$image = rename($source, $target."/".$bsrc);
+
+	$code = ($thumbnail && $image) ? 200:500;
+	$response = [
+		'code' => $code,
+		'thumbnail' => $thumbnail,
+		'image' => $image,
+		'target' => $array['data']['target'],
+		'source' => $array['data']['source']
+	];
+
+	return $response;
 }
 
 function getshares() {

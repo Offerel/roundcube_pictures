@@ -419,7 +419,7 @@ function search(response) {
 			iframe.contentWindow.lightbox.reload();
 			iframe.contentWindow.$('#images').justifiedGallery('norewind');
 		} else {
-			rcmail.display_message(rcmail.gettext('noresults','pictures'), 'error')
+			rcmail.display_message(rcmail.gettext('noresults','pictures'), 'error');
 		}
 	}, 50);
 }
@@ -861,6 +861,29 @@ function getshares(response) {
 	document.getElementById('share_target').firstChild.replaceWith(sselect);
 }
 
+function albMove(response) {
+	console.log(response);
+	document.getElementById("album_edit").style.display = "none";
+	if(response.code === 200) {
+		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.target);
+		sendRequest(getSubs);
+		count_checks();
+		let text = rcmail.gettext('alb_move_ok','pictures').replace('%s%', response.source);
+		text = text.replace('%t%', response.target);
+		rcmail.display_message(text, 'confirmation');
+	} else {
+		if(response.image !== true) {
+			let text = rcmail.gettext('alb_move_image','pictures').replace('%s%', response.source);
+			text = text.replace('%t%', response.target);
+			rcmail.display_message(text, 'error');
+		} else if (response.thumbnail !== true) {
+			let text = rcmail.gettext('alb_move_thumb','pictures').replace('%s%', response.target);
+			text = text.replace('%t%', response.target);
+			rcmail.display_message(text, 'error');
+		}
+	}
+}
+
 function rename_album() {
 	var a = document.getElementById("album_org").value,
 		b = document.getElementById("album_name").value;
@@ -880,20 +903,10 @@ function rename_album() {
 }
 
 function move_album() {
-	var a = document.getElementById("album_org").value,
-		b = document.getElementById("target").value;
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "move",
-			target: b,
-			src: a
-		},
-		success: function(a) {
-			1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(b), sendRequest(getSubs), count_checks())
-		}
-	})
+	sendRequest(albMove, {
+		target: document.getElementById("target").value,
+		source: document.getElementById("album_org").value
+	});
 }
 
 function delete_album() {
