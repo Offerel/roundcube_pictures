@@ -83,7 +83,6 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'rename':	chSymLink($src, $pictures_path.$newPath); mvdb($oldpath, $newPath); die(rename($src, $target)); break;
 		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
 			if (!@mkdir($target, 0755, true)) {
@@ -210,7 +209,10 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			$response = search_photos($jarr['data']);
 			break;
 		case 'albMove':
-			$response = albMove($array);
+			$response = albMove($jarr['data']);
+			break;
+		case 'albRename':
+			$response = albRename($jarr['data']);
 			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
@@ -225,9 +227,30 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
 }
 
-function albMove($array) {
-	$source = rtrim($pictures_path,'/').'/'.filter_var($array['data']['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = isset($array['data']['target']) ?  $pictures_path.$array['data']['target']:'';
+function albRename($data) {
+	global $pictures_path, $thumb_path;
+	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$target = urldecode(dirname($source).'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$newPath = html_entity_decode(str_replace($pictures_path,'',$target));
+	$oldpath = str_replace($pictures_path,'',$source);
+	
+	chSymLink($source, $pictures_path.$newPath);
+	mvdb($oldpath, $newPath);
+	$rename = (rename($source, $target)) ? 200:500;
+	
+	$response = [
+		'code' => $rename,
+		'old' => $oldpath,
+		'new' => $newPath
+	];
+
+	return $response;
+}
+
+function albMove($data) {
+	global $pictures_path, $thumb_path;
+	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$target = isset($data['target']) ?  $pictures_path.$data['target']:'';
 	$bsrc = pathinfo($source, PATHINFO_BASENAME);
 	chSymLink($source, "$target/$bsrc");
 	mvdb($source, "$target/$bsrc");
@@ -239,8 +262,8 @@ function albMove($array) {
 		'code' => $code,
 		'thumbnail' => $thumbnail,
 		'image' => $image,
-		'target' => $array['data']['target'],
-		'source' => $array['data']['source']
+		'target' => $data['target'],
+		'source' => $data['source']
 	];
 
 	return $response;

@@ -129,3 +129,5 @@ $labels['theme_dynamic'] = "Dynamisch";
 $labels['alb_move_ok'] = "Das Album '%s%' wurde nach '%t%' verschoben";
 $labels['alb_move_image'] = "Die Bilder des Albums '%s%' konnten nicht nach '%t%' verschoben werden";
 $labels['alb_move_thumb'] = "Die Thumbnails des Albums '%s%' konnten nicht nach '%t%' verschoben werden";
+$labels['alb_ren_ok'] = "Das Album '%s%' wurde nach '%t%' umbenannt";
+$labels['alb_ren_fail'] = "Das Album '%s%' konnte nicht nach '%t%' umbenannt werden";

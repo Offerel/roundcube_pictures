@@ -862,7 +862,6 @@ function getshares(response) {
 }
 
 function albMove(response) {
-	console.log(response);
 	document.getElementById("album_edit").style.display = "none";
 	if(response.code === 200) {
 		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.target);
@@ -884,22 +883,26 @@ function albMove(response) {
 	}
 }
 
-function rename_album() {
-	var a = document.getElementById("album_org").value,
-		b = document.getElementById("album_name").value;
+function albRename(response) {
+	document.getElementById("album_edit").style.display = "none";
+	if(response.code === 200) {
+		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.old);
+		sendRequest(getSubs);
+		let text = rcmail.gettext('alb_ren_ok','pictures').replace('%s%', response.old);
+		text = text.replace('%t%', response.new);
+		rcmail.display_message(text, 'confirmation');
+	} else {
+		let text = rcmail.gettext('alb_ren_fail','pictures').replace('%s%', response.old);
+		text = text.replace('%t%', response.new);
+		rcmail.display_message(text, 'error');
+	}
+}
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "rename",
-			target: b,
-			src: a
-		},
-		success: function(b) {
-			1 == b && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a), sendRequest(getSubs))
-		}
-	})
+function rename_album() {
+	sendRequest(albRename, {
+		target: document.getElementById("album_name").value,
+		source: document.getElementById("album_org").value
+	});
 }
 
 function move_album() {
