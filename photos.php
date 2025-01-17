@@ -95,7 +95,6 @@ if(isset($_POST['alb_action'])) {
 				die(1);
 			}
 			break;
-		//case 'search': die(search_photos(filter_var($_POST['keyw'], FILTER_UNSAFE_RAW))); break;
 		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
 		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
@@ -619,7 +618,6 @@ function get_mdata($files) {
 function search_photos($keywords) {
 	global $rcmail, $pictures_path, $thumb_path, $exif_mode;
 	$dbh = rcmail_utils::db();
-	//$keywords = json_decode($kwstr);
 	$wcond = "";
 	foreach($keywords as $keyword) {
 		$wcond.= " `pic_EXIF` LIKE '%$keyword%' AND";
@@ -634,14 +632,10 @@ function search_photos($keywords) {
 
 	$images = [];
 
-	$html = '<span id=\"last\"></span>';
 	foreach($pdata as $image) {
-		$linkUrl = "simg.php?file=".$image['pic_path'];
-		$imgUrl = "simg.php?file=".$image['pic_path'].'&t=1';
 		$path_parts = pathinfo("$thumb_path".$image['pic_path']);
 		$file = $path_parts['filename'];
 		$thumbnail = $path_parts['dirname'].'/'.$file.'.webp';
-		$gis = getimagesize($thumbnail)[3];
 		$exif = json_decode($image['pic_EXIF'], true);
 
 		if(isset($exif['ImageDescription'])) {
@@ -653,24 +647,16 @@ function search_photos($keywords) {
 		} else {
 			$alt = $file;
 		}
-		$alt2 = $alt;
-		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
 
-		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true)):NULL;
-		$exifInfo2 = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true), 'json'):NULL;
-		$caption = (strlen($exifInfo) > 10) ? "<div id='".$path_parts['basename']."' class='exinfo'>$exifInfo</div>":"";
-		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>$caption";
-
+		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF($exif, 'json'):NULL;
+		
 		$images[] = [
 			'path' => $image['pic_path'],
-			'alt' => $alt2,
+			'alt' => $alt,
 			'dim' => array(getimagesize($thumbnail)[0],getimagesize($thumbnail)[1]),
-			'exif' => $exifInfo2
+			'exif' => $exifInfo
 		];
 	}
-
-	file_put_contents('/tmp/search.json', json_encode($images, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE));
-	file_put_contents('/tmp/search.html', $html);
 
 	$response = [
 		'code' => 200,
@@ -1221,8 +1207,8 @@ function parseEXIF($jarr, $format = 'html') {
 
 		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
 		if(strlen($osm_params) > 20) {
-			$eInfo['osm'] = $osm;
-			$eInfo['google'] = $google;
+			$eInfo['map']['osm'] = $osm;
+			$eInfo['map']['google'] = $google;
 		}
 	}
 

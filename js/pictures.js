@@ -361,7 +361,6 @@ function search(response) {
 
 	setTimeout(() => {
 		if(response.images.length > 0) {
-			//console.log(response);
 			let iframe = document.getElementById('picturescontentframe');
 			let imgdiv = iframe.contentWindow.document.getElementById('images');
 			let folder = iframe.contentWindow.document.getElementById('folders');
@@ -372,9 +371,8 @@ function search(response) {
 
 			response.images.forEach(element => {
 				let div = document.createElement('div');
-
 				let link = document.createElement('a');
-				link.classname = 'image glightbox';
+				link.setAttribute("class","image glightbox");
 				link.href = 'simg.php?file=' + element.path;
 
 				let image = document.createElement('img');
@@ -395,7 +393,20 @@ function search(response) {
 
 				let caption = document.createElement('div');
 				caption.id = element.path.split('/').pop();
-				caption.classname = 'exinfo';
+				caption.setAttribute('class', 'exinfo');
+
+				let e_el = '';
+
+				for (let key in element.exif) {
+					if(key !== 'map') {
+						e_el += key + ': ' + element.exif[key] + '<br>';
+					} else {
+						e_el += '<img src="images/marker.png"><a class="mapl" href="' + element.exif[key]['osm'] + '" target="_blank">OSM</a> | <a class="mapl" href="' + element.exif[key]['google'] + '" target="_blank">Google Maps</a>';
+					}
+				}
+
+				caption.innerHTML = e_el;
+				div.appendChild(caption);
 
 				imgdiv.appendChild(div);
 			});
@@ -405,18 +416,8 @@ function search(response) {
 			let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
 			header.innerHTML = "<li>" + rcmail.gettext('searchfor','pictures') + response.keywords.join(', ') + "</li>";
 
-			iframe.contentWindow.$('#images').justifiedGallery({
-				rowHeight: 220,
-				margins: 7,
-				border: 0,
-				lastRow: 'nojustify',
-				captions: true,
-				randomize: false,
-				selector: '.glightbox'
-			});
-
-			iframe.contentWindow.$('#images').justifiedGallery('norewind');
 			iframe.contentWindow.lightbox.reload();
+			iframe.contentWindow.$('#images').justifiedGallery('norewind');
 		} else {
 			rcmail.display_message(rcmail.gettext('noresults','pictures'), 'error')
 		}
