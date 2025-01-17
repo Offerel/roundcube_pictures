@@ -657,7 +657,7 @@ function search_photos($keywords) {
 		$alt = (strlen($alt) > 0) ? "alt='$alt'":"";
 
 		$exifInfo = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true)):NULL;
-		$exifInfo2 = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? json_decode($image['pic_EXIF']):NULL;
+		$exifInfo2 = ($exif_mode != 0 && isset($image['pic_EXIF'])) ? parseEXIF(json_decode($image['pic_EXIF'], true), 'json'):NULL;
 		$caption = (strlen($exifInfo) > 10) ? "<div id='".$path_parts['basename']."' class='exinfo'>$exifInfo</div>":"";
 		$html.= "<div><a class=\"image glightbox\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" $gis $alt /></a><input name=\"images\" value=\"file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\"></div>$caption";
 
@@ -671,7 +671,14 @@ function search_photos($keywords) {
 
 	file_put_contents('/tmp/search.json', json_encode($images, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE));
 	file_put_contents('/tmp/search.html', $html);
-	return $html;
+
+	$response = [
+		'code' => 200,
+		'images' => $images,
+		'keywords' => $keywords
+	];
+
+	return $response;
 }
 
 function removeDirectory($path, $user) {
@@ -1099,7 +1106,7 @@ function showPage($thumbnails, $dir) {
 	return $page;
 }
 
-function parseEXIF($jarr) {
+function parseEXIF($jarr, $format = 'html') {
 	global $rcmail;
 	if (!is_array($jarr)) return false;
 
@@ -1141,6 +1148,8 @@ function parseEXIF($jarr) {
 				'query' => str_replace(',','.',$jarr['GPSLatitude']) . ',' . str_replace(',','.',$jarr['GPSLongitude']),
 				'z' => 13
 			),'','&amp;');
+			$osm = "https://www.openstreetmap.org/?$osm_params#map=14/".$jarr['GPSLatitude']."/".$jarr['GPSLongitude'];
+			$google = "https://www.google.com/maps/search/?$gm_params";
 			$gpslink ="<img src='images/marker.png'><a class='mapl' href='https://www.openstreetmap.org/?$osm_params#map=14/".$jarr['GPSLatitude']."/".$jarr['GPSLongitude']."' target='_blank'>OSM</a> | <a class='mapl' href='https://www.google.com/maps/search/?$gm_params' target='_blank'>Google Maps</a>";
 		} else {
 			$osm_params = "";
@@ -1153,19 +1162,46 @@ function parseEXIF($jarr) {
 			$camera = $jarr['Model'];
 
 		$exifInfo = (array_key_exists('Model', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+		if(array_key_exists('Model', $jarr)) $eInfo[$rcmail->gettext('exif_camera','pictures')] = $camera;
+
 		$exifInfo.= (array_key_exists('LensID', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['LensID']."<br>":"";
+		if(array_key_exists('LensID', $jarr)) $eInfo[$rcmail->gettext('exif_lens','pictures')] = $jarr['LensID'];
+
 		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
+		if(array_key_exists('DateTimeOriginal', $jarr)) $eInfo[$rcmail->gettext('exif_date','pictures')] = date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal']);
+
 		$exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
+		if(array_key_exists('Software', $jarr)) $eInfo[$rcmail->gettext('exif_sw','pictures')] = $jarr['Software'];
+
 		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
+		if(array_key_exists('ExposureProgram', $jarr)) $eInfo[$rcmail->gettext('exif_expos','pictures')] = $rcmail->gettext(ep($jarr['ExposureProgram']),'pictures');
+
 		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
+		if(array_key_exists('MeteringMode', $jarr)) $eInfo[$rcmail->gettext('exif_meter','pictures')] = $rcmail->gettext(mm($jarr['MeteringMode']),'pictures');
+
 		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
+		if(array_key_exists('ExposureTime', $jarr)) $eInfo[$rcmail->gettext('exif_exptime','pictures')] = $jarr['ExposureTime'];
+
 		$exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
+		if(array_key_exists('ISO', $jarr)) $eInfo[$rcmail->gettext('exif_ISO','pictures')] = $jarr['ISO'];
+
 		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
+		if(array_key_exists('FocalLength', $jarr)) $eInfo[$rcmail->gettext('exif_focalength','pictures')] = $jarr['FocalLength'];
+
 		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
+		if(array_key_exists('WhiteBalance', $jarr)) $eInfo[$rcmail->gettext('exif_whiteb','pictures')] = $rcmail->gettext(wb($jarr['WhiteBalance']),'pictures');
+
 		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ƒ/".$jarr['FNumber']."<br>":"";
+		if(array_key_exists('FNumber', $jarr)) $eInfo[$rcmail->gettext('exif_fstop','pictures')] = "ƒ/".$jarr['FNumber'];
+
 		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
+		if(array_key_exists('Flash', $jarr)) $eInfo[$rcmail->gettext('exif_flash','pictures')] = $rcmail->gettext(flash($jarr['Flash']),'pictures');
+
 		$exifInfo.= (array_key_exists('Title', $jarr)) ? $rcmail->gettext('exif_title','pictures').": ".$jarr['Title']."<br>":"";
+		if(array_key_exists('Title', $jarr)) $eInfo[$rcmail->gettext('exif_title','pictures')] = $jarr['Title'];
+
 		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
+		if(isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) $eInfo[$rcmail->gettext('exif_desc','pictures')] = $jarr['ImageDescription'];
 		
 		if(isset($jarr['Keywords']) && is_array($jarr['Keywords'])) {
 			$keywords = str_replace('u00','\u00', implode(", ", $jarr['Keywords']));
@@ -1178,12 +1214,23 @@ function parseEXIF($jarr) {
 		}
 
 		$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": $keywords<br>";
+		$eInfo[$rcmail->gettext('exif_keywords','pictures')] = $keywords;
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
+		if(array_key_exists('Copyright', $jarr)) $eInfo[$rcmail->gettext('exif_copyright','pictures')] = $jarr['Copyright'];
+
 		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+		if(strlen($osm_params) > 20) {
+			$eInfo['osm'] = $osm;
+			$eInfo['google'] = $google;
+		}
 	}
 
-	return $exifInfo;
+	if($format === 'html') {
+		return $exifInfo;
+	} else {
+		return $eInfo;
+	}
 }
 
 function ep($val) {

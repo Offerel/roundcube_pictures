@@ -354,54 +354,73 @@ function dosearch() {
 	}
 
 	sendRequest(search, keywords);
-
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "search",
-			target: '',
-			src: '',
-			keyw: JSON.stringify(keywords),
-		},
-		success: function(response) {
-			document.getElementById('searchphotof').style.display='none';
-			setTimeout(() => {
-				if(response.length > 30) {
-					let iframe = document.getElementById('picturescontentframe');
-					iframe.contentWindow.document.getElementById('images').innerHTML = response;
-	
-					if(iframe.contentWindow.document.getElementById('folders')) {
-						let folders = iframe.contentWindow.document.getElementById('folders');
-						folders.innerHTML = '';
-						folders.style.display = 'none';
-					}
-	
-					let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
-					header.innerHTML = "<li>" + rcmail.gettext('searchfor','pictures') + keywords.join(', ') + "</li>";
-	
-					iframe.contentWindow.$('#images').justifiedGallery({
-						rowHeight: 220,
-						margins: 7,
-						border: 0,
-						lastRow: 'nojustify',
-						captions: true,
-						randomize: false,
-						selector: '.glightbox'
-					});
-	
-					iframe.contentWindow.$('#images').justifiedGallery('norewind');
-					iframe.contentWindow.lightbox.reload();
-				} else {
-					alert(rcmail.gettext('noresults','pictures'));
-				}
-			}, 50);
-		}
-	});
 }
 
 function search(response) {
-	console.log(response);
+	document.getElementById('searchphotof').style.display='none';
+
+	setTimeout(() => {
+		if(response.images.length > 0) {
+			//console.log(response);
+			let iframe = document.getElementById('picturescontentframe');
+			let imgdiv = iframe.contentWindow.document.getElementById('images');
+			let folder = iframe.contentWindow.document.getElementById('folders');
+
+			let span = document.createElement('span');
+			span.id = 'last';
+			imgdiv.replaceChildren(span);
+
+			response.images.forEach(element => {
+				let div = document.createElement('div');
+
+				let link = document.createElement('a');
+				link.classname = 'image glightbox';
+				link.href = 'simg.php?file=' + element.path;
+
+				let image = document.createElement('img');
+				image.src = 'simg.php?file=' + element.path + '&t=1';
+				image.width = element.dim[0];
+				image.height = element.dim[1];
+				image.setAttribute('alt', element.alt);
+				link.appendChild(image);
+				div.appendChild(link);
+
+				let input = document.createElement('input');
+				input.name = 'images';
+				input.value = 'file';
+				input.type = 'checkbox';
+				input.addEventListener('change', count_checks);
+				input.classname = 'icheckbox';
+				div.appendChild(input);
+
+				let caption = document.createElement('div');
+				caption.id = element.path.split('/').pop();
+				caption.classname = 'exinfo';
+
+				imgdiv.appendChild(div);
+			});
+
+			folder.style.display = 'none';
+
+			let header = iframe.contentWindow.document.querySelector('#header .breadcrumb');
+			header.innerHTML = "<li>" + rcmail.gettext('searchfor','pictures') + response.keywords.join(', ') + "</li>";
+
+			iframe.contentWindow.$('#images').justifiedGallery({
+				rowHeight: 220,
+				margins: 7,
+				border: 0,
+				lastRow: 'nojustify',
+				captions: true,
+				randomize: false,
+				selector: '.glightbox'
+			});
+
+			iframe.contentWindow.$('#images').justifiedGallery('norewind');
+			iframe.contentWindow.lightbox.reload();
+		} else {
+			rcmail.display_message(rcmail.gettext('noresults','pictures'), 'error')
+		}
+	}, 50);
 }
 
 function searchform() {
