@@ -440,41 +440,34 @@ function metaform() {
 		media.push(dir + '/' + nodes[i].value);
 	}
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "gmdata",
-			target: '',
-			src: '',
-			files: JSON.stringify(media),
-		},
-		success: function(response) {
-			let rarr = JSON.parse(response);
-			if(rarr['keywords'] == 2) {
-				document.getElementById('mekeywords').placeholder = 'Multiple Values';
-				document.getElementById('mekeywords').value = '';
-			} else {
-				document.getElementById('mekeywords').value = rarr['keywords'];
-			}
-
-			if(rarr['title'] == 2) {
-				document.getElementById('metitle').placeholder = 'Multiple Values';
-				document.getElementById('metitle').value = '';
-			} else {
-				document.getElementById('metitle').value = rarr['title'];
-			}
-
-			if(rarr['description'] == 2) {
-				document.getElementById('medescription').placeholder = 'Multiple Values';
-				document.getElementById('medescription').value = '';
-			} else {
-				document.getElementById('medescription').value = rarr['description'];
-			}
-		}
+	sendRequest(metadata, {
+		media: media
 	});
+}
 
-	$("#metadata").contents().find("h2").html(rcmail.gettext('metadata','pictures'));
+function metadata(response) {
+	if(response.mdata['keywords'] == 2) {
+		tagify.DOM.input.setAttribute('data-placeholder', 'Multiple Values')
+		document.getElementById('mekeywords').value = '';
+	} else {
+		document.getElementById('mekeywords').value = response.mdata['keywords'];
+	}
+
+	if(response.mdata['title'] == 2) {
+		document.getElementById('metitle').placeholder = 'Multiple Values';
+		document.getElementById('metitle').value = '';
+	} else {
+		document.getElementById('metitle').value = response.mdata['title'];
+	}
+
+	if(response.mdata['description'] == 2) {
+		document.getElementById('medescription').placeholder = 'Multiple Values';
+		document.getElementById('medescription').value = '';
+	} else {
+		document.getElementById('medescription').value = response.mdata['description'];
+	}
+
+	document.getElementById("mdheader").innerText = rcmail.gettext('metadata','pictures');
 	document.getElementById("metadata").style.display = "block";
 	document.getElementById('mekeywords').focus();
 }

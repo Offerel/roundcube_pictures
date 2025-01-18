@@ -83,7 +83,6 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
 		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
 	}
@@ -197,6 +196,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			break;
 		case 'search':
 			$response = search_photos($jarr['data']);
+			break;
+		case 'metadata':
+			$response= get_mdata($jarr['data']['media']);
 			break;
 		case 'albCreate':
 			$response = albCreate($jarr['data']);
@@ -646,7 +648,6 @@ function save_keywords($data) {
 function get_mdata($files) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
-	$files = json_decode($files);
 	$files = implode("','", $files);
 	$query = "SELECT `pic_EXIF` from `pic_pictures` WHERE `pic_path` IN ('$files') AND user_id = ".$rcmail->user->ID;
 	$dbh->query($query);
@@ -686,13 +687,16 @@ function get_mdata($files) {
 		$last_description = $description;
 	}
 
-	$mdata = array(
-		"keywords" => $final_keywords,
-		"title" => $final_title,
-		"description" => $final_description
-	);
+	$response = [
+		'code' => 200,
+		'mdata' => [
+			"keywords" => $final_keywords,
+			"title" => $final_title,
+			"description" => $final_description
+		]
+	];
 	
-	return $mdata;
+	return $response;
 }
 
 function search_photos($keywords) {
