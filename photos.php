@@ -202,6 +202,10 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'albDel':
 			$response = albDel($jarr['data']);
 			break;
+		case 'imgMove':
+			error_log(print_r($jarr, true));
+			//$response = imgMove();
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -213,6 +217,17 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function imgMove($data) {
+	$newPath = filter_var($data['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
+	foreach($images as $image) {
+		chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
+		mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
+		mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.'/'.$image);
+	}
+	die(true);
 }
 
 function albCreate($data) {

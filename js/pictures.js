@@ -763,6 +763,7 @@ function getSubs(response) {
 	select.options[0].disabled = true;
 
 	document.getElementById('mv_target').firstChild.replaceWith(select);
+	document.getElementById('mv_target_img').firstChild.replaceWith(select);
 	setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
 }
 
@@ -770,6 +771,12 @@ function mvbtncl() {
 	document.getElementById('mvb').classList.remove('disabled');
 	document.getElementById('album_name').value = document.getElementById('album_org').value.split("/").pop();
 	document.getElementById('rnb').classList.add('disabled');
+
+	let mvp = document.getElementById('mvp');
+	let nfolder = document.getElementById('album_name_img').value;
+	nfolder = (nfolder.length > 0) ? nfolder + '/':nfolder;
+	mvp.classList.remove('disabled');
+	mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + nfolder + "'";
 }
 
 function getshares(response) {
@@ -1039,6 +1046,13 @@ function move_picture() {
 		a.push($(this).val())
 	});
 
+	sendRequest(imgMove, {
+		images: a,
+		source: b,
+		target: d,
+		nepath: c
+	});
+	/*
 	$.ajax({
 		type: "POST",
 		url: "plugins/pictures/photos.php",
@@ -1054,6 +1068,18 @@ function move_picture() {
 			dloader('#img_edit', mvp, 'remove');
 		}
 	})
+	*/
+}
+
+function imgMove(response) {
+	console.log(response);
+
+	if(response.code === 200) {
+		document.getElementById("img_edit").style.display = "none";
+		document.getElementById("picturescontentframe").contentWindow.location.reload(!0);
+		count_checks();
+		dloader('#img_edit', document.getElementById('mvp'), 'remove');
+	}
 }
 
 function mv_img() {
@@ -1081,22 +1107,7 @@ function mv_img() {
 		mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + nfolder + "'";
 	});
 
-	$("#album_org_img").val(b); - 1 !== document.getElementById("mv_target_img").innerHTML.indexOf("div") && $.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			getsubs: "1"
-		},
-		success: function(a) {
-			$("#mv_target_img").html(a);
-			document.getElementById('target').addEventListener('change', function() {
-				let nfolder = document.getElementById('album_name_img').value;
-				nfolder = (nfolder.length > 0) ? nfolder + '/':nfolder;
-				mvp.classList.remove('disabled');
-				mvp.title = rcmail.gettext("move", "pictures") + " " + rcmail.gettext("to", "pictures") + ": '" + document.getElementById('target').selectedOptions[0].value + '/' + nfolder + "'";
-			});
-		}
-	});
+	sendRequest(getSubs);
 
 	if(document.getElementById("target")) document.getElementById("target").selectedIndex = 0;
 	document.getElementById("album_name_img").value = "";
