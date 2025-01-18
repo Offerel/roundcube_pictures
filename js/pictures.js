@@ -440,12 +440,12 @@ function metaform() {
 		media.push(dir + '/' + nodes[i].value);
 	}
 
-	sendRequest(metadata, {
+	sendRequest(getMetadata, {
 		media: media
 	});
 }
 
-function metadata(response) {
+function getMetadata(response) {
 	if(response.mdata['keywords'] == 2) {
 		tagify.DOM.input.setAttribute('data-placeholder', 'Multiple Values')
 		document.getElementById('mekeywords').value = '';
@@ -492,36 +492,26 @@ function save_meta(WhiteList) {
 
 	let new_keywords = meta_data.keywords.filter(x => !WhiteList.includes(x));
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "keywords",
-			target: '',
-			src: '',
-			keywords: JSON.stringify(new_keywords),
-		},
-		success: function(new_keywords) {
-			tagify.whitelist = JSON.parse(new_keywords);
-		}
+	sendRequest(setKeywords, {
+		keywords: new_keywords
 	});
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "mfiles",
-			target: '',
-			src: '',
-			data: JSON.stringify(meta_data),
-		},
-		success: function(response) {
-			(response != 0) ? rcmail.display_message(response, 'error'):rcmail.display_message('Data saved', 'confirmation');
-			dloader('#metadata', mes, 'remove');
-			document.getElementById('metadata').style.display='none';
+	sendRequest(saveMetadata, meta_data);
+}
 
-		}
-	});
+function saveMetadata(response) {
+	dloader('#metadata', mes, 'remove');
+	document.getElementById('metadata').style.display='none';
+
+	if (response.code === 200) {
+		rcmail.display_message('Data saved', 'confirmation');
+	} else {
+		rcmail.display_message(response.message, 'error');
+	}
+}
+
+function setKeywords(response) {
+	tagify.whitelist = response.keywords;
 }
 
 function count_checks() {

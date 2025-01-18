@@ -73,22 +73,6 @@ if(isset($_FILES['galleryfiles'])) {
 	die(json_encode($test));
 }
 
-if(isset($_POST['alb_action'])) {
-	$action = $_POST['alb_action'];
-	$src = rtrim($pictures_path,'/').'/'.filter_var($_POST['src'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = isset($_POST['target']) ? urldecode(dirname($src).'/'.filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
-	$mtarget =isset($_POST['target']) ?  $pictures_path.$_POST['target']:'';
-	$oldpath = str_replace($pictures_path,'',$src);
-	$newPath = html_entity_decode(str_replace($pictures_path,'',$target));
-	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
-
-	switch($action) {
-		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
-		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
-	}
-	die();
-}
-
 if(isset($_POST['img_action'])) {
 	global $rcmail, $pictures_path;
 	$dbh = rcmail_utils::db();
@@ -197,8 +181,14 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'search':
 			$response = search_photos($jarr['data']);
 			break;
-		case 'metadata':
+		case 'getMetadata':
 			$response= get_mdata($jarr['data']['media']);
+			break;
+		case 'saveMetadata':
+			$response = meta_files($jarr['data']);
+			break;
+		case 'setKeywords':
+			$response = save_keywords($jarr['data']['keywords']);
 			break;
 		case 'albCreate':
 			$response = albCreate($jarr['data']);
@@ -570,8 +560,6 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 function meta_files($data) {
 	global $pictures_path;
 	$pictures_path = rtrim($pictures_path, '/');
-	$data = json_decode($data, true);
-
 	$files = $data['files'];
 	$times = array();
 
@@ -594,9 +582,19 @@ function meta_files($data) {
 
 	meta_db($data);
 
-	if($msg != 0) error_log($msg);
+	if($msg != 0) {
+		error_log($msg);
+		$code = 500;
+	} else {
+		$code = 200;
+	}
 
-	return $msg;
+	$response = [
+		'code' => $code,
+		'message' => $msg
+	];
+
+	return $response;
 }
 
 function meta_db($data) {
@@ -623,11 +621,11 @@ function meta_db($data) {
 	}
 }
 
-function save_keywords($data) {
+function save_keywords($keywords) {
 	global $rcmail;
 	$uid = $rcmail->user->ID;
 	$dbh = rcmail_utils::db();
-	$keywords = json_decode($data);
+
 	foreach ($keywords as $key => $value) {
 		$query = "INSERT INTO `pic_tags` (`tag_name`, `user_id`) VALUES ('$value', $uid);";
 		$res = $dbh->query($query);
@@ -641,8 +639,13 @@ function save_keywords($data) {
 	for ($x = 0; $x < $dbh->num_rows($res); $x++) {
 		array_push($tags, $dbh->fetch_assoc($res)['tag_name']);
 	}
+	
+	$response = [
+		'code' => (count($tags) > 0) ? 200:500,
+		'keywords' => $tags
+	];
 
-	return json_encode($tags);
+	return $response;
 }
 
 function get_mdata($files) {
