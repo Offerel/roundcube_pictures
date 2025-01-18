@@ -138,4 +138,6 @@ $labels['alb_ren_ok'] = "The album '%s%' has been renamed '%t%'";
 $labels['alb_ren_fail'] = "The album '%s%' could not be renamed to '%t%'";
 $labels['alb_del_ok'] = "The album '%s%' has been deleted";
 $labels['alb_del_fail'] = "The album '%s%' could not be deleted";
+$labels['alb_create_ok'] = "The album '%t%' has been created";
+$labels['alb_create_failed'] = "The album '%t%' could not be created";
 ?>

@@ -687,26 +687,26 @@ function add_album() {
 }
 
 function create_album() {
-	var a = document.getElementById("album_org").value,
-		b = document.getElementById("album_name").value;
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			alb_action: "create",
-			target: b,
-			src: a
-		},
-		success: function(b) {
-			if(b == 1 && (document.getElementById("album_edit").style.display = "none")) {
-				document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(a);
-				count_checks();
-				sendRequest(getSubs)
-			} else {
-				alert(b);
-			}
-		}
-	})
+	sendRequest(albCreate, {
+		target: document.getElementById("album_name").value,
+		source: document.getElementById("album_org").value
+	});
+}
+
+function albCreate(response) {
+	console.log(response);
+	document.getElementById("album_edit").style.display = "none";
+	if(response.code === 200) {
+		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.source);
+		count_checks();
+		sendRequest(getSubs);
+
+		let text = rcmail.gettext('alb_create_ok','pictures').replace('%t%', response.target);
+		rcmail.display_message(text, 'confirmation');
+	} else {
+		let text = rcmail.gettext('alb_create_failed','pictures').replace('%t%', response.target);
+		rcmail.display_message(text, 'error');
+	}
 }
 
 function get_currentalbum() {
@@ -921,20 +921,6 @@ function delete_album() {
 		sendRequest(albDel, {
 			source: document.getElementById("album_org").value
 		});
-		/*
-		$.ajax({
-			type: "POST",
-			url: "plugins/pictures/photos.php",
-			data: {
-				alb_action: "delete",
-				src: a
-			},
-			success: function(a) {
-				dloader('#album_edit', dalb, 'remove');
-				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", sendRequest(getSubs), count_checks())
-			}
-		})
-		*/
 	}
 }
 

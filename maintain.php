@@ -85,10 +85,10 @@ foreach($users as $user) {
 	$message.= ($bcount > 0) ? " with $bcount corrupt media":"";
 	logm($message);
 }
-
+$src = isset($logpieces) ? $logpieces[2]." (".$logpieces[3].")":"Manual Start";
 $message = "Maintenance finished in ".etime($starttime);
 $message.= "\nNew files: ".count($media);
-$message.= "\nSource: ".$logpieces[2]." (".$logpieces[3].")";
+$message.= "\nSource: ".$src;
 $message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 logm($message);

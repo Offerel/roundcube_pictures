@@ -83,15 +83,6 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'create':
-			if (!@mkdir($target, 0755, true)) {
-				$error = error_get_last();
-				error_log($error['message'].$target);
-				die($error['message']);
-			} else {
-				die(1);
-			}
-			break;
 		case 'gmdata': die(json_encode(get_mdata(filter_var($_POST['files'], FILTER_UNSAFE_RAW)))); break;
 		case 'keywords': die(save_keywords(filter_var($_POST['keywords'], FILTER_UNSAFE_RAW))); break;
 		case 'mfiles': die(meta_files(filter_var($_POST['data'], FILTER_UNSAFE_RAW))); break;
@@ -207,6 +198,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'search':
 			$response = search_photos($jarr['data']);
 			break;
+		case 'albCreate':
+			$response = albCreate($jarr['data']);
+			break;
 		case 'albMove':
 			$response = albMove($jarr['data']);
 			break;
@@ -229,6 +223,30 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
 }
 
+function albCreate($data) {
+	global $pictures_path;
+	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$target = isset($data['target']) ? urldecode(dirname($source).'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
+
+	if (!@mkdir($target, 0755, true)) {
+		$error = error_get_last();
+		$message = $error['message'];
+		$code = 500;
+		error_log($message.$target);
+	} else {
+		$message = "Album ".$data['target']." created";
+		$code = 200;
+	}
+
+	$response = [
+		'code' => $code,
+		'message' => $message,
+		'source' => $data['target']
+	];
+
+	return $response;
+}
+
 function albDel($data) {
 	global $pictures_path, $rcmail;
 	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -236,7 +254,7 @@ function albDel($data) {
 	$rmdir = (removeDirectory($source, $rcmail->user->ID)) ? 200:500;
 
 	$response = [
-		'code' = $rmdir,
+		'code' => $rmdir,
 		'path' => $data['source']
 	];
 
