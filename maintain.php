@@ -461,7 +461,8 @@ function todb($file, $base, $user) {
 	if(isset($file['Copyright']) && strlen($file['Copyright']) < 1) unset($file['Copyright']);
 	
 	$file['MIMEType'] = (!isset($file['MIMEType'])) ? mime_content_type($image):$file['MIMEType'];
-	$exif = "'".json_encode($file,  JSON_HEX_APOS)."'";
+	$exif = json_encode($file, JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	$exif = addcslashes($exif,'\'');
 	$type = explode("/", $file['MIMEType'])[0];
 
 	if($type == 'image') {
@@ -478,10 +479,10 @@ function todb($file, $base, $user) {
 
 	if($count == 0) {
 		logm("Add $image to database", 3);
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,$exif,$user)";
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES ('$ppath','$type',$taken,'$exif',$user)";
 	} else {
 		logm("Update database for $image", 3);
-		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exif WHERE `pic_id` = $id";
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = '$exif' WHERE `pic_id` = $id";
 	}
 
 	$db->startTransaction();
