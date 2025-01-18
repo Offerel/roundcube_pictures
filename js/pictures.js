@@ -917,6 +917,11 @@ function delete_album() {
 	if(confirm(rcmail.gettext("galdconfirm", "pictures"))) {
 		let dalb = document.getElementById('dalb');
 		dloader('#album_edit', dalb, 'add');
+		
+		sendRequest(albDel, {
+			source: document.getElementById("album_org").value
+		});
+		/*
 		$.ajax({
 			type: "POST",
 			url: "plugins/pictures/photos.php",
@@ -929,6 +934,25 @@ function delete_album() {
 				1 == a && (document.getElementById("album_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php", sendRequest(getSubs), count_checks())
 			}
 		})
+		*/
+	}
+}
+
+function albDel(response) {
+	dloader('#album_edit', dalb, 'remove');
+	document.getElementById("album_edit").style.display = "none";
+	if(response.code === 200) {
+		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php";
+		sendRequest(getSubs);
+		count_checks();
+
+		let text = rcmail.gettext('alb_del_ok','pictures').replace('%s%', response.path);
+		text = text.replace('%t%', response.new);
+		rcmail.display_message(text, 'confirmation');
+	} else {
+		let text = rcmail.gettext('alb_del_fail','pictures').replace('%s%', response.path);
+		text = text.replace('%t%', response.new);
+		rcmail.display_message(text, 'error');
 	}
 }
 

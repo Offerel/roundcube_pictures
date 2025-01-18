@@ -83,7 +83,6 @@ if(isset($_POST['alb_action'])) {
 	$nnewPath = str_replace($pictures_path,'',$mtarget)."/".pathinfo($src, PATHINFO_BASENAME);
 
 	switch($action) {
-		case 'delete':	delSymLink($src); die(removeDirectory($src, $rcmail->user->ID)); break;
 		case 'create':
 			if (!@mkdir($target, 0755, true)) {
 				$error = error_get_last();
@@ -214,6 +213,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'albRename':
 			$response = albRename($jarr['data']);
 			break;
+		case 'albDel':
+			$response = albDel($jarr['data']);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -227,8 +229,22 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
 }
 
+function albDel($data) {
+	global $pictures_path, $rcmail;
+	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	delSymLink($source);
+	$rmdir = (removeDirectory($source, $rcmail->user->ID)) ? 200:500;
+
+	$response = [
+		'code' = $rmdir,
+		'path' => $data['source']
+	];
+
+	return $response;
+}
+
 function albRename($data) {
-	global $pictures_path, $thumb_path;
+	global $pictures_path;
 	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 	$target = urldecode(dirname($source).'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
 	$newPath = html_entity_decode(str_replace($pictures_path,'',$target));
@@ -1806,12 +1822,13 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		}
 	}
 
-	$exifj = "'".json_encode($exif,  JSON_HEX_APOS)."'";
+	$exifj = json_encode($exifj, JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	$exifj = addcslashes($exif,'\'');
 
 	if($count == 0) {
-		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,$exifj,$user)";
+		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,'$exifj',$user)";
 	} else {
-		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = $exifj WHERE `pic_id` = $id";
+		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = '$exifj' WHERE `pic_id` = $id";
 	}
 
 	$dbh->query($query);

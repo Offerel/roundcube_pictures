@@ -131,3 +131,5 @@ $labels['alb_move_image'] = "Die Bilder des Albums '%s%' konnten nicht nach '%t%
 $labels['alb_move_thumb'] = "Die Thumbnails des Albums '%s%' konnten nicht nach '%t%' verschoben werden";
 $labels['alb_ren_ok'] = "Das Album '%s%' wurde nach '%t%' umbenannt";
 $labels['alb_ren_fail'] = "Das Album '%s%' konnte nicht nach '%t%' umbenannt werden";
+$labels['alb_del_ok'] = "Das Album '%s%' wurde gelöscht";
+$labels['alb_del_fail'] = "Das Album '%s%' konnte nicht gelöscht werden";
