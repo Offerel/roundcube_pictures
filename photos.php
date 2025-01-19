@@ -84,14 +84,6 @@ if(isset($_POST['img_action'])) {
 
 	switch($action) {
 		/*
-		case 'delete':	foreach($images as $image) {
-							delSymLink($pictures_path.$org_path.'/'.$image);
-							delimg($pictures_path.$org_path.'/'.$image);
-							rmdb($org_path.'/'.$image, $user_id);
-						}
-						die(true);
-						break;
-						*/
 		case 'share':	$shareid = filter_var($_POST['shareid'], FILTER_SANITIZE_NUMBER_INT);
 						$cdate = date("Y-m-d");
 						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_UNSAFE_RAW);
@@ -136,7 +128,7 @@ if(isset($_POST['img_action'])) {
 						$dbh->query($query);
 						$sharelink = $dbh->fetch_assoc()['share_link'];
 						die($sharelink);
-						break;
+						break;*/
 		case 'dshare':	$share = filter_var($_POST['share'], FILTER_SANITIZE_NUMBER_INT);
 						$query = "DELETE FROM `pic_shares` WHERE `share_id` = $share AND `user_id` = $user_id";
 						$ret = $dbh->query($query);
@@ -198,6 +190,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'imgMove':
 			$response = imgMove($jarr['data']);
 			break;
+		case 'imgDel':
+			$response = imgDel($jarr['data']);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -209,6 +204,23 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function imgDel($data) {
+	global $pictures_path, $user_id;
+	$images = isset($data['images']) ? $data['images']:[];
+	$source = isset($data['source']) ? urldecode($data['source']):'';
+	foreach($images as $image) {
+		delSymLink($pictures_path.$source.'/'.$image);
+		delimg($pictures_path.$source.'/'.$image);
+		rmdb($source.'/'.$image, $user_id);
+	}
+	
+	$response = [
+		'code' => 200,
+	];
+
+	return $response;
 }
 
 function imgMove($data) {

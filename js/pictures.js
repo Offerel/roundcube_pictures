@@ -1113,24 +1113,21 @@ function delete_picture() {
 		a.push($(this).val())
 	});
 
-	let ctext = rcmail.gettext("picdconfirm", "pictures").replace("%c", a.length);
-	if(confirm(ctext)) {
-		$.ajax({
-			type: "POST",
-			url: "plugins/pictures/photos.php",
-			data: {
-				img_action: "delete",
-				images: a,
-				orgPath: c
-			},
-			success: function(a) {
-				1 == a && document.getElementById("picturescontentframe").contentWindow.location.reload(!0), count_checks();
-
-			}
-		})
+	if(confirm(rcmail.gettext("picdconfirm", "pictures").replace("%c", a.length))) {
+		sendRequest(imgDel, {
+			images: a,
+			source: c
+		});
 	} else {
 		return false;
 	}
 
 	count_checks();
 };
+
+function imgDel(response) {
+	if(response.code === 200) {
+		document.getElementById("picturescontentframe").contentWindow.location.reload(!0);
+		count_checks();
+	}
+}
