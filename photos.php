@@ -83,15 +83,7 @@ if(isset($_POST['img_action'])) {
 	$album_target = isset($_POST['target']) ? html_entity_decode(trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
 
 	switch($action) {
-		case 'move':	$newPath = (isset($_POST['newPath']) && $_POST['newPath'] != "") ? filter_var($_POST['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS):"";
-						if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
-						foreach($images as $image) {
-							chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
-							mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
-							mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.'/'.$image);
-						}
-						die(true);
-						break;
+		/*
 		case 'delete':	foreach($images as $image) {
 							delSymLink($pictures_path.$org_path.'/'.$image);
 							delimg($pictures_path.$org_path.'/'.$image);
@@ -99,6 +91,7 @@ if(isset($_POST['img_action'])) {
 						}
 						die(true);
 						break;
+						*/
 		case 'share':	$shareid = filter_var($_POST['shareid'], FILTER_SANITIZE_NUMBER_INT);
 						$cdate = date("Y-m-d");
 						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_UNSAFE_RAW);
@@ -203,8 +196,7 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			$response = albDel($jarr['data']);
 			break;
 		case 'imgMove':
-			error_log(print_r($jarr, true));
-			//$response = imgMove();
+			$response = imgMove($jarr['data']);
 			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
@@ -220,14 +212,24 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 }
 
 function imgMove($data) {
-	$newPath = filter_var($data['newPath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	if (!is_dir($pictures_path.$album_target.$newPath)) mkdir($pictures_path.$album_target.'/'.$newPath, 0755, true);
+	global $pictures_path;
+	$target = isset($data['target']) ? html_entity_decode(trim(filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
+	$nepath = filter_var($data['nepath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+	$images = isset($data['images']) ? $data['images']:[];
+	$source = isset($data['source']) ? urldecode($data['source']):'';
+
+	if (!is_dir($pictures_path.$target.$nepath)) mkdir($pictures_path.$target.'/'.$nepath, 0755, true);
 	foreach($images as $image) {
-		chSymLink($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
-		mvimg($pictures_path.$org_path.'/'.$image, $pictures_path.$album_target.'/'.$newPath.'/'.$image);
-		mvdb($org_path.'/'.$image, $album_target.'/'.$newPath.'/'.$image);
+		chSymLink($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
+		mvimg($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
+		mvdb($source.'/'.$image, $target.'/'.$nepath.'/'.$image);
 	}
-	die(true);
+
+	$response = [
+		'code' => 200,
+	];
+
+	return $response;
 }
 
 function albCreate($data) {
@@ -1928,7 +1930,6 @@ function mvimg($oldpath, $newPath) {
 		rename($th_old, $th_new);
 		touch($th_new, $ftime);
 	}
-
 }
 
 function delimg($file) {

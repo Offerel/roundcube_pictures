@@ -1038,42 +1038,21 @@ function copyLink() {
 function move_picture() {
 	let mvp = document.getElementById('mvp');
 	dloader('#img_edit', mvp, 'add');
-	var a = [],
-		b = document.getElementById("album_org_img").value,
-		c = document.getElementById("album_name_img").value,
-		d = document.getElementById("target").selectedOptions[0].value;
+	var media = [];
+
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		a.push($(this).val())
+		media.push($(this).val())
 	});
 
 	sendRequest(imgMove, {
-		images: a,
-		source: b,
-		target: d,
-		nepath: c
+		images: media,
+		source: document.getElementById("album_org_img").value,
+		target: document.getElementById("target").selectedOptions[0].value,
+		nepath: document.getElementById("album_name_img").value
 	});
-	/*
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			img_action: "move",
-			images: a,
-			orgPath: b,
-			target: d,
-			newPath: c
-		},
-		success: function(a) {
-			1 == a && (document.getElementById("img_edit").style.display = "none", document.getElementById("picturescontentframe").contentWindow.location.reload(!0), count_checks())
-			dloader('#img_edit', mvp, 'remove');
-		}
-	})
-	*/
 }
 
 function imgMove(response) {
-	console.log(response);
-
 	if(response.code === 200) {
 		document.getElementById("img_edit").style.display = "none";
 		document.getElementById("picturescontentframe").contentWindow.location.reload(!0);
