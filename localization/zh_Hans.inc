@@ -130,4 +130,6 @@ $labels['alb_ren_fail'] = "相册“%s%”无法重命名为“%t%”";
 $labels['alb_move_ok'] = "相册“%s%”已移至“%t%”";
 $labels['alb_ren_ok'] = "相册“%s%”已重命名为“%t%”";
 $labels['alb_del_ok'] = "相册“%s%”已删除";
-$labels['alb_del_fail'] = "相册“%s%”无法删除";
+$labels['alb_del_fail'] = "无法删除相册“%s%”";
+$labels['alb_create_failed'] = "无法创建相册“%t%”";
+$labels['alb_create_ok'] = "相册“%t%”已创建";
