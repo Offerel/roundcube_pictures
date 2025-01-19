@@ -97,3 +97,4 @@ $labels['em_creative_auto'] = "Creatief (langzaam)";
 $labels['exif_focalength'] = "Brandpuntafstand";
 $labels['exif_keywords'] = "Trefwoorden";
 $labels['wb_fluorescent'] = "TL-verlichting";
+$labels['pstatusm'] = "Statusbericht";
