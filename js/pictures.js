@@ -155,27 +155,10 @@ window.onload = function(){
 	if(document.getElementById('rsh')) document.getElementById('rsh').addEventListener('click', function(e){
 		e.preventDefault();
 		e.stopPropagation();
-		$.ajax({
-			type: "POST",
-			url: "plugins/pictures/photos.php",
-			data: {
-				img_action: "dshare",
-				share: document.getElementById('shares').selectedOptions[0].value
-			},
-			success: function(response) {
-				sendRequest(getshares);
-				document.getElementById('sid').value = '';
-				document.getElementById('sname').value = '';
-				document.getElementById('expiredate').value = '';
-				document.getElementById('expiredate').disabled = false;
-				document.getElementById('rsh').disabled = true;
-				document.getElementById('never').checked = false;
-				document.getElementById('link').value = '';
-				let someDate = new Date();
-				document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
-				return false;
-			}
-		})
+
+		sendRequest(shareDel, {
+			share: document.getElementById('shares').selectedOptions[0].value
+		});
 	});
 
 	if(document.getElementById('skeywords')) document.getElementById('skeywords').addEventListener('input', function(e) {
@@ -289,6 +272,22 @@ window.onload = function(){
 		});
 	}
 };
+
+function shareDel(response) {
+	if(response.code === 200) {
+		sendRequest(getshares);
+		document.getElementById('sid').value = '';
+		document.getElementById('sname').value = '';
+		document.getElementById('expiredate').value = '';
+		document.getElementById('expiredate').disabled = false;
+		document.getElementById('rsh').disabled = true;
+		document.getElementById('never').checked = false;
+		document.getElementById('link').value = '';
+		let someDate = new Date();
+		document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
+	}
+	return false;
+}
 
 function checkUser(value) {
 	if(value.length < 5) return false;
@@ -945,7 +944,7 @@ function sharepicture() {
 	}
 	
 	var pictures = [];
-	let sbtn = document.getElementById('sbtn');
+	
 	dloader('#share_edit', sbtn, 'add');
 	let link = document.getElementById('link');
 	link.style.display = 'none';
@@ -954,56 +953,57 @@ function sharepicture() {
 		pictures.push(urlParams.get('file'));
 	});
 
-	$.ajax({
-		type: "POST",
-		url: "plugins/pictures/photos.php",
-		data: {
-			img_action: "share",
-			images: pictures,
-			shareid: document.getElementById('sid').value,
-			sharename: document.getElementById('sname').value,
-			download: document.getElementById('download').value,
-			expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
-			suser: document.getElementById('suser').value,
-			uid: document.getElementById('uid').value,
-			type: type,
-			pf_text: document.getElementById('pstatus').value,
-			pf_sens: document.getElementById('pfsensitive').checked,
-			pf_vis: document.getElementById('pfvisibility').value
-		},
-		success: function(a) {
-			if(a == 'intern') {
-				document.getElementById('expiredate').disabled = false;
-				document.getElementById('expiredate').style.color = 'black';
-				document.getElementById('never').disabled = false;
-				document.getElementById('share_edit').style.display='none';
-				dloader('#share_edit', sbtn, 'remove');
-				return false;
-			}
-
-			if(typeof a === "object") {
-				if(a.uri) console.log('Shared to Pixelfed', a.uri);
-				document.getElementById('share_edit').style.display='none';
-				dloader('#share_edit', sbtn, 'remove');
-			}
-			const url = new URL(location.href);
-			let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + a;
-			$("#link").contents().get(0).nodeValue = nurl;
-			let clpbtn = document.getElementById('btnclp');
-			clpbtn.addEventListener('click', e => {
-				e.preventDefault();
-				copyPageUrl(nurl);
-				document.getElementById('share_edit').style.display='none';
-				return false;
-			});
-			clpbtn.style.display = "block";
-			link.style.visibility = "visible";
-			link.style.display = 'block';
-			dloader('#share_edit', sbtn, 'remove');
-			sbtn.style.display = 'none';
-			count_checks();
-		}
+	sendRequest(share, {
+		images: pictures,
+		shareid: document.getElementById('sid').value,
+		sharename: document.getElementById('sname').value,
+		download: document.getElementById('download').value,
+		expiredate:	Math.floor(document.getElementById('expiredate').valueAsNumber / 1000),
+		suser: document.getElementById('suser').value,
+		uid: document.getElementById('uid').value,
+		type: type,
+		pf_text: document.getElementById('pstatus').value,
+		pf_sens: document.getElementById('pfsensitive').checked,
+		pf_vis: document.getElementById('pfvisibility').value
 	});
+}
+
+function share(response) {
+	let sbtn = document.getElementById('sbtn');
+	let clpbtn = document.getElementById('btnclp');
+	let link = document.getElementById('link');
+
+	if(response.type === 'intern') {
+		document.getElementById('expiredate').disabled = false;
+		document.getElementById('expiredate').style.color = 'black';
+		document.getElementById('never').disabled = false;
+		document.getElementById('share_edit').style.display='none';
+	}
+
+	if(response.type === 'pixelfed') {
+		if(response.pixelfed.uri) console.log('Shared to Pixelfed', response.pixelfed.uri);
+		document.getElementById('share_edit').style.display='none';
+	}
+
+	if(response.type === 'public') {
+		const url = new URL(location.href);
+		let nurl = url.protocol + '//' + url.hostname + url.pathname + '?_task=pictures&slink=' + response.link;
+		$("#link").contents().get(0).nodeValue = nurl;
+		clpbtn.addEventListener('click', e => {
+			e.preventDefault();
+			copyPageUrl(nurl);
+			document.getElementById('share_edit').style.display='none';
+			return false;
+		});
+		clpbtn.style.display = "block";
+		link.style.visibility = "visible";
+		link.style.display = 'block';
+		sbtn.style.display = 'none';
+		dloader('#share_edit', sbtn, 'remove');
+	}
+	
+	dloader('#share_edit', sbtn, 'remove');
+	count_checks();
 }
 
 async function copyPageUrl(text) {

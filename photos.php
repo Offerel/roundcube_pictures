@@ -84,56 +84,7 @@ if(isset($_POST['img_action'])) {
 
 	switch($action) {
 		/*
-		case 'share':	$shareid = filter_var($_POST['shareid'], FILTER_SANITIZE_NUMBER_INT);
-						$cdate = date("Y-m-d");
-						$sharename = (empty($_POST['sharename'])) ? "Unkown-$cdate": filter_var($_POST['sharename'], FILTER_UNSAFE_RAW);
-						$sharelink = bin2hex(random_bytes(25));
-						$edate = filter_var($_POST['expiredate'], FILTER_SANITIZE_NUMBER_INT);
-						$share_down = filter_var($_POST['download'], FILTER_SANITIZE_NUMBER_INT);
-						$share_down = ($share_down > 0) ? 1:"NULL";
-						$expiredate = ($edate > 0) ? $edate:"NULL";
-						$type = filter_var($_POST['type'], FILTER_UNSAFE_RAW);
-
-						if($type === 'pixelfed') {
-							sharePixelfed(filter_var($_POST['pf_text'], FILTER_UNSAFE_RAW), filter_var($_POST['pf_sens'], FILTER_VALIDATE_BOOLEAN), filter_var($_POST['pf_vis'], FILTER_UNSAFE_RAW), $images);
-						}
-
-						if($type === 'intern') {
-							shareIntern($sharename, $images, filter_var($_POST['suser'], FILTER_UNSAFE_RAW), filter_var($_POST['uid'], FILTER_SANITIZE_NUMBER_INT));
-						}
-
-						if(empty($shareid)) {
-							$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`share_down`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$share_down,$expiredate,$user_id)";
-							$ret = $dbh->query($query);
-							$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
-						} else {
-							$query = "UPDATE `pic_shares` SET `share_name`= '$sharename', `expire_date` = $expiredate WHERE `share_id`= $shareid AND `user_id` = $user_id";
-							$ret = $dbh->query($query);
-						}
-
-						$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` IN ('".implode("','", $images)."') AND `user_id` = $user_id";
-						$ret = $dbh->query($query);
-
-						$query = "INSERT IGNORE INTO `pic_shared_pictures` (`share_id`, `user_id`, `pic_id`) VALUES ";
-
-						$rows = $dbh->num_rows();
-						for ($i=0; $i < $rows; $i++) { 
-							$query.="($shareid, $user_id, ".$dbh->fetch_assoc()['pic_id']."),";
-						}
-
-						$query = substr_replace($query,";", -1);
-						$ret = $dbh->query($query);
-
-						$query = "SELECT `share_link` FROM `pic_shares` WHERE `share_id` = $shareid";
-						$dbh->query($query);
-						$sharelink = $dbh->fetch_assoc()['share_link'];
-						die($sharelink);
-						break;*/
-		case 'dshare':	$share = filter_var($_POST['share'], FILTER_SANITIZE_NUMBER_INT);
-						$query = "DELETE FROM `pic_shares` WHERE `share_id` = $share AND `user_id` = $user_id";
-						$ret = $dbh->query($query);
-						die("0");
-						break;
+						*/
 		case 'cUser':	$user = filter_var($_POST['user'], FILTER_UNSAFE_RAW);
 						$query = "SELECT `user_id` FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
 						$dbh->query($query);
@@ -193,6 +144,12 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'imgDel':
 			$response = imgDel($jarr['data']);
 			break;
+		case 'share':
+			$response = share($jarr['data']);
+			break;
+		case 'shareDel':
+			$response = shareDel($jarr['data']);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -204,6 +161,105 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function shareDel($data) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$share = filter_var($data['share'], FILTER_SANITIZE_NUMBER_INT);
+	$query = "DELETE FROM `pic_shares` WHERE `share_id` = $share AND `user_id` = ".$rcmail->user->ID;
+	$ret = $dbh->query($query);
+	
+	$response = [
+		'code' => 200
+	];
+
+	return $response;
+}
+
+function share($data) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$images = isset($data['images']) ? $data['images']:[];
+	$shareid = filter_var($data['shareid'], FILTER_SANITIZE_NUMBER_INT);
+	$cdate = date("Y-m-d");
+	$sharename = (empty($data['sharename'])) ? "Unkown-$cdate": filter_var($data['sharename'], FILTER_UNSAFE_RAW);
+	$sharelink = bin2hex(random_bytes(25));
+	$edate = filter_var($data['expiredate'], FILTER_SANITIZE_NUMBER_INT);
+	$share_down = filter_var($data['download'], FILTER_SANITIZE_NUMBER_INT);
+	$share_down = ($share_down > 0) ? 1:"NULL";
+	$expiredate = ($edate > 0) ? $edate:"NULL";
+	$type = filter_var($data['type'], FILTER_UNSAFE_RAW);
+	$pixelfed = [];
+	$shareintern = [];
+	$response = [];
+
+	if($type === 'pixelfed') {
+		$pixelfed = sharePixelfed(filter_var($data['pf_text'], FILTER_UNSAFE_RAW), filter_var($data['pf_sens'], FILTER_VALIDATE_BOOLEAN), filter_var($data['pf_vis'], FILTER_UNSAFE_RAW), $images);
+		if(count($pixelfed) > 1) {
+			$response = [
+				'code' => 200,
+				'pixelfed' => $pixelfed
+			];
+		} else {
+			$response = [
+				'code' => 500,
+				'pixelfed' => $pixelfed
+			];
+		}
+	}
+
+	if($type === 'intern') {
+		$shareintern = shareIntern($sharename, $images, filter_var($data['suser'], FILTER_UNSAFE_RAW), filter_var($data['uid'], FILTER_SANITIZE_NUMBER_INT));
+		if($shareintern['code'] === 200) {
+			$response = [
+				'code' => 200,
+				'message' => 'Intern shared finished'
+			];
+		} else {
+			$response = [
+				'code' => 500,
+				'message' => $shareintern['message']
+			];
+		}
+	}
+
+	if($type === 'public') {
+		$user_id = $rcmail->user->ID;
+		if(empty($shareid)) {
+			$query = "INSERT INTO `pic_shares` (`share_name`,`share_link`,`share_down`,`expire_date`,`user_id`) VALUES ('$sharename','$sharelink',$share_down,$expiredate,$user_id)";
+			$ret = $dbh->query($query);
+			$shareid = ($ret === false) ? "":$dbh->insert_id("pic_shares");
+		} else {
+			$query = "UPDATE `pic_shares` SET `share_name`= '$sharename', `expire_date` = $expiredate WHERE `share_id`= $shareid AND `user_id` = $user_id";
+			$ret = $dbh->query($query);
+		}
+	
+		$query = "SELECT `pic_id` FROM `pic_pictures` WHERE `pic_path` IN ('".implode("','", $images)."') AND `user_id` = $user_id";
+		$ret = $dbh->query($query);
+	
+		$query = "INSERT IGNORE INTO `pic_shared_pictures` (`share_id`, `user_id`, `pic_id`) VALUES ";
+	
+		$rows = $dbh->num_rows();
+		for ($i=0; $i < $rows; $i++) { 
+			$query.="($shareid, $user_id, ".$dbh->fetch_assoc()['pic_id']."),";
+		}
+	
+		$query = substr_replace($query,";", -1);
+		$ret = $dbh->query($query);
+	
+		$query = "SELECT `share_link` FROM `pic_shares` WHERE `share_id` = $shareid";
+		$dbh->query($query);
+		$sharelink = $dbh->fetch_assoc()['share_link'];
+
+		$response = [
+			'code' => 200,
+			'link' => $sharelink
+		];
+	}
+
+	$response['type'] = $type;
+	return $response;
 }
 
 function imgDel($data) {
@@ -423,8 +479,7 @@ function chSymLink($src, $target) {
 }
 
 function sharePixelfed($status, $sensitive, $visibility, $images) {
-	global $rcmail;
-	$pictures_path = rtrim(str_replace("%u", $rcmail->user->get_username(), $rcmail->config->get('pictures_path', false)), '/');
+	global $rcmail, $pictures_path;
 	$imagepath = $pictures_path.'/'.$images[0];
 
 	$mime = mime_content_type($imagepath);
@@ -488,21 +543,38 @@ function sharePixelfed($status, $sensitive, $visibility, $images) {
 	curl_close($curl_session);
 	imagedestroy($image);
 	unlink($tmpname);
-	header("Content-Type: application/json");
-	die($result);
+
+	return json_decode($result, true);
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {
 	global $rcmail, $username;
 	$dbh = rcmail_utils::db();
 	$share_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename";
-	@mkdir($share_path, 0755, true);
+	$mdmsg = '';
+	$mdcode = 200;
+
+	if(!@mkdir($share_path, 0755, true)) {
+		$error = error_get_last();
+		return [
+			'code' => 500,
+			'message' => $error['message']
+		];
+	}
+
 	foreach ($images as $key => $image) {
 		$org_path = rtrim(str_replace("%u", $username, $rcmail->config->get('pictures_path', false)), '/')."/".$image;
 		$sym_path = rtrim(str_replace("%u", $sUser, $rcmail->config->get('pictures_path', false)), '/')."/Incoming/$sharename/".basename($image);
-		@symlink($org_path, $sym_path);
+		if(!@symlink($org_path, $sym_path)) {
+			$error = error_get_last();
+			return [
+				'code' => 500,
+				'message' => $error['message']
+			];
+		}
 		$otime = filemtime($org_path);
 		touch($sym_path, $otime);
+
 		$query = "INSERT IGNORE INTO `pic_symlink_map` (`user_id`,`symlink`,`target`) VALUES ($uid, '$sym_path', '$org_path')";
 		$dbh->query($query);
 	}
@@ -579,11 +651,14 @@ function shareIntern($sharename, $images, $sUser, $uid) {
 					<p>$ShareText</p>
 				</body>
 			</html>";
-		$isHtml = true;
 
-		$MAIL_MIME = $SENDMAIL->create_message($headers, $body, $isHtml, []);
-		$sendStatus = $SENDMAIL->deliver_message($MAIL_MIME);
-	die('intern');
+	$isHtml = true;
+	$MAIL_MIME = $SENDMAIL->create_message($headers, $body, $isHtml, []);
+	$sendStatus = $SENDMAIL->deliver_message($MAIL_MIME);
+
+	return [
+		'code' => 200,
+	];
 }
 
 function meta_files($data) {
