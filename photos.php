@@ -73,28 +73,6 @@ if(isset($_FILES['galleryfiles'])) {
 	die(json_encode($test));
 }
 
-if(isset($_POST['img_action'])) {
-	global $rcmail, $pictures_path;
-	$dbh = rcmail_utils::db();
-	$user_id = $rcmail->user->ID;
-	$action = $_POST['img_action'];
-	$images = isset($_POST['images']) ? $_POST['images']:[];
-	$org_path = isset($_POST['orgPath']) ? urldecode($_POST['orgPath']):'';
-	$album_target = isset($_POST['target']) ? html_entity_decode(trim(filter_var($_POST['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
-
-	switch($action) {
-		/*
-						
-		case 'cUser':	$user = filter_var($_POST['user'], FILTER_UNSAFE_RAW);
-						$query = "SELECT `user_id` FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
-						$dbh->query($query);
-						$uid = $dbh->fetch_assoc()['user_id'];
-						die($uid);
-						break;*/
-	}
-	die();
-}
-
 if( isset($_GET['g']) ) {
 	$dir = $_POST['g'];
 	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
