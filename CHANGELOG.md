@@ -1,5 +1,6 @@
-### v1.5.3
+### v1.5.4
 - Fix change sharetype
+- Standardize send functions
 
 ### v1.5.2
 - Add optional downloads for public shares

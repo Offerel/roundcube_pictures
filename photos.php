@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.3
+ * @version 1.5.4
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -871,16 +871,6 @@ function removeDirectory($path, $user) {
 	return true;
 }
 
-if( isset($_GET['p']) ) {
-	$dir = html_entity_decode(urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS)));
-	guardAgainstDirectoryTraversal($dir);
-	echo showPage(showGallery($dir), $dir);
-	die();
-} else {
-	echo showPage(showGallery(""), '');
-	die();
-}
-
 function rsfolderjpg($filename) {
 	global $thumbsize;
 	list($owidth, $oheight) = getimagesize($filename);
@@ -1589,7 +1579,9 @@ function showGallery($requestedDir, $offset = 0) {
 		closedir($handle);
 	} else {
 		error_log('Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
-		die("ERROR: Please check server error log");
+		http_response_code(444);
+		header('Location: photos.php', true, 301);
+		die();
 	}
 
 	$thumbnails = "";
@@ -1670,10 +1662,6 @@ function getExistingShares() {
 	return $shares;
 }
 
-if (!function_exists('exif_read_data') && $exif_mode != 0) {
-	error_log('EXIF functions are not available');
-}
-
 function strposa($haystack, $needle, $offset=0) {
 	if(!is_array($needle)) $needle = array($needle);
 	foreach($needle as $query) {
@@ -1718,6 +1706,7 @@ function parse_fraction($v, $round = 0) {
 
 function readEXIF($file, $info) {
 	$exif_arr = array();
+	if (!function_exists('exif_read_data') && $exif_mode != 0) error_log('EXIF functions are not available');
 	ini_set('exif.decode_unicode_motorola','UCS-2LE');
 	$exif_data = @exif_read_data($file);
 
@@ -1815,10 +1804,13 @@ function checkpermissions($file) {
 function guardAgainstDirectoryTraversal($path) {
 	$pattern = "/^(.*\/)?(\.\.)(\/.*)?$/";
 	$directory_traversal = preg_match($pattern, $path);
+	$current_dir = (isset($current_dir)) ? $current_dir:'';
 
 	if ($directory_traversal === 1) {
 		error_log('Could not open \"'.htmlspecialchars(stripslashes($current_dir)).'\" for reading!');
-		die("ERROR: Could not open directory \"".htmlspecialchars(stripslashes($current_dir))."\" for reading!");
+		http_response_code(444);
+		header('Location: photos.php', true, 301);
+		die();
 	}
 }
 
@@ -2050,7 +2042,11 @@ function delimg($file) {
 	if(file_exists($webp)) unlink($webp);
 }
 
-$thumbdir = rtrim($pictures_path.$requestedDir,'/');
-$current_dir = $thumbdir;
-guardAgainstDirectoryTraversal($current_dir);
+if( isset($_GET['p']) ) {
+	$dir = html_entity_decode(urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS)));
+	guardAgainstDirectoryTraversal($dir);
+	die(showPage(showGallery($dir), $dir));
+} else {
+	die(showPage(showGallery(""), ''));
+}
 ?>
