@@ -84,13 +84,13 @@ if(isset($_POST['img_action'])) {
 
 	switch($action) {
 		/*
-						*/
+						
 		case 'cUser':	$user = filter_var($_POST['user'], FILTER_UNSAFE_RAW);
 						$query = "SELECT `user_id` FROM `users` WHERE `username` = '$user' AND user_id != $user_id;";
 						$dbh->query($query);
 						$uid = $dbh->fetch_assoc()['user_id'];
 						die($uid);
-						break;
+						break;*/
 	}
 	die();
 }
@@ -150,6 +150,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'shareDel':
 			$response = shareDel($jarr['data']);
 			break;
+		case 'validateUser':
+			$response = validateUser($jarr['data']);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -161,6 +164,29 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function validateUser($data) {
+	global $rcmail;
+	$user_id = $rcmail->user->ID;
+	$dbh = rcmail_utils::db();
+	$user = filter_var($data['user'], FILTER_UNSAFE_RAW);
+	$query = "SELECT COUNT(`user_id`) as count FROM `users` WHERE `username` = '$user' AND `user_id` != $user_id;";
+	$dbh->query($query);
+	$count = $dbh->fetch_assoc()['count'];
+	if(isset($count) && $count === "1") {
+		$response = [
+			'code' => 200,
+			'valid' => true
+		];
+	} else {
+		$response = [
+			'code' => 500,
+			'valid' => false
+		];
+	}
+
+	return $response;
 }
 
 function shareDel($data) {

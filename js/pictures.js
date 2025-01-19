@@ -215,12 +215,10 @@ window.onload = function(){
 		});
 	}
 
-	let checkUserTimer;
-	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('input', function(e) {
-		clearTimeout(checkUserTimer);
-		checkUserTimer = setTimeout(() => {
-			checkUser(document.getElementById('suser').value);
-		}, 400);
+	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('change', function(e) {
+		sendRequest(validateUser, {
+			user: this.value
+		});
 	});
 
 	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
@@ -273,6 +271,39 @@ window.onload = function(){
 	}
 };
 
+function validateUser(response) {
+	let shares = document.getElementById('shares');
+	let rsh = document.getElementById('rsh');
+	let expiredate = document.getElementById('expiredate');
+	let sbtn = document.getElementById('sbtn');
+	let never = document.getElementById('never');
+	let suser = document.getElementById('suser');
+
+	if(response.code === 200) {
+		shares.disabled = true;
+		rsh.disabled = true;
+		expiredate.disabled = true;
+		expiredate.style.color = "lightgray";
+		never.disabled = true;
+		suser.style.color = 'green';
+		suser.style.borderColor = 'green';
+		suser.style.backgroundColor = 'honeydew';
+		sbtn.title = rcmail.gettext('intsharetitle','pictures');
+		document.getElementById('uid').value = response;
+	} else {
+		shares.disabled = false;
+		rsh.disabled = false;
+		expiredate.disabled = false;
+		expiredate.style.color = "black";
+		never.disabled = false;
+		suser.style.color = 'orangered';
+		suser.style.borderColor = 'red';
+		suser.style.backgroundColor = 'antiquewhite';
+		sbtn.title = rcmail.gettext('extlinktitle','pictures');
+		document.getElementById('uid').value = '';
+	}
+}
+
 function shareDel(response) {
 	if(response.code === 200) {
 		sendRequest(getshares);
@@ -287,45 +318,6 @@ function shareDel(response) {
 		document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 	}
 	return false;
-}
-
-function checkUser(value) {
-	if(value.length < 5) return false;
-	$.ajax({
-		type: 'POST',
-		url: "plugins/pictures/photos.php",
-		data: {
-			img_action: "cUser",
-			user: value
-		},success: function(response) {
-			let shares = document.getElementById('shares');
-			let rsh = document.getElementById('rsh');
-			let expiredate = document.getElementById('expiredate');
-			let sbtn = document.getElementById('sbtn');
-			let never = document.getElementById('never');
-			let suser = document.getElementById('suser');
-
-			if(parseInt(response) && response > 0) {
-				shares.disabled = true;
-				rsh.disabled = true;
-				expiredate.disabled = true;
-				expiredate.style.color = "lightgray";
-				never.disabled = true;
-				suser.style.borderColor = 'green';
-				sbtn.title = rcmail.gettext('intsharetitle','pictures');
-				document.getElementById('uid').value = response;
-			} else {
-				shares.disabled = false;
-				rsh.disabled = false;
-				expiredate.disabled = false;
-				expiredate.style.color = "black";
-				never.disabled = false;
-				suser.style.borderColor = 'red';
-				sbtn.title = rcmail.gettext('extlinktitle','pictures');
-				document.getElementById('uid').value = '';
-			}
-		}
-	});
 }
 
 function iBoxShow(e) {
