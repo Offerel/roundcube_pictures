@@ -244,32 +244,25 @@ window.onload = function(){
 				document.getElementById('spixelfed').style.visibility = 'visible';
 				document.getElementById('pstatus').focus();
 
-				xhr = new XMLHttpRequest();
-				let json = JSON.stringify({
-					action: 'pixelfed_verify'
-				});
+				sendRequest(pixelfed_verify);
 
-				xhr.onload = function () {
-					if(this.status == 200 && this.response.base_url != null) {
-						document.getElementById('sbtn').classList.remove('disabled');
-					} else {
-						document.getElementById('pstatus').disabled = true;
-						document.getElementById('pfvisibility').disabled = true;
-						document.getElementById('pfsensitive').disabled = true;
-						document.getElementById('sbtn').classList.add('disabled');
-						rcmail.display_message('Configuration error. Please check Pixelfed configuration in "Pictures" settings', 'error');
-					}
-				}
-				
-				xhr.responseType = 'json';
-				xhr.open('POST', './plugins/pictures/photos.php');
-				xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-				xhr.send(json);
 				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 1) rcmail.display_message(rcmail.gettext('pftomuch','pictures'), 'warning');
 			}
 		});
 	}
 };
+
+function pixelfed_verify(response) {
+	if(response.code == 200 && this.response.base_url != null) {
+		document.getElementById('sbtn').classList.remove('disabled');
+	} else {
+		document.getElementById('pstatus').disabled = true;
+		document.getElementById('pfvisibility').disabled = true;
+		document.getElementById('pfsensitive').disabled = true;
+		document.getElementById('sbtn').classList.add('disabled');
+		rcmail.display_message('Configuration error. Please check Pixelfed configuration in "Pictures" settings', 'error');
+	}
+}
 
 function validateUser(response) {
 	let shares = document.getElementById('shares');
