@@ -73,13 +73,6 @@ if(isset($_FILES['galleryfiles'])) {
 	die(json_encode($test));
 }
 
-if( isset($_GET['g']) ) {
-	$dir = $_POST['g'];
-	$offset = filter_var($_POST['s'], FILTER_SANITIZE_NUMBER_INT);
-	$thumbnails = showGallery($dir, $offset);
-	die($thumbnails);
-}
-
 $jarr  = json_decode(file_get_contents('php://input'), true);
 if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	switch($jarr['action']) {
@@ -130,6 +123,12 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			break;
 		case 'validateUser':
 			$response = validateUser($jarr['data']);
+			break;
+		case 'lazyload':
+			$dir = $jarr['g'];
+			$offset = filter_var($jarr['s'], FILTER_SANITIZE_NUMBER_INT);
+			$thumbnails = showGallery($dir, $offset);
+			die($thumbnails);
 			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
@@ -1130,13 +1129,15 @@ function showPage($thumbnails, $dir) {
 			if(wposition > wheight || slide) {
 				$.ajax({
 					type: 'POST',
-					url: 'photos.php?g=1',
+					url: 'photos.php',
 					async: false,
 					beforeSend: aLoader('visible'),
-					data: {
+					data: JSON.stringify({
+						action: 'lazyload',
 						g: '$gal',
 						s: $('.glightbox').length
-					},
+					}),
+					contentType: 'application/json; charset=utf-8',
 					success: function(response) {
 						aLoader('hidden');
 						$('#images').append(response);
