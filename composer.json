@@ -29,6 +29,7 @@
 		"ext-gd": "*",
 		"ext-json": "*",
 		"ext-curl": "*",
+		"ext-exif": "*",
 		"roundcube/plugin-installer": ">=0.3.0"
 	},
 	"extra": {
