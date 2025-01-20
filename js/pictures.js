@@ -68,23 +68,14 @@ window.onload = function(){
 		});
 	
 		lightbox.on('slide_changed', (data) => {
-			document.querySelector('.gnext').classList.remove('mvbtn');
-			document.querySelectorAll('.exinfo').forEach(element => {
-				element.classList.remove('eshow');
-			});
-
-			clicks = 0;
-
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
 
 			let imglink = new URL(data.current.slideConfig.href);
 			let exinfo = 'exif_' + imglink.searchParams.get('p');
 			let closebtn = document.querySelector('.gclose');
-			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-	
+			
 			if(document.getElementById(exinfo)) {
-				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 				let infobtn = document.createElement('button');
 				infobtn.id = 'infbtn';
 				infobtn.dataset.iid = exinfo;
@@ -102,7 +93,8 @@ window.onload = function(){
 				window.location = 'plugins/pictures/simg.php?w=4&i=' + new URL(data.current.slideConfig.href).searchParams.get('p');
 			});
 			if(document.getElementById('images').classList.contains('dl')) closebtn.before(dlbtn);
-			
+
+			if(document.getElementById('infobox')) iBoxShow();
 		});
 
 		lightbox.on('slide_before_change', (data) => {
@@ -313,6 +305,11 @@ function shareDel(response) {
 }
 
 function iBoxShow(e) {
+	if(!document.getElementById('infbtn')) {
+		document.getElementById('infobox').classList.remove('eshow');
+		return false;
+	}
+	
 	let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
 	let infobox = info.cloneNode(true);
 	infobox.id = 'infobox';

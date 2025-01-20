@@ -1001,7 +1001,6 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('slide_changed', (data) => {
-			document.querySelector('.gnext').classList.remove('mvbtn');
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
 			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();		

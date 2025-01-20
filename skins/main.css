@@ -9,6 +9,23 @@ html {
 	padding: 0 0 10px 0;
 	top: 50px;
 }
+.infotop {
+	display: block;
+	text-align: center;
+	font-size: 1.2em;
+	text-transform: uppercase;
+	font-weight: 600;
+	margin-bottom: 1em;
+}
+.cpr {
+	margin-top: .7em;
+	display: block;
+}
+.gps {
+	margin-top: .7em;
+	display: block;
+	text-align: center;
+}
 .mmn-drop {
 	opacity: .7;
 	border: 1px dashed #00386f;
@@ -20,27 +37,27 @@ html {
 	background-color: #4788c7;
 }
 .progress {
-    height: 14px;
-    position: fixed;
-    opacity: .6;
-    visibility: hidden;
-    left: 0;
-    top: 0;
-    width: 100%;
-    background-color: #e9ecef;
+	height: 14px;
+	position: fixed;
+	opacity: .6;
+	visibility: hidden;
+	left: 0;
+	top: 0;
+	width: 100%;
+	background-color: #e9ecef;
 }
 .progressbar {
-    width: 0;
-    text-align: center;
-    vertical-align: middle;
-    color: #fff;
-    font-weight: 400;
-    font-size: .8em;
-    background-color: #007bff;
-    height: 100%;
-    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
-    background-size: 3rem 3rem;
-    text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
+	width: 0;
+	text-align: center;
+	vertical-align: middle;
+	color: #fff;
+	font-weight: 400;
+	font-size: .8em;
+	background-color: #007bff;
+	height: 100%;
+	background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+	background-size: 3rem 3rem;
+	text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
 }
 .jg-entry:hover .icheckbox {
 	visibility: visible;
@@ -49,14 +66,14 @@ html {
 	visibility: visible;
 }
 .is_shared:after {
-    content: " ";
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    right: 8px;
-    bottom: 8px;
-    background: #00b3ff;
-    border-radius: 50%;
+	content: " ";
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	right: 8px;
+	bottom: 8px;
+	background: #00b3ff;
+	border-radius: 50%;
 }
 .video {
 	background: url("../images/video-play.png") no-repeat center center;
@@ -74,48 +91,48 @@ html {
 	color: aliceblue;
 }
 .exinfo {
-    position: fixed;
-    overflow: hidden;
-    right: 0;
-    background: #0000008a;
-    padding: 55px 10px 0;
-    top: 0;
-    color: #fff;
-    width: 270px;
-    text-overflow: ellipsis;
-    bottom: 0;
-    font-size: .95em;
-    visibility: hidden;
+	position: fixed;
+	overflow: hidden;
+	right: 0;
+	background: #0000008a;
+	padding: 55px 10px 0;
+	top: 0;
+	color: #fff;
+	width: 270px;
+	text-overflow: ellipsis;
+	bottom: 0;
+	font-size: .95em;
+	visibility: hidden;
 }
 .infotable {
-    border-collapse: collapse;
-    border-spacing: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
 }
 .infotable th {
-    padding: 0 0 10px 0;
-    border: 0;
-    font-size: 1.3em;
+	padding: 0 0 10px 0;
+	border: 0;
+	font-size: 1.3em;
 }
 .infotable td {
-    border: 0;
-    padding: 0;
+	border: 0;
+	padding: 0;
 }
 td.tvar {
-    overflow: hidden;
-    width: 110px;
-    vertical-align: baseline;
+	overflow: hidden;
+	width: 110px;
+	vertical-align: baseline;
 }
 td.tvalue {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    max-width: 160px;
-    padding-bottom: 5px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 160px;
+	padding-bottom: 5px;
 }
 .infotable tbody tr {
-    line-height: 24px;
+	line-height: 24px;
 }
 .mvbtn {
-    margin-right: 260px;
+	margin-right: 260px;
 }
 .eshow {
 	/* z-index: 1000000; */
@@ -534,7 +551,7 @@ footer a {
 	height: 35px;
 }
 #dlbtn.ex {
-    right: 100px;
+	right: 100px;
 }
 #fbtn {
 	position: absolute;
@@ -562,8 +579,8 @@ footer a {
 	z-index: 10000;
 }
 #infbtn:disabled {
-    cursor: default;
-    opacity: .3;
+	cursor: default;
+	opacity: .3;
 }
 #fbtn:hover, #infbtn:hover, #dlbtn:hover {
 	background-color: rgba(0,0,0,.7);
@@ -593,7 +610,7 @@ footer a {
 	margin-right: auto !important;
 }
 .sshare {
-    background-color: #212121;
+	background-color: #212121;
 }
 #header {
 	top: 0;
