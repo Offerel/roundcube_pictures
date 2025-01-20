@@ -1,5 +1,9 @@
+### v1.5.5
+- Fix Infobox
+
 ### v1.5.4
 - Fix change sharetype
+- Fix unicode encoding
 - Standardize send functions
 
 ### v1.5.2

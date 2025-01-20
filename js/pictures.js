@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.4
+ * @version 1.5.5
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -92,7 +92,6 @@ window.onload = function(){
 				infobtn.addEventListener('click', iBoxShow, true);
 				closebtn.before(infobtn);
 			}
-
 			
 			if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
 			let dlbtn = document.createElement('button');
@@ -314,19 +313,16 @@ function shareDel(response) {
 }
 
 function iBoxShow(e) {
-	let gnext = document.querySelector('.gnext');
 	let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
 	let infobox = info.cloneNode(true);
-	if(document.getElementById('infobox')) document.getElementById('infobox').remove();
 	infobox.id = 'infobox';
-	
-	clicks += 1;
-	if(clicks % 2 != 0) {
-		infobox.classList.add('eshow')
-		document.querySelector('.gcontainer').append(infobox);
-		gnext.classList.add('mvbtn');
+	infobox.classList.add('eshow');
+
+	if(document.getElementById('infobox')) {
+		document.getElementById('infobox').remove();
+		if(e == undefined) document.querySelector('.gcontainer').append(infobox);
 	} else {
-		gnext.classList.remove('mvbtn');
+		document.querySelector('.gcontainer').append(infobox);
 	}
 }
 

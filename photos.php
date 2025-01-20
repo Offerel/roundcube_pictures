@@ -2,7 +2,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.4
+ * @version 1.5.5
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -1004,11 +1004,7 @@ function showPage($thumbnails, $dir) {
 			document.querySelector('.gnext').classList.remove('mvbtn');
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
-			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
-
-			document.querySelectorAll('.exinfo').forEach(element => {
-				element.classList.remove('eshow');
-			});
+			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();		
 
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			let dlbtn = document.createElement('button');
@@ -1043,6 +1039,8 @@ function showPage($thumbnails, $dir) {
 			} else {
 				infobtn.disabled = true;
 			}
+
+			if(document.getElementById('infobox')) iBoxShow();
 		});
 
 		lightbox.on('slide_before_change', (data) => {
@@ -1089,19 +1087,19 @@ function showPage($thumbnails, $dir) {
 		checkboxes();
 
 		function iBoxShow(e) {
-			let gnext = document.querySelector('.gnext');
+			//let gnext = document.querySelector('.gnext');
 			let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
 			let infobox = info.cloneNode(true);
-			if(document.getElementById('infobox')) document.getElementById('infobox').remove();
 			infobox.id = 'infobox';
-			
-			clicks += 1;
-			if(clicks % 2 != 0) {
-				infobox.classList.add('eshow')
-				document.querySelector('.gcontainer').append(infobox);
-				gnext.classList.add('mvbtn');
+			infobox.classList.add('eshow');
+
+			if(document.getElementById('infobox')) {
+				document.getElementById('infobox').remove();
+				//gnext.classList.remove('mvbtn');
+				if(e == undefined) document.querySelector('.gcontainer').append(infobox);
 			} else {
-				gnext.classList.remove('mvbtn');
+				document.querySelector('.gcontainer').append(infobox);
+				//gnext.classList.add('mvbtn');
 			}
 		}
 		
