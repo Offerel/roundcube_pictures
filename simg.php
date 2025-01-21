@@ -45,7 +45,7 @@ if(isset($spicture) && !empty($spicture)) {
 }
 
 if(isset($file) && !empty($file)) {
-	if (!empty($rcmail->user->ID)) {
+	if (!empty($rcmail->user->ID) && !isset($_GET['i'])) {
 		$username = $rcmail->user->get_username();
 		switch($mode) {
 			case 1:

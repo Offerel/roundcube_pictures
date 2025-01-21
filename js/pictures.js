@@ -69,30 +69,37 @@ window.onload = function(){
 	
 		lightbox.on('slide_changed', (data) => {
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
+			if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
 
 			let imglink = new URL(data.current.slideConfig.href);
 			let exinfo = 'exif_' + imglink.searchParams.get('p');
 			let closebtn = document.querySelector('.gclose');
-			
+
+			if(document.getElementById('btn_container')) document.getElementById('btn_container').remove();
+			let btn_container = document.createElement('div');
+			btn_container.id = 'btn_container';
+
 			if(document.getElementById(exinfo)) {
 				let infobtn = document.createElement('button');
 				infobtn.id = 'infbtn';
 				infobtn.dataset.iid = exinfo;
 				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
 				infobtn.addEventListener('click', iBoxShow, true);
-				closebtn.before(infobtn);
+				btn_container.appendChild(infobtn);
 			}
 			
-			if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
 			let dlbtn = document.createElement('button');
 			dlbtn.id = 'dlbtn';
-			dlbtn.classList.add('ex');
-			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
+			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"white\" viewBox=\"0 0 16 16\"><path d=\"M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z\"></path><path d=\"M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z\"></path></svg>';
 			dlbtn.addEventListener('click', e => {
 				window.location = 'plugins/pictures/simg.php?w=4&i=' + new URL(data.current.slideConfig.href).searchParams.get('p');
 			});
-			if(document.getElementById('images').classList.contains('dl')) closebtn.before(dlbtn);
+
+			if(document.getElementById('images').classList.contains('dl')) btn_container.appendChild(dlbtn);
+
+			btn_container.appendChild(closebtn);
+			let gcontainer = document.querySelector('.gcontainer');
+			gcontainer.appendChild(btn_container);
 
 			if(document.getElementById('infobox')) iBoxShow();
 		});

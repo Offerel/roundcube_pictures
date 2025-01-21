@@ -1009,8 +1009,8 @@ function showPage($thumbnails, $dir) {
 			let fbtn = document.createElement('button');
 			dlbtn.id = 'dlbtn';
 			fbtn.id = 'fbtn';
-			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
-			fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
+			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"white\" viewBox=\"0 0 16 16\"><path d=\"M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z\"></path><path d=\"M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z\"></path></svg>';
+			fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"white\" viewBox=\"0 0 16 16\"><path d=\"M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z\"></path></svg>';
 			dlbtn.addEventListener('click', e => {
 				window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
 			})
@@ -1022,14 +1022,15 @@ function showPage($thumbnails, $dir) {
 				}
 			});
 			let closebtn = document.querySelector('.gclose');
-			closebtn.before(dlbtn);
-			closebtn.before(fbtn);
+			
+			if(document.getElementById('btn_container')) document.getElementById('btn_container').remove();
+			let btn_container = document.createElement('div');
+			btn_container.id = 'btn_container';
 
 			let iBox = document.getElementById(file);
 			let infobtn = document.createElement('button');
 			infobtn.id = 'infbtn';
 			infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-			closebtn.before(infobtn);
 
 			if(document.getElementById(file)) {
 				infobtn.dataset.iid = file;
@@ -1037,6 +1038,13 @@ function showPage($thumbnails, $dir) {
 			} else {
 				infobtn.disabled = true;
 			}
+
+			btn_container.appendChild(dlbtn);
+			btn_container.appendChild(infobtn);
+			btn_container.appendChild(fbtn);
+			btn_container.appendChild(closebtn);
+			let gcontainer = document.querySelector('.gcontainer');
+			gcontainer.appendChild(btn_container);
 
 			if(document.getElementById('infobox')) iBoxShow();
 		});
@@ -1085,7 +1093,6 @@ function showPage($thumbnails, $dir) {
 		checkboxes();
 
 		function iBoxShow(e) {
-			//let gnext = document.querySelector('.gnext');
 			let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
 			let infobox = info.cloneNode(true);
 			infobox.id = 'infobox';
@@ -1093,11 +1100,9 @@ function showPage($thumbnails, $dir) {
 
 			if(document.getElementById('infobox')) {
 				document.getElementById('infobox').remove();
-				//gnext.classList.remove('mvbtn');
 				if(e == undefined) document.querySelector('.gcontainer').append(infobox);
 			} else {
 				document.querySelector('.gcontainer').append(infobox);
-				//gnext.classList.add('mvbtn');
 			}
 		}
 		
@@ -1329,46 +1334,46 @@ function parseEXIF($jarr, $format = 'html') {
 		elseif(array_key_exists('Model', $jarr))
 			$camera = $jarr['Model'];
 
-		$exifInfo = (array_key_exists('Model', $jarr)) ? $rcmail->gettext('exif_camera','pictures').": $camera<br>":"";
+		$exifInfo = (array_key_exists('Model', $jarr)) ? "<strong>".$rcmail->gettext('exif_camera','pictures').":</strong> $camera<br>":"";
 		if(array_key_exists('Model', $jarr)) $eInfo[$rcmail->gettext('exif_camera','pictures')] = $camera;
 
-		$exifInfo.= (array_key_exists('LensID', $jarr)) ? $rcmail->gettext('exif_lens','pictures').": ".$jarr['LensID']."<br>":"";
+		$exifInfo.= (array_key_exists('LensID', $jarr)) ? "<strong>".$rcmail->gettext('exif_lens','pictures').":</strong> ".$jarr['LensID']."<br>":"";
 		if(array_key_exists('LensID', $jarr)) $eInfo[$rcmail->gettext('exif_lens','pictures')] = $jarr['LensID'];
 
-		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? $rcmail->gettext('exif_date','pictures').": ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
+		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? "<strong>".$rcmail->gettext('exif_date','pictures').":</strong> ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
 		if(array_key_exists('DateTimeOriginal', $jarr)) $eInfo[$rcmail->gettext('exif_date','pictures')] = date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal']);
 
-		$exifInfo.= (array_key_exists('Software', $jarr)) ? $rcmail->gettext('exif_sw','pictures').": ".$jarr['Software']."<br>":"";
+		$exifInfo.= (array_key_exists('Software', $jarr)) ? "<strong>".$rcmail->gettext('exif_sw','pictures').":</strong> ".$jarr['Software']."<br>":"";
 		if(array_key_exists('Software', $jarr)) $eInfo[$rcmail->gettext('exif_sw','pictures')] = $jarr['Software'];
 
-		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? $rcmail->gettext('exif_expos','pictures').": ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? "<strong>".$rcmail->gettext('exif_expos','pictures').":</strong> ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
 		if(array_key_exists('ExposureProgram', $jarr)) $eInfo[$rcmail->gettext('exif_expos','pictures')] = $rcmail->gettext(ep($jarr['ExposureProgram']),'pictures');
 
-		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? $rcmail->gettext('exif_meter','pictures').": ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? "<strong>".$rcmail->gettext('exif_meter','pictures').":</strong> ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
 		if(array_key_exists('MeteringMode', $jarr)) $eInfo[$rcmail->gettext('exif_meter','pictures')] = $rcmail->gettext(mm($jarr['MeteringMode']),'pictures');
 
-		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? $rcmail->gettext('exif_exptime','pictures').": ".$jarr['ExposureTime']."s<br>":"";
+		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? "<strong>".$rcmail->gettext('exif_exptime','pictures').":</strong> ".$jarr['ExposureTime']."s<br>":"";
 		if(array_key_exists('ExposureTime', $jarr)) $eInfo[$rcmail->gettext('exif_exptime','pictures')] = $jarr['ExposureTime'];
 
-		$exifInfo.= (array_key_exists('ISO', $jarr)) ? $rcmail->gettext('exif_ISO','pictures').": ".$jarr['ISO']."<br>":"";
+		$exifInfo.= (array_key_exists('ISO', $jarr)) ? "<strong>".$rcmail->gettext('exif_ISO','pictures').":</strong> ".$jarr['ISO']."<br>":"";
 		if(array_key_exists('ISO', $jarr)) $eInfo[$rcmail->gettext('exif_ISO','pictures')] = $jarr['ISO'];
 
-		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? $rcmail->gettext('exif_focalength','pictures').": ".$jarr['FocalLength']."mm<br>":"";
+		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? "<strong>".$rcmail->gettext('exif_focalength','pictures').":</strong> ".$jarr['FocalLength']."mm<br>":"";
 		if(array_key_exists('FocalLength', $jarr)) $eInfo[$rcmail->gettext('exif_focalength','pictures')] = $jarr['FocalLength'];
 
-		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? $rcmail->gettext('exif_whiteb','pictures').": ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? "<strong>".$rcmail->gettext('exif_whiteb','pictures').":</strong> ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
 		if(array_key_exists('WhiteBalance', $jarr)) $eInfo[$rcmail->gettext('exif_whiteb','pictures')] = $rcmail->gettext(wb($jarr['WhiteBalance']),'pictures');
 
-		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? $rcmail->gettext('exif_fstop','pictures').": ƒ/".$jarr['FNumber']."<br>":"";
+		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? "<strong>".$rcmail->gettext('exif_fstop','pictures').":</strong> ƒ/".$jarr['FNumber']."<br>":"";
 		if(array_key_exists('FNumber', $jarr)) $eInfo[$rcmail->gettext('exif_fstop','pictures')] = "ƒ/".$jarr['FNumber'];
 
-		$exifInfo.= (array_key_exists('Flash', $jarr)) ? $rcmail->gettext('exif_flash','pictures').": ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('Flash', $jarr)) ? "<strong>".$rcmail->gettext('exif_flash','pictures').":</strong> ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		if(array_key_exists('Flash', $jarr)) $eInfo[$rcmail->gettext('exif_flash','pictures')] = $rcmail->gettext(flash($jarr['Flash']),'pictures');
 
-		$exifInfo.= (array_key_exists('Title', $jarr)) ? $rcmail->gettext('exif_title','pictures').": ".$jarr['Title']."<br>":"";
+		$exifInfo.= (array_key_exists('Title', $jarr)) ? "<strong>".$rcmail->gettext('exif_title','pictures').":</strong> ".$jarr['Title']."<br>":"";
 		if(array_key_exists('Title', $jarr)) $eInfo[$rcmail->gettext('exif_title','pictures')] = $jarr['Title'];
 
-		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? $rcmail->gettext('exif_desc','pictures').": ".$jarr['ImageDescription']."<br>":"";
+		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? "<strong>".$rcmail->gettext('exif_desc','pictures').":</strong> ".$jarr['ImageDescription']."<br>":"";
 		if(isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) $eInfo[$rcmail->gettext('exif_desc','pictures')] = $jarr['ImageDescription'];
 		
 		if(isset($jarr['Keywords']) && is_array($jarr['Keywords'])) {
@@ -1381,7 +1386,7 @@ function parseEXIF($jarr, $format = 'html') {
 			$keywords = '';
 		}
 
-		$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": $keywords<br>";
+		$exifInfo.= "<strong>".$rcmail->gettext('exif_keywords','pictures').":</strong> $keywords<br>";
 		$eInfo[$rcmail->gettext('exif_keywords','pictures')] = $keywords;
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? "<span class='cpr'>".str_replace("u00a9","&copy;",$jarr['Copyright'])."</span>":"";
