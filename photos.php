@@ -905,12 +905,19 @@ function showPage($thumbnails, $dir) {
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
 			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
-			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
+			
 			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
+			<!--
+			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
+			-->
+			
+			<link rel=\"stylesheet\" href=\"js/spotlight/spotlight.min.css\">
+    		<script src=\"js/spotlight/spotlight.min.js\"></script>
+			
 			";
 	$aarr = explode('/',$dir);
 	$path = "";
@@ -986,7 +993,20 @@ function showPage($thumbnails, $dir) {
 		$(window).scroll(function() {
 			lazyload();
 		});
+
+		Spotlight.init();
+		const iButton = Spotlight.addControl('info', function(event){
+			const footer = document.querySelector('.spl-footer');
+			footer.classList.toggle('show');
+		});
 		
+		const dButton = Spotlight.addControl('idownload', function(event){
+			console.log(event);
+			//window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
+		});
+		
+
+		/*
 		lightbox = GLightbox({
 			plyr: {
 				config: {
@@ -1066,6 +1086,7 @@ function showPage($thumbnails, $dir) {
 				});
 			}, {once: true});
 		});
+		*/
 		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
@@ -1138,7 +1159,7 @@ function showPage($thumbnails, $dir) {
 						}
 							
 						});
-						lightbox.reload();
+						//lightbox.reload();
 						checkboxes();
 						return false;
 					}
@@ -1481,7 +1502,6 @@ function showGallery($requestedDir, $offset = 0) {
 	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
-	$hidden_vid = "";
 	$pnavigation = "";
 	
 	$dbh = rcmail_utils::db();
@@ -1552,15 +1572,15 @@ function showGallery($requestedDir, $offset = 0) {
 
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
-				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
+				//$caption = (strlen($exifInfo) > 10) ? $exifInfo:"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
-					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox$shared\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					//$html = "\t\t\t\t\t\t<a class=\"spotlight$shared\" href='$linkUrl' data-media='image' data-description='$caption' data-download='true'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">";
+					$html = "\t\t\t\t\t\t<a class=\"spotlight$shared\" href='$linkUrl' data-media='image' data-description='$caption'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">";
 				}
 				
 				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
-					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
-					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					$html = "\t\t\t\t\t\t<a class=\"spotlight$shared\" href='$linkUrl' data-media='video' data-description='$caption'><img src=\"$imgUrl\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">";
 				}
 				
 				$files[] = array(
@@ -1614,16 +1634,9 @@ function showGallery($requestedDir, $offset = 0) {
 		for ($y = $offset; $y < $offset_end; $y++) {
 			$thumbnails2.= "\n".$files[$y]["html"];
 		}
-
-		if(isset($videos) && sizeof($videos) > 0){
-			foreach($videos as $video) {
-				$hidden_vid.= $video["html"];
-			}
-		}
 	}
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
-	$thumbnails.= $hidden_vid;
 
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 
