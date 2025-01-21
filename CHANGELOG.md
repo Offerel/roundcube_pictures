@@ -1,5 +1,7 @@
 ### v1.5.5
 - Fix Infobox
+- Updated Tagify to 4.33.1 (https://github.com/yairEO/tagify)
+- Updated GLightbox 3.3.1 (https://github.com/biati-digital/glightbox)
 
 ### v1.5.4
 - Fix change sharetype
