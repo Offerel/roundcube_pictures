@@ -1384,10 +1384,10 @@ function parseEXIF($jarr, $format = 'html') {
 		$exifInfo.= $rcmail->gettext('exif_keywords','pictures').": $keywords<br>";
 		$eInfo[$rcmail->gettext('exif_keywords','pictures')] = $keywords;
 		
-		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? $rcmail->gettext('exif_copyright','pictures').": ".str_replace("u00a9","&copy;",$jarr['Copyright'])."<br>":"";
+		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? "<span class='cpr'>".str_replace("u00a9","&copy;",$jarr['Copyright'])."</span>":"";
 		if(array_key_exists('Copyright', $jarr)) $eInfo[$rcmail->gettext('exif_copyright','pictures')] = $jarr['Copyright'];
 
-		$exifInfo.= (strlen($osm_params) > 20) ? "$gpslink<br>":"";
+		$exifInfo.= (strlen($osm_params) > 20) ? "<span class='gps'>$gpslink</span>":"";
 		if(strlen($osm_params) > 20) {
 			$eInfo['map']['osm'] = $osm;
 			$eInfo['map']['google'] = $google;
@@ -1481,7 +1481,7 @@ function showGallery($requestedDir, $offset = 0) {
 	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
-	$hidden_vid = "";
+	//$hidden_vid = "";
 	$pnavigation = "";
 	
 	$dbh = rcmail_utils::db();
@@ -1552,15 +1552,15 @@ function showGallery($requestedDir, $offset = 0) {
 
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
-				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'>$exifInfo</div>":"";
+				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
-					$html = "\t\t\t\t\t\t<div><a class=\"image glightbox$shared\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					$html = "\t\t\t\t\t\t<div><a class=\"glightbox$shared\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
-					$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
-					$html = "\t\t\t\t\t\t<div><a class=\"video glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /><span class='video'></span></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+					//$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
+					$html = "\t\t\t\t\t\t<div><a class=\"glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
 				$files[] = array(
@@ -1614,16 +1614,17 @@ function showGallery($requestedDir, $offset = 0) {
 		for ($y = $offset; $y < $offset_end; $y++) {
 			$thumbnails2.= "\n".$files[$y]["html"];
 		}
-
+		/*
 		if(isset($videos) && sizeof($videos) > 0){
 			foreach($videos as $video) {
 				$hidden_vid.= $video["html"];
 			}
 		}
+		*/
 	}
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
-	$thumbnails.= $hidden_vid;
+	//$thumbnails.= $hidden_vid;
 
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 

@@ -9,6 +9,14 @@ html {
 	padding: 0 0 10px 0;
 	top: 50px;
 }
+[data-type="video"]:after {
+    background: url(../pictures/images/video-play.png) no-repeat center center;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: .4;
+}
 .infotop {
 	display: block;
 	text-align: center;
