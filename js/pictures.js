@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
-var lightbox, tagify, clicks;
+var lightbox, tagify, clicks, intervalID;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
@@ -61,6 +61,7 @@ window.onload = function(){
 		});
 	
 		lightbox.on('close', () => {
+			stop_loop();
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			document.querySelectorAll('.exinfo').forEach(element => {
 				element.classList.remove('eshow');
@@ -68,37 +69,53 @@ window.onload = function(){
 		});
 	
 		lightbox.on('slide_changed', (data) => {
-			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-			if(document.getElementById('dlbtn')) document.getElementById('dlbtn').remove();
-
 			let imglink = new URL(data.current.slideConfig.href);
 			let exinfo = 'exif_' + imglink.searchParams.get('p');
 			let closebtn = document.querySelector('.gclose');
+			let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
 
 			if(document.getElementById('btn_container')) document.getElementById('btn_container').remove();
+			
 			let btn_container = document.createElement('div');
 			btn_container.id = 'btn_container';
+			let gcontainer = document.querySelector('.gcontainer');
 
-			if(document.getElementById(exinfo)) {
-				let infobtn = document.createElement('button');
-				infobtn.id = 'infbtn';
-				infobtn.dataset.iid = exinfo;
-				infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-				infobtn.addEventListener('click', iBoxShow, true);
-				btn_container.appendChild(infobtn);
-			}
+			let infobtn = document.createElement('button');
+			infobtn.id = 'infbtn';
+			infobtn.dataset.iid = exinfo;
+			infobtn.addEventListener('click', iBoxShow, true);
 			
 			let dlbtn = document.createElement('button');
 			dlbtn.id = 'dlbtn';
-			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"white\" viewBox=\"0 0 16 16\"><path d=\"M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z\"></path><path d=\"M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z\"></path></svg>';
 			dlbtn.addEventListener('click', e => {
 				window.location = 'plugins/pictures/simg.php?w=4&i=' + new URL(data.current.slideConfig.href).searchParams.get('p');
 			});
 
-			if(document.getElementById('images').classList.contains('dl')) btn_container.appendChild(dlbtn);
+			let fbtn = document.createElement('button');
+			fbtn.id = 'fbtn';
+			fbtn.addEventListener('click', e => {
+				if(document.fullscreenElement){ 
+					document.exitFullscreen();
+				} else { 
+					document.getElementById('glightbox-body').requestFullscreen();
+				}
+				fbtn.classList.toggle('on');
+			});
 
+			let pbtn = document.createElement('button');
+			pbtn.id = 'pbtn';
+			if(loop_play) {
+				pbtn.classList.add('on');
+				pbtn.addEventListener('click', stop_loop);
+			} else {
+				pbtn.addEventListener('click', loop_slide.bind(this, 5));
+			}
+
+			btn_container.appendChild(pbtn);
+			if(document.getElementById('images').classList.contains('dl') && data.current.slideConfig.type != 'video') btn_container.appendChild(dlbtn);
+			if(document.getElementById(exinfo)) btn_container.appendChild(infobtn);
+			btn_container.appendChild(fbtn);
 			btn_container.appendChild(closebtn);
-			let gcontainer = document.querySelector('.gcontainer');
 			gcontainer.appendChild(btn_container);
 
 			if(document.getElementById('infobox')) iBoxShow();
@@ -249,6 +266,33 @@ window.onload = function(){
 		});
 	}
 };
+
+function stop_loop() {
+	if(document.getElementById('pbtn')) {
+		let pbtn = document.getElementById('pbtn');
+		pbtn.classList.remove('on');
+		pbtn.addEventListener('click', loop_slide.bind(this, 5));
+	}
+	
+	clearInterval(intervalID);
+	document.getElementById('slide_progress').style.width = 0;
+}
+
+function loop_slide(duration=3) {
+	document.getElementById('pbtn').classList.add('on');
+	lightbox.nextSlide();
+	var width = 1;
+	intervalID = setInterval(frame, 10);
+	function frame() {
+		if (width >= 100) {
+			clearInterval(intervalID);
+			loop_slide(duration);
+		} else {
+			width = width + (100/(duration*60));
+			document.getElementById('slide_progress').style.width = width + 'vw';
+		}
+  }
+}
 
 function pixelfed_verify(response) {
 	if(response.code == 200 && this.response.base_url != null) {

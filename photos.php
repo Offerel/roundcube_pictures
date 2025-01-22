@@ -920,7 +920,7 @@ function showPage($thumbnails, $dir) {
 		if(strlen($folder) > 0) $albumnav.= "<li><a href='?p=$path'>$folder</a></li>";
 	}
 	$page.= "</head>
-	\t\t<body class='picbdy'>
+	\t\t<body class='picbdy'><div id='slide_progress'></div>
 	\t\t\t<div id='loader' class='lbg'><div class='db-spinner'></div></div>
 	
 	\t\t\t<div id='header'>
@@ -934,6 +934,7 @@ function showPage($thumbnails, $dir) {
 	$page.="
 	<script>
 		var clicks = 0;
+		var intervalID;
 		let ntitle = '$gal';
 		let btitle = ntitle.split('/');
 		let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
@@ -1000,25 +1001,23 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('slide_changed', (data) => {
-			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
-			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();		
+			let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
 
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			let dlbtn = document.createElement('button');
 			let fbtn = document.createElement('button');
 			dlbtn.id = 'dlbtn';
 			fbtn.id = 'fbtn';
-			fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"white\" viewBox=\"0 0 16 16\"><path d=\"M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z\"></path></svg>';
 			dlbtn.addEventListener('click', e => {
 				window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
 			})
 			fbtn.addEventListener('click', e => {
-				if(document.fullscreenElement){ 
+				if(document.fullscreenElement){
 					document.exitFullscreen() 
 				} else { 
 					document.getElementById('glightbox-body').requestFullscreen();
 				}
+				fbtn.classList.toggle('on');
 			});
 			let closebtn = document.querySelector('.gclose');
 			
@@ -1029,8 +1028,7 @@ function showPage($thumbnails, $dir) {
 			let iBox = document.getElementById(file);
 			let infobtn = document.createElement('button');
 			infobtn.id = 'infbtn';
-			infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-
+			
 			if(document.getElementById(file)) {
 				infobtn.dataset.iid = file;
 				infobtn.addEventListener('click', iBoxShow, true);
@@ -1038,6 +1036,16 @@ function showPage($thumbnails, $dir) {
 				infobtn.disabled = true;
 			}
 
+			let pbtn = document.createElement('button');
+			pbtn.id = 'pbtn';
+			if(loop_play) {
+				pbtn.classList.add('on');
+				pbtn.addEventListener('click', stop_loop);
+			} else {
+				pbtn.addEventListener('click', loop_slide.bind(this, 5));
+			}
+			
+			btn_container.appendChild(pbtn);
 			btn_container.appendChild(dlbtn);
 			btn_container.appendChild(infobtn);
 			btn_container.appendChild(fbtn);
@@ -1058,6 +1066,7 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('close', () => {
+			stop_loop();
 			document.querySelectorAll('.exinfo').forEach(element => {
 				element.classList.remove('eshow');
 			});
@@ -1090,6 +1099,33 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		checkboxes();
+
+		function stop_loop() {
+			if(document.getElementById('pbtn')) {
+				let pbtn = document.getElementById('pbtn');
+				pbtn.classList.remove('on');
+				pbtn.addEventListener('click', loop_slide.bind(this, 5));
+			}
+			
+			clearInterval(intervalID);
+			document.getElementById('slide_progress').style.width = 0;
+		}
+
+		function loop_slide(duration=3) {
+			document.getElementById('pbtn').classList.add('on');
+			lightbox.nextSlide();
+			var width = 1;
+			intervalID = setInterval(frame, 10);
+			function frame() {
+				if (width >= 100) {
+					clearInterval(intervalID);
+					loop_slide(duration);
+				} else {
+					width = width + (100/(duration*60));
+					document.getElementById('slide_progress').style.width = width + 'vw';
+				}
+		}
+		}
 
 		function iBoxShow(e) {
 			let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
@@ -1485,7 +1521,6 @@ function showGallery($requestedDir, $offset = 0) {
 	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
-	//$hidden_vid = "";
 	$pnavigation = "";
 	
 	$dbh = rcmail_utils::db();
@@ -1563,7 +1598,6 @@ function showGallery($requestedDir, $offset = 0) {
 				}
 				
 				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
-					//$videos[] = array("html" => "<div style=\"display: none;\" id=\"".pathinfo($file)['filename']."\"><video class=\"lg-video-object lg-html5\" controls preload=\"none\"><source src=\"$linkUrl\" type=\"video/mp4\"></video></div>");
 					$html = "\t\t\t\t\t\t<div><a class=\"glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
 				}
 				
@@ -1618,17 +1652,9 @@ function showGallery($requestedDir, $offset = 0) {
 		for ($y = $offset; $y < $offset_end; $y++) {
 			$thumbnails2.= "\n".$files[$y]["html"];
 		}
-		/*
-		if(isset($videos) && sizeof($videos) > 0){
-			foreach($videos as $video) {
-				$hidden_vid.= $video["html"];
-			}
-		}
-		*/
 	}
 	$thumbnails.= $thumbnails2;
 	$thumbnails.= "\n\t\t\t\t\t</div>";
-	//$thumbnails.= $hidden_vid;
 
 	if($offset_end == count($files)) $thumbnails2.= "<span id='last'></span>";
 

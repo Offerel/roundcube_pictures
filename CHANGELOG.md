@@ -1,5 +1,6 @@
 ### v1.5.5
 - Fix Infobox
+- Added Slideshow
 - Updated Tagify to 4.33.1 (https://github.com/yairEO/tagify)
 - Updated GLightbox 3.3.1 (https://github.com/biati-digital/glightbox)
 

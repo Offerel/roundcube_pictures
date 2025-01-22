@@ -87,7 +87,7 @@ class pictures extends rcube_plugin {
 					$linkUrl =	"plugins/pictures/simg.php?p=$id&t=2";
 					$gis = getimagesize($thumb_path)[3];
 
-					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='$img_name' /><span class='$type' ></span></a>$exifSpan";
+					$thumbnails2.= "\n\t\t\t\t<a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='$img_name' /></a>$exifSpan";
 				}
 			}
 
@@ -496,7 +496,7 @@ function showShare($thumbnails, $share) {
 			<script src='plugins/pictures/js/plyr/plyr.js'></script>
 			<script src='plugins/pictures/js/pictures.js'></script>
 			";
-	$page.= "\n\t\t</head>\n\t\t<body class='picbdy sshare'>";
+	$page.= "\n\t\t</head>\n\t\t<body class='picbdy sshare'><div id='slide_progress'></div>";
 	$page.= "\n\t\t\t<div id='header' style='position: fixed; padding-left: 0; width: 100%'><h2 style='align-items: center; display: inline-flex; padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$head</h2>";
 	$page.= "\n\t\t\t</div>";
 	$page.= $thumbnails;
