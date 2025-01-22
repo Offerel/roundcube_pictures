@@ -995,6 +995,7 @@ function showPage($thumbnails, $dir) {
 		});
 
 		Spotlight.init();
+
 		Spotlight.addControl('info', function(event){
 			const footer = document.querySelector('.spl-footer');
 			footer.classList.toggle('show');
@@ -1011,88 +1012,17 @@ function showPage($thumbnails, $dir) {
 			}
 		});
 		
-
-		/*
-		lightbox = GLightbox({
-			plyr: {
-				config: {
-					muted: true,
-				}
-			},
-			autoplayVideos: false,
-			loop: false,
-			videosWidth: '100%',
-			closeOnOutsideClick: false
+		Spotlight.show([], {
+			onchange: slide_change,
 		});
+		
 
-		lightbox.on('slide_changed', (data) => {
-			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
-			if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();		
-
-			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
-			let dlbtn = document.createElement('button');
-			let fbtn = document.createElement('button');
-			dlbtn.id = 'dlbtn';
-			fbtn.id = 'fbtn';
-			dlbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" xml:space=\"preserve\" width=\"23\" height=\"23\" fill=\"#fff\" stroke=\"#fff\" viewBox=\"0 0 29.978 29.978\"><path d=\"M25.462 19.105v6.848H4.515v-6.848H.489v8.861c0 1.111.9 2.012 2.016 2.012h24.967c1.115 0 2.016-.9 2.016-2.012v-8.861h-4.026zm-10.842-.679-5.764-6.965s-.877-.828.074-.828h3.248V.494S12.049 0 12.793 0h4.572c.536 0 .524.416.524.416v10.008h2.998c1.154 0 .285.867.285.867s-4.904 6.51-5.588 7.193c-.492.495-.964-.058-.964-.058z\"/></svg>';
-			fbtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 14 14\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M2 9H0v5h5v-2H2V9ZM0 5h2V2h3V0H0v5Zm12 7H9v2h5V9h-2v3ZM9 0v2h3v3h2V0H9Z\"/></svg>';
-			dlbtn.addEventListener('click', e => {
-				window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
-			})
-			fbtn.addEventListener('click', e => {
-				if(document.fullscreenElement){ 
-					document.exitFullscreen() 
-				} else { 
-					document.getElementById('glightbox-body').requestFullscreen();
-				}
-			});
-			let closebtn = document.querySelector('.gclose');
-			closebtn.before(dlbtn);
-			closebtn.before(fbtn);
-
-			let iBox = document.getElementById(file);
-			let infobtn = document.createElement('button');
-			infobtn.id = 'infbtn';
-			infobtn.innerHTML = '<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.0\" viewBox=\"0 0 160 160\"><g fill=\"white\"><path d=\"M80 15c-35.88 0-65 29.12-65 65s29.12 65 65 65 65-29.12 65-65-29.12-65-65-65zm0 10c30.36 0 55 24.64 55 55s-24.64 55-55 55-55-24.64-55-55 24.64-55 55-55z\"/><path d=\"M89.998 51.25a11.25 11.25 0 1 1-22.5 0 11.25 11.25 0 1 1 22.5 0zm.667 59.71c-.069 2.73 1.211 3.5 4.327 3.82l5.008.1V120H60.927v-5.12l5.503-.1c3.291-.1 4.082-1.38 4.327-3.82V80.147c.035-4.879-6.296-4.113-10.757-3.968v-5.074L90.665 70\"/></g></svg>';
-			closebtn.before(infobtn);
-
-			if(document.getElementById(file)) {
-				infobtn.dataset.iid = file;
-				infobtn.addEventListener('click', iBoxShow, true);
-			} else {
-				infobtn.disabled = true;
+		function slide_change(index, options) {
+			const panes = document.getElementsByClassName('spl-pane');
+			if(index > panes.length) {
+				lazyload(true);
 			}
-
-			if(document.getElementById('infobox')) iBoxShow();
-		});
-
-		lightbox.on('slide_before_change', (data) => {
-			let cindex = data.current.index + 1;
-			let cimages = document.getElementsByClassName('glightbox').length;
-			let last = document.getElementById('last') ? false:true;
-			if(cindex == cimages && last) {
-				setTimeout(lazyload, 100, true);
-			}
-		});
-
-		lightbox.on('close', () => {
-			document.querySelectorAll('.exinfo').forEach(element => {
-				element.classList.remove('eshow');
-			});
-		});
-
-		lightbox.on('open', () => {
-			document.querySelector('.gclose').addEventListener('click', () => {
-				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-				if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
-				if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
-				document.querySelectorAll('.exinfo').forEach(element => {
-					element.classList.remove('eshow');
-				});
-			}, {once: true});
-		});
-		*/
+		}
 		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
@@ -1134,7 +1064,7 @@ function showPage($thumbnails, $dir) {
 		
 		function lazyload(slide = false) {
 			if(document.getElementById('last') && !slide) return false;
-			if(document.getElementsByClassName('glightbox').length <= 0 && !slide) return false;
+			if(document.getElementsByClassName('spotlight').length <= 0 && !slide) return false;
 
 			let wheight = $(document).height() - 10;
 			let wposition = Math.ceil($(window).scrollTop() + $(window).height());
@@ -1148,7 +1078,7 @@ function showPage($thumbnails, $dir) {
 					data: JSON.stringify({
 						action: 'lazyload',
 						g: '$gal',
-						s: $('.glightbox').length
+						s: $('.spotlight').length
 					}),
 					contentType: 'application/json; charset=utf-8',
 					success: function(response) {
@@ -1157,7 +1087,7 @@ function showPage($thumbnails, $dir) {
 						$('#images').justifiedGallery('norewind');
 						const html = new DOMParser().parseFromString(response, 'text/html');
 						html.body.childNodes.forEach(element => {		
-						if(element.children !== undefined && element.children.count > 0 && element.children[0].classList.contains('glightbox')) {
+						if(element.children !== undefined && element.children.count > 0 && element.children[0].classList.contains('spotlight')) {
 								lightbox.insertSlide({
 									'href': element.children[0].href,
 									'type': element.children[0].dataset.type
@@ -1165,7 +1095,7 @@ function showPage($thumbnails, $dir) {
 						}
 							
 						});
-						//lightbox.reload();
+
 						checkboxes();
 						return false;
 					}
@@ -1578,7 +1508,7 @@ function showGallery($requestedDir, $offset = 0) {
 
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
-				$caption = (strlen($exifInfo) > 10) ? $exifInfo:"";
+				//$caption = (strlen($exifInfo) > 10) ? $exifInfo:"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
 					//$html = "\t\t\t\t\t\t<a class=\"spotlight$shared\" href='$linkUrl' data-media='image' data-description='$caption' data-download='true'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">";
@@ -1623,7 +1553,7 @@ function showGallery($requestedDir, $offset = 0) {
 		$thumbnails.= "\n\t\t\t\t\t</div>";
 	}
 
-	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='justified-gallery'>";
+	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='justified-gallery spotlight-group' data-control='prev,next,page,play,progress,fullscreen,close' >";
 	$thumbnails2 = "";
 	$offset_end = 0;
 

@@ -122,6 +122,7 @@ window.onload = function(){
 		}
 
 		Spotlight.init();
+
 		Spotlight.addControl('info', function(event){
 			const footer = document.querySelector('.spl-footer');
 			footer.classList.toggle('show');
@@ -137,6 +138,18 @@ window.onload = function(){
 				}
 			}
 		});
+		
+		Spotlight.show([], {
+			onchange: slide_change,
+		});
+		
+
+		function slide_change(index, options) {
+			const panes = document.getElementsByClassName('spl-pane');
+			if(index > panes.length) {
+				lazyload(true);
+			}
+		}
 	}
 	
 	if (top.location!= self.location) {
