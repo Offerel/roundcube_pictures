@@ -995,14 +995,20 @@ function showPage($thumbnails, $dir) {
 		});
 
 		Spotlight.init();
-		const iButton = Spotlight.addControl('info', function(event){
+		Spotlight.addControl('info', function(event){
 			const footer = document.querySelector('.spl-footer');
 			footer.classList.toggle('show');
 		});
 		
-		const dButton = Spotlight.addControl('idownload', function(event){
-			console.log(event);
-			//window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
+		Spotlight.addControl('idownload', function(event){
+			const panes = document.getElementsByClassName('spl-pane');
+			for (let index = 0; index < panes.length; index++) {
+				const pane = panes[index];
+				if(pane.childElementCount === 1) {
+					window.location = 'simg.php?w=3&file=' + new URL(pane.firstChild.src).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
+					return false;
+				}
+			}
 		});
 		
 
@@ -1572,7 +1578,7 @@ function showGallery($requestedDir, $offset = 0) {
 
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
-				//$caption = (strlen($exifInfo) > 10) ? $exifInfo:"";
+				$caption = (strlen($exifInfo) > 10) ? $exifInfo:"";
 				
 				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
 					//$html = "\t\t\t\t\t\t<a class=\"spotlight$shared\" href='$linkUrl' data-media='image' data-description='$caption' data-download='true'><img src=\"$imgUrl\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">";

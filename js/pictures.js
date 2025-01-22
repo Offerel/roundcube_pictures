@@ -120,6 +120,23 @@ window.onload = function(){
 			}
 			prevScrollpos = currentScrollPos;
 		}
+
+		Spotlight.init();
+		Spotlight.addControl('info', function(event){
+			const footer = document.querySelector('.spl-footer');
+			footer.classList.toggle('show');
+		});
+		
+		Spotlight.addControl('idownload', function(event){
+			const panes = document.getElementsByClassName('spl-pane');
+			for (let index = 0; index < panes.length; index++) {
+				const pane = panes[index];
+				if(pane.childElementCount === 1) {
+					window.location = 'simg.php?w=3&file=' + new URL(pane.firstChild.src).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
+					return false;
+				}
+			}
+		});
 	}
 	
 	if (top.location!= self.location) {
