@@ -140,7 +140,7 @@ window.onload = function(){
 				(currentScrollPos > 150) ? header.classList.add('shadow'):header.classList.remove('shadow');
 			} else {
 				header.style.top = '-55px';
-				header.classList.remove('shadow')
+				header.classList.remove('shadow');
 			}
 			prevScrollpos = currentScrollPos;
 		}
@@ -280,6 +280,7 @@ function stop_loop() {
 
 function loop_slide(duration=3) {
 	document.getElementById('pbtn').classList.add('on');
+	
 	lightbox.nextSlide();
 	var width = 1;
 	intervalID = setInterval(frame, 10);

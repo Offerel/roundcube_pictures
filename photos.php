@@ -1113,6 +1113,7 @@ function showPage($thumbnails, $dir) {
 
 		function loop_slide(duration=3) {
 			document.getElementById('pbtn').classList.add('on');
+
 			lightbox.nextSlide();
 			var width = 1;
 			intervalID = setInterval(frame, 10);
@@ -1124,7 +1125,7 @@ function showPage($thumbnails, $dir) {
 					width = width + (100/(duration*60));
 					document.getElementById('slide_progress').style.width = width + 'vw';
 				}
-		}
+			}
 		}
 
 		function iBoxShow(e) {
