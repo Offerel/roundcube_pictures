@@ -94,7 +94,7 @@ class pictures extends rcube_plugin {
 			$thumbnails2.= ($mthumbs == $rc) ? "<span id='last'></span>":"";
 			$thumbnails.= $thumbnails2."\n\t\t\t</div>";
 
-			if(!$shp) {
+			if($shp === false) {
 				die($thumbnails2);
 			} else {
 				showShare($thumbnails, array(

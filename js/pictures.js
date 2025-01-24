@@ -579,11 +579,9 @@ function lazyload(slide = false) {
 		type: 'POST',
 		url: window.location.href,
 		async: false,
-		data: JSON.stringify({
-			action: 'lazyload',
+		data: {
 			s: $('.glightbox').length
-		}),
-		contentType: 'application/json; charset=utf-8',
+		},
 		success: function(response) {
 			$('#images').append(response);
 			$('#images').justifiedGallery('norewind');
