@@ -304,7 +304,7 @@ function getEXIFSpan($json, $imgid, $lang) {
 	$exifArray = json_decode($json, true);
 	$exifHTML = "";
 
-	if (array_key_exists('1', $exifArray)) {
+	if (is_array($exifArray) && array_key_exists('1', $exifArray)) {
 		if($exifArray[0] != "-" && $exifArray[8] != "-") $exifHTML.= $labels['exif_camera'].": ".$exifArray[8]." - ".$exifArray[0]."<br>";
 		if($exifArray[10] != "-") $exifHTML.= $labels['exif_expos'].": ".$exifArray[10]."<br>";
 		if($exifArray[12] != "-") $exifHTML.= $labels['exif_meter'].": ".$exifArray[12]."<br>";
@@ -313,7 +313,7 @@ function getEXIFSpan($json, $imgid, $lang) {
 		if($exifArray[13] != "-") $exifHTML.= $labels['exif_whiteb'].": ".gv($exifArray[13], 'wb', $lang)."<br>";
 		if($exifArray[3] != "-") $exifHTML.= $labels['exif_fstop'].": ".$exifArray[3]."<br>";
 		if($exifArray[11] != "-") $exifHTML.= $labels['exif_flash'].": ".gv($exifArray[11], 'fl', $lang)."<br>";
-	} elseif (array_key_exists('Model', $exifArray)) {
+	} elseif (is_array($exifArray) && array_key_exists('Model', $exifArray)) {
 		$exifHTML = "<span class='infotop'>".$labels['metadata']."</span>";
 
 		if(array_key_exists('Make', $exifArray) && array_key_exists('Model', $exifArray))
@@ -349,7 +349,8 @@ function getEXIFSpan($json, $imgid, $lang) {
 			$keywords = str_replace('u00','\u00',$keywords);
 			$keywords = json_decode('"' . $keywords . '"');
 		}
-		$exifHTML.= "<strong>".$labels['exif_keywords'].": </strong>$keywords<br />";
+
+		$exifHTML.= isset($keywords) ? "<strong>".$labels['exif_keywords'].": </strong>$keywords<br />":'';
 
 		if(array_key_exists('GPSLatitude', $exifArray) && array_key_exists('GPSLongitude', $exifArray)) {
 			$osm_params = http_build_query(array(

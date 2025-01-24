@@ -69,6 +69,8 @@ window.onload = function(){
 		});
 	
 		lightbox.on('slide_changed', (data) => {
+			let cindex = data.current.index + 1;
+			let cimages = lightbox.elements.length;
 			let imglink = new URL(data.current.slideConfig.href);
 			let exinfo = 'exif_' + imglink.searchParams.get('p');
 			let closebtn = document.querySelector('.gclose');
@@ -119,11 +121,15 @@ window.onload = function(){
 			gcontainer.appendChild(btn_container);
 
 			if(document.getElementById('infobox')) iBoxShow();
+			
+			if(document.getElementById('last') && cindex === cimages) {
+				stop_loop();
+			}
 		});
 
 		lightbox.on('slide_before_change', (data) => {
 			let cindex = data.current.index + 1;
-			let cimages = document.getElementsByClassName('glightbox').length;
+			let cimages = lightbox.elements.length;
 			let last = document.getElementById('last') ? false:true;
 			if(cindex == cimages && last) {
 				setTimeout(lazyload, 100, true);

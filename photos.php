@@ -1001,8 +1001,9 @@ function showPage($thumbnails, $dir) {
 		});
 
 		lightbox.on('slide_changed', (data) => {
+			let cindex = data.current.index + 1;
+			let cimages = lightbox.elements.length;
 			let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
-
 			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
 			let dlbtn = document.createElement('button');
 			let fbtn = document.createElement('button');
@@ -1054,11 +1055,15 @@ function showPage($thumbnails, $dir) {
 			gcontainer.appendChild(btn_container);
 
 			if(document.getElementById('infobox')) iBoxShow();
+
+			if(document.getElementById('last') && cindex === cimages) {
+				stop_loop();
+			}
 		});
 
 		lightbox.on('slide_before_change', (data) => {
 			let cindex = data.current.index + 1;
-			let cimages = document.getElementsByClassName('glightbox').length;
+			let cimages = lightbox.elements.length;
 			let last = document.getElementById('last') ? false:true;
 			if(cindex == cimages && last) {
 				setTimeout(lazyload, 100, true);
@@ -1170,17 +1175,15 @@ function showPage($thumbnails, $dir) {
 						$('#images').append(response);
 						$('#images').justifiedGallery('norewind');
 						const html = new DOMParser().parseFromString(response, 'text/html');
-						html.body.childNodes.forEach(element => {		
-						if(element.children !== undefined && element.children.count > 0 && element.children[0].classList.contains('glightbox')) {
+						html.body.childNodes.forEach(element => {
+							if (element.classList && element.classList.contains('gdiv')) {
 								lightbox.insertSlide({
-									'href': element.children[0].href,
-									'type': element.children[0].dataset.type
+									'href': element.firstChild.href,
+									'type': element.firstChild.dataset.type
 								});
-						}
-							
+							}
 						});
 						lightbox.reload();
-						checkboxes();
 						return false;
 					}
 				});
@@ -1593,14 +1596,14 @@ function showGallery($requestedDir, $offset = 0) {
 				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
 				$imgUrl = "simg.php?$imgParams";
 				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
-				
-				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {				
-					$html = "\t\t\t\t\t\t<div><a class=\"glightbox$shared\" href='$linkUrl' data-type='image'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
+
+				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {
+					$type = 'image';
+				} elseif (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
+					$type = 'video';
 				}
 				
-				if (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
-					$html = "\t\t\t\t\t\t<div><a class=\"glightbox$shared\" href='$linkUrl' data-type='video'><img src=\"$imgUrl\" alt=\"$file\" $gis /></a><input name=\"images\" value=\"$file\" class=\"icheckbox\" type=\"checkbox\" onchange=\"count_checks()\">$caption</div>";
-				}
+				$html = "\t\t\t\t\t\t<div class='gdiv'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$file' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'></div>";
 				
 				$files[] = array(
 					"name" => $file,
