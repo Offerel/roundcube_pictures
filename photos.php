@@ -1176,7 +1176,7 @@ function showPage($thumbnails, $dir) {
 						$('#images').justifiedGallery('norewind');
 						const html = new DOMParser().parseFromString(response, 'text/html');
 						html.body.childNodes.forEach(element => {
-							if (element.classList && element.classList.contains('gdiv')) {
+							if (element instanceof HTMLDivElement) {
 								lightbox.insertSlide({
 									'href': element.firstChild.href,
 									'type': element.firstChild.dataset.type
@@ -1568,7 +1568,7 @@ function showGallery($requestedDir, $offset = 0) {
 					
 					$dirs[] = array("name" => $file,
 								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' alt='$file' /><span class='dropzone'>$file</span></a>"
+								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
 								);
 				}
 			}
@@ -1603,7 +1603,7 @@ function showGallery($requestedDir, $offset = 0) {
 					$type = 'video';
 				}
 				
-				$html = "\t\t\t\t\t\t<div class='gdiv'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' alt='$file' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'></div>";
+				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
 				
 				$files[] = array(
 					"name" => $file,
