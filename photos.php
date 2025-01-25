@@ -1422,10 +1422,10 @@ function parseEXIF($jarr, $format = 'html') {
 			$keywords = str_replace('u00','\u00',$jarr['Keywords']);
 			$keywords = json_decode('"' . $keywords . '"');
 		} else {
-			$keywords = '';
+			$keywords = null;
 		}
 
-		$exifInfo.= "<strong>".$rcmail->gettext('exif_keywords','pictures').": </strong>$keywords<br>";
+		$exifInfo.= isset($keywords) ? "<strong>".$rcmail->gettext('exif_keywords','pictures').": </strong>$keywords<br>":'';
 		$eInfo[$rcmail->gettext('exif_keywords','pictures')] = $keywords;
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? "<span class='cpr'>".str_replace("u00a9","&copy;",$jarr['Copyright'])."</span>":"";
