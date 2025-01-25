@@ -1373,46 +1373,46 @@ function parseEXIF($jarr, $format = 'html') {
 		elseif(array_key_exists('Model', $jarr))
 			$camera = $jarr['Model'];
 
-		$exifInfo = (array_key_exists('Model', $jarr)) ? "<strong>".$rcmail->gettext('exif_camera','pictures').":</strong> $camera<br>":"";
+		$exifInfo = (array_key_exists('Model', $jarr)) ? "<strong>".$rcmail->gettext('exif_camera','pictures').": </strong>$camera<br>":"";
 		if(array_key_exists('Model', $jarr)) $eInfo[$rcmail->gettext('exif_camera','pictures')] = $camera;
 
-		$exifInfo.= (array_key_exists('LensID', $jarr)) ? "<strong>".$rcmail->gettext('exif_lens','pictures').":</strong> ".$jarr['LensID']."<br>":"";
+		$exifInfo.= (array_key_exists('LensID', $jarr)) ? "<strong>".$rcmail->gettext('exif_lens','pictures').": </strong>".$jarr['LensID']."<br>":"";
 		if(array_key_exists('LensID', $jarr)) $eInfo[$rcmail->gettext('exif_lens','pictures')] = $jarr['LensID'];
 
-		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? "<strong>".$rcmail->gettext('exif_date','pictures').":</strong> ".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
+		$exifInfo.= (array_key_exists('DateTimeOriginal', $jarr)) ? "<strong>".$rcmail->gettext('exif_date','pictures').": </strong>".date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal'])."<br>":"";
 		if(array_key_exists('DateTimeOriginal', $jarr)) $eInfo[$rcmail->gettext('exif_date','pictures')] = date($rcmail->config->get('date_format', '')." ".$rcmail->config->get('time_format', ''), $jarr['DateTimeOriginal']);
 
-		$exifInfo.= (array_key_exists('Software', $jarr)) ? "<strong>".$rcmail->gettext('exif_sw','pictures').":</strong> ".$jarr['Software']."<br>":"";
+		$exifInfo.= (array_key_exists('Software', $jarr)) ? "<strong>".$rcmail->gettext('exif_sw','pictures').": </strong>".$jarr['Software']."<br>":"";
 		if(array_key_exists('Software', $jarr)) $eInfo[$rcmail->gettext('exif_sw','pictures')] = $jarr['Software'];
 
-		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? "<strong>".$rcmail->gettext('exif_expos','pictures').":</strong> ".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('ExposureProgram', $jarr)) ? "<strong>".$rcmail->gettext('exif_expos','pictures').": </strong>".$rcmail->gettext(ep($jarr['ExposureProgram']),'pictures')."<br>":"";
 		if(array_key_exists('ExposureProgram', $jarr)) $eInfo[$rcmail->gettext('exif_expos','pictures')] = $rcmail->gettext(ep($jarr['ExposureProgram']),'pictures');
 
-		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? "<strong>".$rcmail->gettext('exif_meter','pictures').":</strong> ".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('MeteringMode', $jarr)) ? "<strong>".$rcmail->gettext('exif_meter','pictures').": </strong>".$rcmail->gettext(mm($jarr['MeteringMode']),'pictures')."<br>":"";
 		if(array_key_exists('MeteringMode', $jarr)) $eInfo[$rcmail->gettext('exif_meter','pictures')] = $rcmail->gettext(mm($jarr['MeteringMode']),'pictures');
 
-		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? "<strong>".$rcmail->gettext('exif_exptime','pictures').":</strong> ".$jarr['ExposureTime']."s<br>":"";
+		$exifInfo.= (array_key_exists('ExposureTime', $jarr)) ? "<strong>".$rcmail->gettext('exif_exptime','pictures').": </strong>".$jarr['ExposureTime']."s<br>":"";
 		if(array_key_exists('ExposureTime', $jarr)) $eInfo[$rcmail->gettext('exif_exptime','pictures')] = $jarr['ExposureTime'];
 
-		$exifInfo.= (array_key_exists('ISO', $jarr)) ? "<strong>".$rcmail->gettext('exif_ISO','pictures').":</strong> ".$jarr['ISO']."<br>":"";
+		$exifInfo.= (array_key_exists('ISO', $jarr)) ? "<strong>".$rcmail->gettext('exif_ISO','pictures').": </strong>".$jarr['ISO']."<br>":"";
 		if(array_key_exists('ISO', $jarr)) $eInfo[$rcmail->gettext('exif_ISO','pictures')] = $jarr['ISO'];
 
-		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? "<strong>".$rcmail->gettext('exif_focalength','pictures').":</strong> ".$jarr['FocalLength']."mm<br>":"";
+		$exifInfo.= (array_key_exists('FocalLength', $jarr)) ? "<strong>".$rcmail->gettext('exif_focalength','pictures').": </strong>".$jarr['FocalLength']."mm<br>":"";
 		if(array_key_exists('FocalLength', $jarr)) $eInfo[$rcmail->gettext('exif_focalength','pictures')] = $jarr['FocalLength'];
 
-		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? "<strong>".$rcmail->gettext('exif_whiteb','pictures').":</strong> ".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('WhiteBalance', $jarr)) ? "<strong>".$rcmail->gettext('exif_whiteb','pictures').": </strong>".$rcmail->gettext(wb($jarr['WhiteBalance']),'pictures')."<br>":"";
 		if(array_key_exists('WhiteBalance', $jarr)) $eInfo[$rcmail->gettext('exif_whiteb','pictures')] = $rcmail->gettext(wb($jarr['WhiteBalance']),'pictures');
 
-		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? "<strong>".$rcmail->gettext('exif_fstop','pictures').":</strong> ƒ/".$jarr['FNumber']."<br>":"";
+		$exifInfo.= (array_key_exists('FNumber', $jarr)) ? "<strong>".$rcmail->gettext('exif_fstop','pictures').": </strong>ƒ/".$jarr['FNumber']."<br>":"";
 		if(array_key_exists('FNumber', $jarr)) $eInfo[$rcmail->gettext('exif_fstop','pictures')] = "ƒ/".$jarr['FNumber'];
 
-		$exifInfo.= (array_key_exists('Flash', $jarr)) ? "<strong>".$rcmail->gettext('exif_flash','pictures').":</strong> ".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
+		$exifInfo.= (array_key_exists('Flash', $jarr)) ? "<strong>".$rcmail->gettext('exif_flash','pictures').": </strong>".$rcmail->gettext(flash($jarr['Flash']),'pictures')."<br>":"";
 		if(array_key_exists('Flash', $jarr)) $eInfo[$rcmail->gettext('exif_flash','pictures')] = $rcmail->gettext(flash($jarr['Flash']),'pictures');
 
-		$exifInfo.= (array_key_exists('Title', $jarr)) ? "<strong>".$rcmail->gettext('exif_title','pictures').":</strong> ".$jarr['Title']."<br>":"";
+		$exifInfo.= (array_key_exists('Title', $jarr)) ? "<strong>".$rcmail->gettext('exif_title','pictures').": </strong>".$jarr['Title']."<br>":"";
 		if(array_key_exists('Title', $jarr)) $eInfo[$rcmail->gettext('exif_title','pictures')] = $jarr['Title'];
 
-		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? "<strong>".$rcmail->gettext('exif_desc','pictures').":</strong> ".$jarr['ImageDescription']."<br>":"";
+		$exifInfo.= (isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) ? "<strong>".$rcmail->gettext('exif_desc','pictures').": </strong>".$jarr['ImageDescription']."<br>":"";
 		if(isset($jarr['ImageDescription']) && strlen($jarr['ImageDescription']) > 0) $eInfo[$rcmail->gettext('exif_desc','pictures')] = $jarr['ImageDescription'];
 		
 		if(isset($jarr['Keywords']) && is_array($jarr['Keywords'])) {
@@ -1425,7 +1425,7 @@ function parseEXIF($jarr, $format = 'html') {
 			$keywords = '';
 		}
 
-		$exifInfo.= "<strong>".$rcmail->gettext('exif_keywords','pictures').":</strong> $keywords<br>";
+		$exifInfo.= "<strong>".$rcmail->gettext('exif_keywords','pictures').": </strong>$keywords<br>";
 		$eInfo[$rcmail->gettext('exif_keywords','pictures')] = $keywords;
 		
 		$exifInfo.= (array_key_exists('Copyright', $jarr)) ? "<span class='cpr'>".str_replace("u00a9","&copy;",$jarr['Copyright'])."</span>":"";
