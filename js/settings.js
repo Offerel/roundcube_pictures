@@ -1,7 +1,7 @@
 /**
  * Roundcube Pictures Plugin
  *
- * @version 1.5.5
+ * @version 1.5.6
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -76,6 +76,11 @@ function checkInstance() {
 				instance.classList.add('success');
 				instance.classList.remove('error');
 				aplink.href = url + '/settings/applications';
+
+				let max_chars = data.configuration.statuses.max_characters;
+				let max_resev = data.configuration.statuses.characters_reserved_per_url;
+
+				document.getElementById('pixelfed_max_media').value = data.configuration.statuses.max_media_attachments;
 			} else {
 				rcmail.display_message('Invalid Pixelfed URL, version check failed', 'error');
 				instance.classList.add('error');
