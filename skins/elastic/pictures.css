@@ -229,7 +229,7 @@ a.disabled {
 	height: 100%;
 	background: black;
 	position: absolute;
-	z-index: 1;
+	z-index: 2;
 	opacity: .3;
 }
 .button.loading {

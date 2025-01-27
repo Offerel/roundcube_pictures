@@ -266,8 +266,11 @@ window.onload = function(){
 				document.getElementById('pstatus').focus();
 
 				sendRequest(pixelfed_verify);
-
-				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 1) rcmail.display_message(rcmail.gettext('pftomuch','pictures'), 'warning');
+				setTimeout(() => {
+					let text = rcmail.gettext('pftomuch','pictures');
+					let max_attachments = document.getElementById('max_attachments').value;
+					if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
+				  }, "600");
 			}
 		});
 	}
@@ -302,8 +305,9 @@ function loop_slide(duration=3) {
 }
 
 function pixelfed_verify(response) {
-	if(response.code == 200 && this.response.base_url != null) {
+	if(response.code == 200 && response.base_url != null) {
 		document.getElementById('sbtn').classList.remove('disabled');
+		document.getElementById('max_attachments').value = response.max_attachments;
 	} else {
 		document.getElementById('pstatus').disabled = true;
 		document.getElementById('pfvisibility').disabled = true;
@@ -713,7 +717,6 @@ function create_album() {
 }
 
 function albCreate(response) {
-	console.log(response);
 	document.getElementById("album_edit").style.display = "none";
 	if(response.code === 200) {
 		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.source);
@@ -1001,11 +1004,13 @@ function sharepicture() {
 		type: type,
 		pf_text: document.getElementById('pstatus').value,
 		pf_sens: document.getElementById('pfsensitive').checked,
-		pf_vis: document.getElementById('pfvisibility').value
+		pf_vis: document.getElementById('pfvisibility').value,
+		pf_max: document.getElementById('max_attachments').value
 	});
 }
 
 function share(response) {
+	console.log(response);
 	let sbtn = document.getElementById('sbtn');
 	let clpbtn = document.getElementById('btnclp');
 	let link = document.getElementById('link');
@@ -1018,7 +1023,7 @@ function share(response) {
 	}
 
 	if(response.type === 'pixelfed') {
-		if(response.pixelfed.uri) console.log('Shared to Pixelfed', response.pixelfed.uri);
+		if(response.pixelfed.uri) rcmail.display_message('Shared to Pixelfed', 'confirmation');
 		document.getElementById('share_edit').style.display='none';
 	}
 

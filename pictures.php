@@ -202,10 +202,6 @@ class pictures extends rcube_plugin {
 		$p['blocks']['main']['options']['pixelfed_token'] = array(
 														'title'=> html::label($field_id, $this->gettext('pixelfed_token')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_token')));
-		$field_id='pixelfed_max_media';
-		$input = new html_inputfield(array('name' => 'pixelfed_max_media', 'type' => 'hidden' , 'id' => $field_id, 'placeholder' => 'https://pixelfed.social'));
-		$p['blocks']['main']['options']['pixelfed_max_media'] = array(
-														'content'=> $input->show($rcmail->config->get('pixelfed_max_media')));
 
 		return $p;
 	}
@@ -219,8 +215,7 @@ class pictures extends rcube_plugin {
 				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
 				'sharedays'	=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
 				'pixelfed_instance'		=> rcube_utils::get_input_value('pixelfed_instance', rcube_utils::INPUT_POST),
-				'pixelfed_token'		=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST),
-				'pixelfed_max_media'	=> intval(rcube_utils::get_input_value('pixelfed_max_media', rcube_utils::INPUT_POST))
+				'pixelfed_token'		=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST)
             );
 		}
 

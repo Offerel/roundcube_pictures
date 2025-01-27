@@ -119,18 +119,24 @@ function checkInstance() {
 		if (this.readyState == 4 && this.status == 200) {
 			let data = JSON.parse(this.responseText);
 			if(data.version !== undefined) {
-				let version = data.version.split('; ')[1];
-				version = version.substr(0, version.length - 1).split(' ')[1];
-				rcmail.display_message('Pixelfed instance with ' + version + ' found', 'confirmation');
+				let version = '';
+				switch(data.title) {
+					case 'Pixelfed':
+						version = data.version.split('; ')[1];
+						break;
+					case 'Mastodon':
+						version = data.version;
+						break;
+					default:
+						return false;
+				}
+				
+				rcmail.display_message(data.title + ' instance with ' + version + ' found', 'confirmation');
+
 				aplink.classList.remove('disabled');
 				instance.classList.add('success');
 				instance.classList.remove('error');
 				aplink.href = url + '/settings/applications';
-
-				let max_chars = data.configuration.statuses.max_characters;
-				let max_resev = data.configuration.statuses.characters_reserved_per_url;
-
-				document.getElementById('pixelfed_max_media').value = data.configuration.statuses.max_media_attachments;
 			} else {
 				rcmail.display_message('Invalid Pixelfed URL, version check failed', 'error');
 				instance.classList.add('error');
