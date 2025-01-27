@@ -484,7 +484,108 @@ function chSymLink($src, $target) {
 function sharePixelfed($status, $sensitive, $visibility, $images) {
 	global $rcmail, $pictures_path;
 	$imagepath = $pictures_path.'/'.$images[0];
+	$max = 20;
+	$current = count($images);
+	$index = ($max >= $current) ? $current:$max;
+	$media = [];
+	
+	for ($i=0; $i < $index ; $i++) {
+		$imagepath = $pictures_path.'/'.$images[$i];
+		$mime = mime_content_type($imagepath);
 
+		switch($mime) {
+			case 'image/gif':
+				$image = @imagecreatefromgif($imagepath);
+				break;
+			case 'image/jpeg':
+				$image = @imagecreatefromjpeg($imagepath);
+				break;
+			case 'image/png':
+				$image = @imagecreatefrompng($imagepath);
+				break;
+			case 'image/webp':
+				$image = @imagecreatefrompng($imagepath);
+				break;
+		}
+
+		$exif = exif_read_data($imagepath);
+
+		switch($exif['Orientation']) {
+			case '3':
+				$image = imagerotate($image, 180, 0);
+				break;
+			case '6':
+				$image = imagerotate($image, 270, 0);
+				break;
+			case '8':
+				$image = imagerotate($image, 90, 0);
+				break;
+		}
+
+		$iname = basename($imagepath);
+		$tmpname = sys_get_temp_dir().'/'.$iname;
+		imagewebp($image, $tmpname, 60);
+
+		$headers = array(
+			'Content-Type: multipart/form-data',
+			'Authorization: Bearer '.$rcmail->config->get('pixelfed_token'),
+			'Accept: application/json'
+		);
+
+		$curl_session = curl_init();
+		curl_setopt($curl_session, CURLOPT_URL, rtrim($rcmail->config->get('pixelfed_instance'), '/').'/api/v1/media');
+		curl_setopt($curl_session, CURLOPT_POST, true);
+		curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($curl_session, CURLOPT_POSTFIELDS, [
+			'description' => 'Shared by Pictures',
+			'file' => new CURLFile($tmpname, $iname, 'image/webp')
+		]);
+
+		$result = curl_exec($curl_session);
+		curl_close($curl_session);
+		imagedestroy($image);
+		unlink($tmpname);
+		$response = json_decode($result, true);
+		$media[] = $response['id'];
+		//return json_decode($result, true);
+	}
+
+	$headers = array(
+		'Content-Type: multipart/form-data',
+		'Authorization: Bearer '.$rcmail->config->get('pixelfed_token'),
+		'Accept: application/json'
+	);
+
+	$fields = array(
+		'status' => $status,
+		'sensitive' => $sensitive,
+		'visibility' => $visibility,
+		'media_ids[]' => $media
+	);
+
+	//error_log(print_r($fields, true));
+	//die();
+
+	//$fields_string = http_build_query($fields);
+
+	$curl_session = curl_init();
+	curl_setopt($curl_session, CURLOPT_URL, rtrim($rcmail->config->get('pixelfed_instance'), '/').'/api/v1/statuses');
+	curl_setopt($curl_session, CURLOPT_POST, true);
+	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+	curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($curl_session, CURLOPT_POSTFIELDS, $fields);
+
+	$result = curl_exec($curl_session);
+	curl_close($curl_session);
+
+	error_log($result);
+	error_log(json_decode($result, true));
+
+	return json_decode($result, true);
+/*
 	$mime = mime_content_type($imagepath);
 
 	switch($mime) {
@@ -528,7 +629,6 @@ function sharePixelfed($status, $sensitive, $visibility, $images) {
 	);
 
 	$curl_session = curl_init();
-
 	curl_setopt($curl_session, CURLOPT_URL, rtrim($rcmail->config->get('pixelfed_instance'), '/').'/api/v1.1/status/create');
 	curl_setopt($curl_session, CURLOPT_POST, true);
 	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
@@ -548,6 +648,7 @@ function sharePixelfed($status, $sensitive, $visibility, $images) {
 	unlink($tmpname);
 
 	return json_decode($result, true);
+*/
 }
 
 function shareIntern($sharename, $images, $sUser, $uid) {

@@ -15,7 +15,9 @@ class pictures extends rcube_plugin {
 		if(isset($_GET['code'])) {
 			error_log('code: '.$_GET['code']);
 		} else {
-			error_log(print_r($_GET,true));
+			error_log("POST: ".print_r($_POST, true));
+			error_log("GET: ".print_r($_GET, true));
+			error_log("JSON: ".print_r(json_decode(file_get_contents('php://input'), true), true));
 		}
 		*/
 
