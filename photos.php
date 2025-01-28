@@ -441,11 +441,37 @@ function pixelfed_verify() {
 			'code' => 300,
 		];
 	} else {
-		$json = json_decode(file_get_contents("$base_url/api/v2/instance"), true);
+		$json = file_get_contents("$base_url/api/v2/instance");
+		$code = substr($http_response_header[0], 9, 3);
+		$arr = json_decode($json, true);
+
+		if($code === '200' && $arr['title'] == 'Mastodon') {
+			$curl_session = curl_init();
+			$headers = array(
+				'Authorization: Bearer '.$token,
+				'Accept: application/json'
+			);
+			
+			curl_setopt($curl_session, CURLOPT_URL, rtrim($base_url, '/').'/api/v1/featured_tags/suggestions');
+			curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+			curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+			$result = curl_exec($curl_session);
+			$response = json_decode($result, true);
+			curl_close($curl_session);
+
+			$tags = [];
+			foreach ($response as $key => $tag) {
+				$tags[] = $tag['name'];
+			}
+		}
+
 		$response = [
-			'code' => 200,
+			'code' => $code,
 			'base_url' => $base_url,
-			'max_attachments' => $json['configuration']['statuses']['max_media_attachments'],
+			'type' => $arr['title'],
+			'max_attachments' => $arr['configuration']['statuses']['max_media_attachments'],
+			'tags' => $tags,
 			'token' => 'tokenset',
 		];
 	}

@@ -47,9 +47,10 @@ a.disabled {
 	outline: 0;
 }
 #pfvisibility {
-	display: block;
 	width: 150px !important;
 	margin-bottom: 0 !important;
+	float: left;
+	margin-right: 10px;
 }
 .stype label {
 	width: fit-content !important;
@@ -63,7 +64,7 @@ a.disabled {
 	width: revert;
 }
 #stype .sch {
-	width: 80px;
+	width: 95px;
 	position: absolute;
 }
 .sch label {
@@ -484,7 +485,18 @@ a.disabled {
 #modal-body label:after {
 	content: ": ";
 }
-#modal-body .tagify {
+#sname:disabled {
+    background-color: whitesmoke;
+    color: darkgray;
+}
+#spixelfed .tagify {
+	height: 80px;
+	overflow: auto;
+	background: white;
+	margin-bottom: 10px;
+	margin-top: -5px;
+}
+#metadata .tagify {
 	width: 100%;
 	border-radius: 5px;
 	border: 1px solid #b2b2b2!important;
@@ -496,7 +508,7 @@ a.disabled {
 	overflow-x: scroll;
 	overflow-y: hidden;
 }
-.tagify__tag-text, .tagify__input {
+#metadata .tagify__tag-text, #metadata .tagify__input {
 	white-space: nowrap !important;
 }
 #metadata #modal-body input {
@@ -506,6 +518,9 @@ a.disabled {
 	border: 1px solid #b2b2b2;
 	outline: 0;
 	border-radius: 5px;
+}
+#spixelfed .tagify__input {
+	overflow: auto;
 }
 @media screen and (max-width: 768px) {
 	#picturestoolbar {

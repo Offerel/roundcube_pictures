@@ -235,13 +235,10 @@ window.onload = function(){
 			save_meta(WhiteList)
 		});
 
-
-		var MastoTags = ['Homer simpson', 'Marge simpson', 'Bart', 'Lisa', 'Maggie', 'Mr. Burns', 'Ned', 'Milhouse', 'Moe'];
 		MastoStatus = new Tagify(document.getElementById('pstatus'), {
 			mode: 'mix',
 			pattern: /@|#/,
-			tagTextProp: 'text',
-			whitelist: MastoTags,
+			whitelist: [],
 			validate(data){
 				return !/[^a-zA-Z0-9 ]/.test(data.value)
 			},
@@ -250,30 +247,8 @@ window.onload = function(){
 				position: 'text',
 				mapValueTo: 'text',
 				highlightFirst: true
-			},
-			callbacks: {
-				add: console.log,  // callback when adding a tag
-				remove: console.log   // callback when removing a tag
 			}
     	})
-
-		MastoStatus.on('input', function(e){
-			var prefix = e.detail.prefix;
-			if( prefix ){
-				if( prefix == '#' )
-					MastoStatus.whitelist = MastoTags;
-		
-				if( e.detail.value.length > 1 )
-					MastoStatus.dropdown.show(e.detail.value);
-			}
-		
-			console.log( MastoStatus.value )
-			console.log('mix-mode "input" event value: ', e.detail)
-		})
-
-		MastoStatus.on('add', function(e){
-			console.log(e)
-		})
 	}
 
 	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('change', function(e) {
@@ -283,12 +258,16 @@ window.onload = function(){
 	});
 
 	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
+		sendRequest(pixelfed_verify);
 		elem.addEventListener("input", (event) => {
 			if(event.target.id == 'public') {
 				document.getElementById('spublic').style.visibility = 'visible';
 				document.getElementById('sintern').style.visibility = 'hidden';
 				document.getElementById('spixelfed').style.visibility = 'hidden';
 				document.getElementById('sbtn').classList.remove('disabled');
+				document.getElementById('sname').disabled = false;
+				document.getElementById('shares').disabled = false;
+				document.getElementById('rsh').disabled = false;
 			}
 
 			if(event.target.id == 'intern') {
@@ -297,6 +276,9 @@ window.onload = function(){
 				document.getElementById('spixelfed').style.visibility = 'hidden';
 				document.getElementById('sname').focus();
 				document.getElementById('sbtn').classList.remove('disabled');
+				document.getElementById('sname').disabled = false;
+				document.getElementById('shares').disabled = false;
+				document.getElementById('rsh').disabled = false;
 			}
 
 			if(event.target.id == 'pixelfed') {
@@ -304,13 +286,13 @@ window.onload = function(){
 				document.getElementById('sintern').style.visibility = 'hidden';
 				document.getElementById('spixelfed').style.visibility = 'visible';
 				document.getElementById('pstatus').focus();
-
-				sendRequest(pixelfed_verify);
-				setTimeout(() => {
-					let text = rcmail.gettext('pftomuch','pictures');
-					let max_attachments = document.getElementById('max_attachments').value;
-					if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
-				  }, "600");
+				document.getElementById('sname').disabled = true;
+				document.getElementById('shares').disabled = true;
+				document.getElementById('rsh').disabled = true;	
+				MastoStatus.whitelist = document.getElementById('mstdtags').value.split(',');
+				let text = rcmail.gettext('pftomuch','pictures');
+				let max_attachments = document.getElementById('max_attachments').value;
+				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
 			}
 		});
 	}
@@ -348,6 +330,8 @@ function pixelfed_verify(response) {
 	if(response.code == 200 && response.base_url != null) {
 		document.getElementById('sbtn').classList.remove('disabled');
 		document.getElementById('max_attachments').value = response.max_attachments;
+		document.getElementById('type').value = response.type;
+		document.getElementById('mstdtags').value = response.tags;
 	} else {
 		document.getElementById('pstatus').disabled = true;
 		document.getElementById('pfvisibility').disabled = true;
@@ -1033,6 +1017,9 @@ function sharepicture() {
 		pictures.push(urlParams.get('file'));
 	});
 
+	let text = document.getElementById('pstatus').value.replaceAll('[[{"value":"', '#');
+	text = text.replaceAll('","prefix":"#"}]]', '');
+
 	sendRequest(share, {
 		images: pictures,
 		shareid: document.getElementById('sid').value,
@@ -1042,7 +1029,7 @@ function sharepicture() {
 		suser: document.getElementById('suser').value,
 		uid: document.getElementById('uid').value,
 		type: type,
-		pf_text: document.getElementById('pstatus').value,
+		pf_text: text,
 		pf_sens: document.getElementById('pfsensitive').checked,
 		pf_vis: document.getElementById('pfvisibility').value,
 		pf_max: document.getElementById('max_attachments').value
