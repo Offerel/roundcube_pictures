@@ -1,7 +1,6 @@
 ﻿<?php
 $labels = array();
 $labels['pictures'] = 'Photos';
-
 $labels['home'] = "Home";
 $labels['create'] = "Create";
 $labels['page'] = "Page";
@@ -64,7 +63,6 @@ $labels['em_action_auto'] = "Action (High speed)";
 $labels['em_portrait_auto'] = "Portrait";
 $labels['em_landscape_auto'] = "Landscape";
 $labels['em_bulb'] = "Bulb";
-
 $labels['mm_unkown'] = "Unknown";
 $labels['mm_average'] = "Average";
 $labels['mm_middle'] = "Center";
@@ -73,7 +71,6 @@ $labels['mm_multi-spot'] = "Multi-Spot";
 $labels['mm_multi'] = "Multi-field";
 $labels['mm_partial'] = "Partial";
 $labels['mm_other'] = "Other";
-
 $labels['exif_camera'] = "Camera";
 $labels['exif_focalength'] = "Focal Length";
 $labels['exif_fstop'] = "Aperture";
@@ -92,14 +89,12 @@ $labels['exif_texptime'] = "Shutter speed";
 $labels['exif_copyright'] = "Copyright";
 $labels['exif_keywords'] = "Keywords";
 $labels['exif_title'] = "Title";
-
 $labels['ptheme'] = "Theme";
 $labels['theme_dark'] = "Dark";
 $labels['theme_dynamic'] = "Dynamic";
 $labels['thumbs_pr_page'] = "Thumbnail Count";
 $labels['pmargins'] = "Margin";
 $labels['sharedays'] = "Default Shareduration in Days";
-
 $labels['wb_auto'] = "Auto";
 $labels['wb_daylight'] = "Daylight";
 $labels['wb_fluorescent'] = "Fluorescent";
@@ -108,7 +103,6 @@ $labels['wb_flash'] = "Flash";
 $labels['wb_fineWeather'] = "Fine Weather";
 $labels['wb_cloudy'] = "Cloudy";
 $labels['wb_shade'] = "Shade";
-
 $labels['NotFired'] = "No Flash";
 $labels['Fired'] = "Fired";
 $labels['StrobeReturnLightNotDetected'] = "Fired, Return not detected";
