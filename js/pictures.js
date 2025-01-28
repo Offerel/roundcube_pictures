@@ -313,7 +313,7 @@ function pixelfed_verify(response) {
 		document.getElementById('pfvisibility').disabled = true;
 		document.getElementById('pfsensitive').disabled = true;
 		document.getElementById('sbtn').classList.add('disabled');
-		rcmail.display_message('Configuration error. Please check Pixelfed configuration in "Pictures" settings', 'error');
+		rcmail.display_message(rcmail.gettext('pf_conf_error','pictures'), 'error');
 	}
 }
 

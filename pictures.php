@@ -195,12 +195,12 @@ class pictures extends rcube_plugin {
 		$field_id='pixelfed_instance';
 		$input = new html_inputfield(array('name' => 'pixelfed_instance', 'id' => $field_id, 'placeholder' => 'https://pixelfed.social'));
 		$p['blocks']['main']['options']['pixelfed_instance'] = array(
-														'title'=> html::label($field_id, $this->gettext('pixelfed_instance')),
+														'title'=> html::label($field_id, $this->gettext('pf_md_instance')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_instance')));
 		$field_id='pixelfed_token';
 		$input = new html_inputfield(array('name' => 'pixelfed_token', 'id' => $field_id, 'type' => 'password'));
 		$p['blocks']['main']['options']['pixelfed_token'] = array(
-														'title'=> html::label($field_id, $this->gettext('pixelfed_token')),
+														'title'=> html::label($field_id, $this->gettext('pf_md_token')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_token')));
 
 		return $p;

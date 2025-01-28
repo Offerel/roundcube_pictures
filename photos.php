@@ -555,12 +555,16 @@ function sharePixelfed($status, $sensitive, $visibility, $images, $max) {
 		'status' => $status,
 		'sensitive' => $sensitive,
 		'visibility' => $visibility,
-		'media_ids[]' => $media
 	);
 
+	$data = http_build_query($fields);
+	foreach ($media as $key => $image) {
+		$data.= '&media_ids%5B%5D='.$image;
+	}
+	
 	$curl_session = curl_init();
 	$headers = array(
-		'Content-Type: multipart/form-data',
+		'Content-Type: application/x-www-form-urlencoded',
 		'Authorization: Bearer '.$rcmail->config->get('pixelfed_token'),
 		'Accept: application/json'
 	);
@@ -569,11 +573,9 @@ function sharePixelfed($status, $sensitive, $visibility, $images, $max) {
 	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
 	curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
-	curl_setopt($curl_session, CURLOPT_POSTFIELDS, $fields);
+	curl_setopt($curl_session, CURLOPT_POSTFIELDS, $data);
 
 	$result = curl_exec($curl_session);
-	error_log(print_r($fields, true));
-	error_log($result);
 	curl_close($curl_session);
 
 	return json_decode($result, true);
