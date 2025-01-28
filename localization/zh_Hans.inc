@@ -133,3 +133,4 @@ $labels['alb_del_ok'] = "相册“%s%”已删除";
 $labels['alb_del_fail'] = "无法删除相册“%s%”";
 $labels['alb_create_failed'] = "无法创建相册“%t%”";
 $labels['alb_create_ok'] = "相册“%t%”已创建";
+$labels['pf_md_token'] = "令牌";
