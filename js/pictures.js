@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
-var lightbox, tagify, clicks, intervalID;
+var lightbox, tagify, tagify2, clicks, intervalID;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);
@@ -234,6 +234,46 @@ window.onload = function(){
 		if(document.getElementById('mes')) document.getElementById('mes').addEventListener('click', function() {
 			save_meta(WhiteList)
 		});
+
+
+		var MastoTags = ['Homer simpson', 'Marge simpson', 'Bart', 'Lisa', 'Maggie', 'Mr. Burns', 'Ned', 'Milhouse', 'Moe'];
+		MastoStatus = new Tagify(document.getElementById('pstatus'), {
+			mode: 'mix',
+			pattern: /@|#/,
+			tagTextProp: 'text',
+			whitelist: MastoTags,
+			validate(data){
+				return !/[^a-zA-Z0-9 ]/.test(data.value)
+			},
+			dropdown : {
+				enabled: 1,
+				position: 'text',
+				mapValueTo: 'text',
+				highlightFirst: true
+			},
+			callbacks: {
+				add: console.log,  // callback when adding a tag
+				remove: console.log   // callback when removing a tag
+			}
+    	})
+
+		MastoStatus.on('input', function(e){
+			var prefix = e.detail.prefix;
+			if( prefix ){
+				if( prefix == '#' )
+					MastoStatus.whitelist = MastoTags;
+		
+				if( e.detail.value.length > 1 )
+					MastoStatus.dropdown.show(e.detail.value);
+			}
+		
+			console.log( MastoStatus.value )
+			console.log('mix-mode "input" event value: ', e.detail)
+		})
+
+		MastoStatus.on('add', function(e){
+			console.log(e)
+		})
 	}
 
 	if(document.getElementById('suser')) document.getElementById('suser').addEventListener('change', function(e) {

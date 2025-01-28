@@ -1118,6 +1118,8 @@ function showPage($thumbnails, $dir) {
 				});
 			}, {once: true});
 		});
+
+		
 		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
