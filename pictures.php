@@ -11,15 +11,8 @@ class pictures extends rcube_plugin {
 	public $task = '?(?!login|logout).*';
 	public function onload() {
 		$rcmail = rcmail::get_instance();
-		/*
-		if(isset($_GET['code'])) {
-			error_log('code: '.$_GET['code']);
-		} else {
-			error_log("POST: ".print_r($_POST, true));
-			error_log("GET: ".print_r($_GET, true));
-			error_log("JSON: ".print_r(json_decode(file_get_contents('php://input'), true), true));
-		}
-		*/
+		
+		
 
 		if (isset($_GET['_task']) && $_GET['_task'] == 'pictures') {
 			$json = json_decode(file_get_contents('php://input'), true);
@@ -133,6 +126,12 @@ class pictures extends rcube_plugin {
 			'type'		=> 'link'
 		), 'taskbar');
 
+		if(isset($_GET['code'])) {
+			//error_log('code: '.$_GET['code']);
+			//filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+			setToken(filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+		}
+
 		if ($rcmail->task == 'pictures') {
 			$this->register_action('index', array($this, 'action'));
 			$rcmail->output->set_env('refresh_interval', 0);
@@ -210,12 +209,12 @@ class pictures extends rcube_plugin {
 		if ($p['section'] == 'pictures') {
 
             $p['prefs'] = array(
-                'ptheme'		=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
+                'ptheme'			=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
 				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
-				'pmargins'	=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
-				'sharedays'	=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
-				'pixelfed_instance'		=> rcube_utils::get_input_value('pixelfed_instance', rcube_utils::INPUT_POST),
-				'pixelfed_token'		=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST)
+				'pmargins'			=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
+				'sharedays'			=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
+				'pixelfed_instance'	=> rcube_utils::get_input_value('pixelfed_instance', rcube_utils::INPUT_POST),
+				'pixelfed_token'	=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST)
             );
 		}
 
@@ -238,6 +237,26 @@ class pictures extends rcube_plugin {
 			$attrib['id'] = 'rcmailpicturescontent';
 		$attrib['name'] = $attrib['id'];
 		return $rcmail->output->frame($attrib);
+	}
+
+	function setToken($token) {
+		$rcmail = rcmail::get_instance();
+		//$rcmail->config->set('pft_token', $token);
+		/*
+		$curl_session = curl_init();
+		$headers = array(
+			'Authorization: Bearer '.$token,
+			'Accept: application/json'
+		);
+		
+		curl_setopt($curl_session, CURLOPT_URL, rtrim($base_url, '/').'/oauth/token');
+		curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+		$result = curl_exec($curl_session);
+		$response = json_decode($result, true);
+		curl_close($curl_session);
+		*/
 	}
 
 	function get_tags() {

@@ -22,13 +22,6 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 		let base_url = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
 		url = base_url + '/settings/applications';
 		hint_td.innerHTML = hint.replace('%link%', "<a href='" + url + "' target='_blank' id='aplink' class='disabled'>Applications</a>");
-		
-		let pf_cid = document.createElement('input');
-		pf_cid.id = 'pf_cid';
-		pf_cid.type = 'hidden';
-		let pf_sec = document.createElement('input');
-		pf_sec.id = 'pf_sec';
-		pf_sec.type = 'hidden';
 
 		let auth_link = document.createElement('a');
 		auth_link.id = 'pf_auth_link';
@@ -37,27 +30,57 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 		auth_link.addEventListener('click', e => {
 			e.preventDefault();
 			e.stopPropagation();
+			let redirect_url = location.protocol + '//' + location.host + location.pathname + '?_task=pictures';
+			let scope = 'read write';
 
-			let data = new FormData();
-			data.append('client_name', 'Pictures');
-			data.append('redirect_uris', location.protocol + '//' + location.host + location.pathname + '?_task=pictures, urn:ietf:wg:oauth:2.0:oob');
-			data.append('scopes', 'read write');
-			data.append('website', 'https://codeberg.org/Offerel/Roundcube_Pictures');
-
-			let result = sendRequest(base_url, data, '/api/v1/apps');
+			let regData = new FormData();
+			regData.append('client_name', 'Roundcube Photos');
+			regData.append('redirect_uris', redirect_url);
+			regData.append('scopes', scope);
+			regData.append('website', 'https://codeberg.org/Offerel/Roundcube_Pictures');
+			let result = sendRequest(base_url, regData, '/api/v1/apps');			
 			console.log(result);
-			if(result === 200) {
-				pf_cid.value = result.response.client_id;
-				pf_sec.value = result.response.client_secret;
+
+			if(result.status === 200) {
+				let client_id = result.response.client_id;
+				let client_secret = result.response.client_secret;
+
+				let authData = new FormData();
+				authData.append('client_id', client_id);
+				authData.append('client_secret', client_secret);
+				authData.append('redirect_uri', redirect_url);
+				authData.append('grant_type', 'client_credentials');
+				authData.append('scope', scope);
+				result = sendRequest(base_url, authData, '/oauth/token');
+				console.log(result);
+
+				if(result.status === 200) {
+					let token = result.response.access_token;
+					result = sendRequest(base_url, null, '/api/v1/apps/verify_credentials', 'GET', token);
+					console.log(result);
+
+					if(result.status === 200) {
+						const params = new URLSearchParams({
+							client_id: client_id,
+							scope: scope,
+							redirect_uri: redirect_url,
+							response_type: 'code'
+						});
+						//url = base_url + '/oauth/authorize?' + params.toString();
+						window.open(base_url + '/oauth/authorize?' + params.toString(), '_blank').focus();
+						// Save to db
+					} else {
+						rcmail.display_message(rcmail.gettext('app_verify_failed','pictures'), 'error');
+					}
+				} else {
+					rcmail.display_message(rcmail.gettext('app_token_failed','pictures'), 'error');
+				}
 			} else {
-				rcmail.display_message('App registration failed', 'error');
+				rcmail.display_message(rcmail.gettext('app_reg_failed','pictures').replace('%instance%', base_url), 'error');
 			}
 		});
 
 		hint_td.appendChild(auth_link);
-		hint_td.appendChild(pf_cid);
-		hint_td.appendChild(pf_sec);
-
 		hint_tr.appendChild(hint_td);
 		token.parentNode.insertBefore(hint_tr, token);
 
@@ -65,7 +88,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	}
 });
 
-function sendRequest(base_url, data, endpoint) {
+function sendRequest(url, data, endpoint, method = 'POST', token) {
 	xhr = new XMLHttpRequest();
 	xhr.onload = function() {
 		let result = {};
@@ -74,7 +97,8 @@ function sendRequest(base_url, data, endpoint) {
 		return result;
 	}
 
-	xhr.open('POST', base_url + endpoint);
+	xhr.open(method, url + endpoint);
+	if(token !== undefined) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
 	xhr.responseType = 'json';
 	xhr.send(data);
 }

@@ -135,3 +135,6 @@ $labels['alb_del_ok'] = "Das Album '%s%' wurde gelöscht";
 $labels['alb_del_fail'] = "Das Album '%s%' konnte nicht gelöscht werden";
 $labels['alb_create_ok'] = "Das Album '%t%' wurde erstellt";
 $labels['alb_create_failed'] = "Das Album '%t%' konnte nicht erstellt werden";
+$labels['app_reg_failed'] = "Roundcube Fotos Registrierung auf %instance% fehlgeschlagen";
+$labels['app_token_failed'] = "Fehler beim Versuch Zugriffs Token zu erhalten";
+$labels['app_verify_failed'] = "Die Anmeldung von Roundcube Fotos an %instance% ist fehlgeschlagen";
