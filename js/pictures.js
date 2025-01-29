@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
-var lightbox, tagify, tagify2, clicks, intervalID;
+var lightbox, tagify, MastoStatus, clicks, intervalID;
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("rename_alb", rename_album, !0);
 	rcmail.register_command("move_alb", move_album, !0);

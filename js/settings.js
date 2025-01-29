@@ -39,7 +39,6 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 			regData.append('scopes', scope);
 			regData.append('website', 'https://codeberg.org/Offerel/Roundcube_Pictures');
 			let result = sendRequest(base_url, regData, '/api/v1/apps');			
-			console.log(result);
 
 			if(result.status === 200) {
 				let client_id = result.response.client_id;
@@ -52,12 +51,10 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 				authData.append('grant_type', 'client_credentials');
 				authData.append('scope', scope);
 				result = sendRequest(base_url, authData, '/oauth/token');
-				console.log(result);
 
 				if(result.status === 200) {
 					let token = result.response.access_token;
 					result = sendRequest(base_url, null, '/api/v1/apps/verify_credentials', 'GET', token);
-					console.log(result);
 
 					if(result.status === 200) {
 						const params = new URLSearchParams({
@@ -66,9 +63,38 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 							redirect_uri: redirect_url,
 							response_type: 'code'
 						});
-						//url = base_url + '/oauth/authorize?' + params.toString();
-						window.open(base_url + '/oauth/authorize?' + params.toString(), '_blank').focus();
-						// Save to db
+						/*
+						document.cookie = 'pfmd=' + JSON.stringify({
+							id:client_id,
+							se:client_secret,
+							ru:redirect_url,
+							tk:token,
+							bu:base_url
+						}) + '; path=/;max-age=900;secure;samesite=strict';
+						*/
+						let pfmd = new FormData();
+						pfmd.append('id', client_id);
+						pfmd.append('se', client_secret);
+						pfmd.append('ru', redirect_url);
+						pfmd.append('tk', token);
+						pfmd.append('bu', base_url);
+
+						//sendRequest('plugins/pictures/photos.php', pfmd, '');
+						sendRequest(redirect_url, pfmd, '');
+
+						//window.open(base_url + '/oauth/authorize?' + params.toString(), '_blank').focus();
+
+						setTimeout(function() {
+							const cookies = document.cookie.split(';');
+							for (let cookie of cookies) {
+								let [key, value] = cookie.trim().split('=');
+								if (key === 'pfmdrt') {
+									res = (value === 1) ? 'Success':'failed';
+									document.getElementById('test').innerText = res;
+									break;
+								}
+							}
+						}, 3000);
 					} else {
 						rcmail.display_message(rcmail.gettext('app_verify_failed','pictures'), 'error');
 					}
@@ -80,7 +106,13 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 			}
 		});
 
+		let test = document.createElement('a');
+		test.id = 'test';
+		test.innerText = 'Untestet';
+		test.href = '#';
+
 		hint_td.appendChild(auth_link);
+		hint_td.appendChild(test);
 		hint_tr.appendChild(hint_td);
 		token.parentNode.insertBefore(hint_tr, token);
 
@@ -89,18 +121,20 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 });
 
 function sendRequest(url, data, endpoint, method = 'POST', token) {
-	xhr = new XMLHttpRequest();
+	let result = {};
+	let xhr = new XMLHttpRequest();
 	xhr.onload = function() {
-		let result = {};
-		if(xhr.status === 200) result.response = this.response;
 		result.status = xhr.status;
-		return result;
+		if(xhr.status === 200) {
+			result.response = JSON.parse(this.response);
+		}
 	}
 
-	xhr.open(method, url + endpoint);
+	xhr.open(method, url + endpoint, false);
 	if(token !== undefined) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-	xhr.responseType = 'json';
+	//xhr.responseType = 'json';
 	xhr.send(data);
+	return result;
 }
 
 function checkToken() {

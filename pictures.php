@@ -11,8 +11,6 @@ class pictures extends rcube_plugin {
 	public $task = '?(?!login|logout).*';
 	public function onload() {
 		$rcmail = rcmail::get_instance();
-		
-		
 
 		if (isset($_GET['_task']) && $_GET['_task'] == 'pictures') {
 			$json = json_decode(file_get_contents('php://input'), true);
@@ -127,9 +125,29 @@ class pictures extends rcube_plugin {
 		), 'taskbar');
 
 		if(isset($_GET['code'])) {
-			//error_log('code: '.$_GET['code']);
-			//filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 			setToken(filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+		}
+
+		if(isset($_POST['bu']) && isset($_POST['ru'])) {
+			$array = [
+				'id' => filter_var($_POST['id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'se' => filter_var($_POST['se'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'ru' => filter_var($_POST['ru'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'tk' => filter_var($_POST['tk'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'bu' => filter_var($_POST['bu'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)
+			];
+			$str = json_encode($array);
+			$rcmail->config->set('dstr',$str);
+			die($rcmail->config->get('dstr'));
+			/*
+			$rcmail->config->set('dstr', json_encode([
+				'id' => filter_var($_POST['id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'se' => filter_var($_POST['se'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'ru' => filter_var($_POST['ru'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'tk' => filter_var($_POST['tk'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+				'bu' => filter_var($_POST['bu'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)
+			]));
+			*/
 		}
 
 		if ($rcmail->task == 'pictures') {
@@ -239,26 +257,6 @@ class pictures extends rcube_plugin {
 		return $rcmail->output->frame($attrib);
 	}
 
-	function setToken($token) {
-		$rcmail = rcmail::get_instance();
-		//$rcmail->config->set('pft_token', $token);
-		/*
-		$curl_session = curl_init();
-		$headers = array(
-			'Authorization: Bearer '.$token,
-			'Accept: application/json'
-		);
-		
-		curl_setopt($curl_session, CURLOPT_URL, rtrim($base_url, '/').'/oauth/token');
-		curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
-		$result = curl_exec($curl_session);
-		$response = json_decode($result, true);
-		curl_close($curl_session);
-		*/
-	}
-
 	function get_tags() {
 		$rcmail = rcmail::get_instance();
 		$uid = $rcmail->user->ID;
@@ -319,6 +317,50 @@ class pictures extends rcube_plugin {
 			$rcmail->output->add_script($script, 'docready');
 		}
 	}
+}
+
+function setToken($code) {
+	$rcmail = rcmail::get_instance();
+	$pfmd = json_decode($rcmail->config->get('dstr'), true);
+
+	$curl_session = curl_init();
+	$headers = array(
+		'Authorization: Bearer '.$pfmd['tk'],
+		'Accept: application/json'
+	);
+
+	curl_setopt($curl_session, CURLOPT_URL, rtrim($pfmd['bu'], '/').'/oauth/token');
+	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
+	curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($curl_session, CURLOPT_POSTFIELDS, [
+		'client_id' => $pfmd['id'],
+		'client_secret' => $pfmd['se'],
+		'redirect_uri' => $pfmd['ru'],
+		'grant_type' => 'authorization_code',
+		'scope' => 'read write',
+		'code' => $code,
+	]);
+
+	$result = curl_exec($curl_session);
+	$response = json_decode($result, true);
+	curl_close($curl_session);
+
+	if(isset($response['access_token'])) {
+		$rcmail->config->set('pixelfed_token',$response['access_token']);
+
+		$opts = array (
+			'expires' => time() + 3600, 
+			'path' => '/', 
+			'secure' => true,
+			'samesite' => 'Strict'
+		);
+		setcookie('pfmdrt', '1', $opts);
+	} else {
+		setcookie('pfmdrt', '0', $opts);
+	}
+	
+	setcookie('pfmd', '0', time()-3600);
 }
 
 function getIType($path) {

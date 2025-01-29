@@ -73,6 +73,18 @@ if(isset($_FILES['galleryfiles'])) {
 	die(json_encode($test));
 }
 
+if(isset($_POST['bu']) && isset($_POST['ru'])) {
+	global $rcmail;
+	$rcmail->config->set('dstr', json_encode([
+		'id' => filter_var($_POST['id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+		'se' => filter_var($_POST['se'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+		'ru' => filter_var($_POST['ru'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+		'tk' => filter_var($_POST['tk'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
+		'bu' => filter_var($_POST['bu'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)
+	]));
+	die('saved');
+}
+
 $jarr  = json_decode(file_get_contents('php://input'), true);
 if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	switch($jarr['action']) {
