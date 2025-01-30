@@ -21,104 +21,105 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 		let url = instance.value;
 		let base_url = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
 		url = base_url + '/settings/applications';
-		hint_td.innerHTML = hint.replace('%link%', "<a href='" + url + "' target='_blank' id='aplink' class='disabled'>Applications</a>");
 
 		let auth_link = document.createElement('a');
 		auth_link.id = 'pf_auth_link';
 		auth_link.innerText = 'Register App';
 		auth_link.href = '#';
-		auth_link.addEventListener('click', e => {
-			e.preventDefault();
-			e.stopPropagation();
-			let redirect_url = location.protocol + '//' + location.host + location.pathname + '?_task=pictures';
-			let scope = 'read write';
-
-			let regData = new FormData();
-			regData.append('client_name', 'Roundcube Photos');
-			regData.append('redirect_uris', redirect_url);
-			regData.append('scopes', scope);
-			regData.append('website', 'https://codeberg.org/Offerel/Roundcube_Pictures');
-			let result = sendRequest(base_url, regData, '/api/v1/apps');			
-
-			if(result.status === 200) {
-				let client_id = result.response.client_id;
-				let client_secret = result.response.client_secret;
-
-				let authData = new FormData();
-				authData.append('client_id', client_id);
-				authData.append('client_secret', client_secret);
-				authData.append('redirect_uri', redirect_url);
-				authData.append('grant_type', 'client_credentials');
-				authData.append('scope', scope);
-				result = sendRequest(base_url, authData, '/oauth/token');
-
-				if(result.status === 200) {
-					let token = result.response.access_token;
-					result = sendRequest(base_url, null, '/api/v1/apps/verify_credentials', 'GET', token);
-
-					if(result.status === 200) {
-						const params = new URLSearchParams({
-							client_id: client_id,
-							scope: scope,
-							redirect_uri: redirect_url,
-							response_type: 'code'
-						});
-						/*
-						document.cookie = 'pfmd=' + JSON.stringify({
-							id:client_id,
-							se:client_secret,
-							ru:redirect_url,
-							tk:token,
-							bu:base_url
-						}) + '; path=/;max-age=900;secure;samesite=strict';
-						*/
-						let pfmd = new FormData();
-						pfmd.append('id', client_id);
-						pfmd.append('se', client_secret);
-						pfmd.append('ru', redirect_url);
-						pfmd.append('tk', token);
-						pfmd.append('bu', base_url);
-
-						//sendRequest('plugins/pictures/photos.php', pfmd, '');
-						sendRequest(redirect_url, pfmd, '');
-
-						//window.open(base_url + '/oauth/authorize?' + params.toString(), '_blank').focus();
-
-						setTimeout(function() {
-							const cookies = document.cookie.split(';');
-							for (let cookie of cookies) {
-								let [key, value] = cookie.trim().split('=');
-								if (key === 'pfmdrt') {
-									res = (value === 1) ? 'Success':'failed';
-									document.getElementById('test').innerText = res;
-									break;
-								}
-							}
-						}, 3000);
-					} else {
-						rcmail.display_message(rcmail.gettext('app_verify_failed','pictures'), 'error');
-					}
-				} else {
-					rcmail.display_message(rcmail.gettext('app_token_failed','pictures'), 'error');
-				}
-			} else {
-				rcmail.display_message(rcmail.gettext('app_reg_failed','pictures').replace('%instance%', base_url), 'error');
-			}
-		});
-
-		let test = document.createElement('a');
-		test.id = 'test';
-		test.innerText = 'Untestet';
-		test.href = '#';
+		auth_link.addEventListener('click', registerApp);
 
 		hint_td.appendChild(auth_link);
-		hint_td.appendChild(test);
 		hint_tr.appendChild(hint_td);
 		token.parentNode.insertBefore(hint_tr, token);
-
-		if(instance.value.length != 0) document.getElementById('aplink').classList.remove('disabled');
 	}
 });
+
+function registerApp(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	let instance = document.getElementById('pixelfed_instance');
+	let url = instance.value;
+	let token = '';
+	let client_id = 'fsfsfdokf';
+	let client_secret = 'sdfsdfffffewfds';
+	let scope = 'read write';
+	let redirect_uri = location.protocol + '//' + location.host + location.pathname + '?_task=pictures';
+	instance.value = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
+
+	let cApp = createApp(redirect_uri, scope, instance.value);
+	if(cApp.status === 200) {
+		client_id = cApp.response.client_id;
+		client_secret = cApp.response.client_secret;
+	} else {
+		rcmail.display_message(rcmail.gettext('app_reg_failed','pictures').replace('%instance%', instance.value), 'error');
+		return false;
+	}
+
+	let gToken = getToken(client_id, client_secret, redirect_uri, scope, instance.value);
+	if(gToken.status === 200) {
+		token = gToken.response.access_token;
+	} else {
+		rcmail.display_message(rcmail.gettext('app_token_failed','pictures'), 'error');
+		return false;
+	}
+
+	let vApp = verifyApp(token, instance.value);
+	if(vApp.status !== 200) {
+		rcmail.display_message(rcmail.gettext('app_verify_failed','pictures'), 'error');
+		return false;
+	}
+	
+
+	getCode();
+
+	function createApp(redirect, scopes, instance) {
+		let regData = new FormData();
+		regData.append('client_name', 'Roundcube Photos');
+		regData.append('redirect_uris', redirect);
+		regData.append('scopes', scopes);
+		regData.append('website', 'https://codeberg.org/Offerel/Roundcube_Pictures');
+		let response = sendRequest(instance, regData, '/api/v1/apps');
+		return response;
+	}
+
+	function getToken(client, secret, redirect, scope, instance) {
+		let authData = new FormData();
+		authData.append('client_id', client);
+		authData.append('client_secret', secret);
+		authData.append('redirect_uri', redirect);
+		authData.append('grant_type', 'client_credentials');
+		authData.append('scope', scope);
+		result = sendRequest(instance, authData, '/oauth/token');
+		return result;
+	}
+
+	function verifyApp(token, instance) {
+		result = sendRequest(instance, null, '/api/v1/apps/verify_credentials', 'GET', token);
+		return result;
+	}
+
+	function getCode() {
+		const params = new URLSearchParams({
+			client_id: client_id,
+			scope: scope,
+			redirect_uri: redirect_uri,
+			response_type: 'code'
+		});
+
+		const cookie_data = JSON.stringify({
+			client_id:client_id,
+			client_secret:client_secret,
+			redirect_uri:redirect_uri,
+			instance:instance.value,
+			token:token,
+			scope:scope
+		});
+
+		document.cookie = "appval=" + (cookie_data || "") + "; max-age=1800; secure; path=/";
+
+		let wind = window.open(instance.value + '/oauth/authorize?' + params.toString(), '_top', 'width=300,height=200,menubar=no,status=no');
+	}
+}
 
 function sendRequest(url, data, endpoint, method = 'POST', token) {
 	let result = {};
@@ -132,7 +133,6 @@ function sendRequest(url, data, endpoint, method = 'POST', token) {
 
 	xhr.open(method, url + endpoint, false);
 	if(token !== undefined) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-	//xhr.responseType = 'json';
 	xhr.send(data);
 	return result;
 }

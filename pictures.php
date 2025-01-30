@@ -125,29 +125,64 @@ class pictures extends rcube_plugin {
 		), 'taskbar');
 
 		if(isset($_GET['code'])) {
-			setToken(filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-		}
+			$code = filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+			$html = '<script>
+				window.addEventListener("load", (event) => {
+					let cookieArr = document.cookie.split(";");
+					let cVal;
+					for(let i=0; i < cookieArr.length; i++) {
+						if(cookieArr[i].includes("appval")) {
+							cVal = cookieArr[i].replace("appval=","");
+							break;
+						}
+					}
+					
+					let cArr = JSON.parse(cVal);
+					let data = new FormData();
+					data.append("client_id", cArr["client_id"]);
+					data.append("client_secret", cArr["client_secret"]);
+					data.append("redirect_uri", cArr["redirect_uri"]);
+					data.append("grant_type", "authorization_code");
+					data.append("scope", cArr["scope"]);
+					data.append("code", "'.$code.'");
 
-		if(isset($_POST['bu']) && isset($_POST['ru'])) {
-			$array = [
-				'id' => filter_var($_POST['id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'se' => filter_var($_POST['se'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'ru' => filter_var($_POST['ru'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'tk' => filter_var($_POST['tk'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'bu' => filter_var($_POST['bu'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)
-			];
-			$str = json_encode($array);
-			$rcmail->config->set('dstr',$str);
-			die($rcmail->config->get('dstr'));
-			/*
-			$rcmail->config->set('dstr', json_encode([
-				'id' => filter_var($_POST['id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'se' => filter_var($_POST['se'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'ru' => filter_var($_POST['ru'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'tk' => filter_var($_POST['tk'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
-				'bu' => filter_var($_POST['bu'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)
-			]));
-			*/
+					let xhr = new XMLHttpRequest();
+					xhr.onload = function() {
+						let result = JSON.parse(this.response);
+
+						if(xhr.status === 200) {
+							let nToken = result.access_token;
+							saveVals(cArr["instance"],nToken, cArr["redirect_uri"]);
+						} else {
+							console.error("error saving token")
+						}
+					}
+					xhr.open("POST", cArr["instance"] + "/oauth/token", false);
+					xhr.setRequestHeader("Authorization", "Bearer " + cArr["token"]);
+					xhr.send(data);
+				});
+
+				function saveVals(instance,token, rdu) {
+					const data = JSON.stringify({
+						action: "pfmd",
+						data: {
+							instance:instance,
+							token:token,
+						}
+					});
+					let xhr = new XMLHttpRequest();
+					xhr.onload = function() {
+						let result = this.response;
+						if(result.code == 200) location.href = rdu;
+					}
+					xhr.open("POST", "./plugins/pictures/photos.php");
+					xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
+					xhr.responseType = "json";
+					xhr.send(data);
+				}
+			</script>';
+			
+			die($html);
 		}
 
 		if ($rcmail->task == 'pictures') {
@@ -215,9 +250,8 @@ class pictures extends rcube_plugin {
 														'title'=> html::label($field_id, $this->gettext('pf_md_instance')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_instance')));
 		$field_id='pixelfed_token';
-		$input = new html_inputfield(array('name' => 'pixelfed_token', 'id' => $field_id, 'type' => 'password'));
+		$input = new html_inputfield(array('name' => 'pixelfed_token', 'id' => $field_id, 'type' => 'hidden'));
 		$p['blocks']['main']['options']['pixelfed_token'] = array(
-														'title'=> html::label($field_id, $this->gettext('pf_md_token')),
 														'content'=> $input->show($rcmail->config->get('pixelfed_token')));
 
 		return $p;
@@ -317,50 +351,6 @@ class pictures extends rcube_plugin {
 			$rcmail->output->add_script($script, 'docready');
 		}
 	}
-}
-
-function setToken($code) {
-	$rcmail = rcmail::get_instance();
-	$pfmd = json_decode($rcmail->config->get('dstr'), true);
-
-	$curl_session = curl_init();
-	$headers = array(
-		'Authorization: Bearer '.$pfmd['tk'],
-		'Accept: application/json'
-	);
-
-	curl_setopt($curl_session, CURLOPT_URL, rtrim($pfmd['bu'], '/').'/oauth/token');
-	curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($curl_session, CURLOPT_SSL_VERIFYHOST, 2);
-	curl_setopt($curl_session, CURLOPT_HTTPHEADER, $headers);
-	curl_setopt($curl_session, CURLOPT_POSTFIELDS, [
-		'client_id' => $pfmd['id'],
-		'client_secret' => $pfmd['se'],
-		'redirect_uri' => $pfmd['ru'],
-		'grant_type' => 'authorization_code',
-		'scope' => 'read write',
-		'code' => $code,
-	]);
-
-	$result = curl_exec($curl_session);
-	$response = json_decode($result, true);
-	curl_close($curl_session);
-
-	if(isset($response['access_token'])) {
-		$rcmail->config->set('pixelfed_token',$response['access_token']);
-
-		$opts = array (
-			'expires' => time() + 3600, 
-			'path' => '/', 
-			'secure' => true,
-			'samesite' => 'Strict'
-		);
-		setcookie('pfmdrt', '1', $opts);
-	} else {
-		setcookie('pfmdrt', '0', $opts);
-	}
-	
-	setcookie('pfmd', '0', time()-3600);
 }
 
 function getIType($path) {

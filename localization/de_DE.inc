@@ -44,7 +44,6 @@ $labels['pf_md_token'] = "Token";
 $labels['pfvisibility'] = "Sichtbarkeit";
 $labels['pfsensitive'] = "NSFW";
 $labels['pftomuch'] = "Von den ausgewählten Fotos werden nur %max% veröffentlicht";
-$labels['pfapphint'] = "Ein neuer Token kann unter %link% erstellt werden. Der Token benötigt die Rechte <strong>'read'</strong> und <strong>'write'</strong>";
 $labels['pf_conf_error'] = 'Konfigurationsfehler. Bitte die Pixelfed/Mastodon Konfiguration in den "Fotos" Einstellungen prüfen';
 $labels['unlisted'] = "Ungelistet";
 $labels['private'] = "Privat";
