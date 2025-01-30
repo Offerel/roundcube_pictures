@@ -136,3 +136,6 @@ $labels['alb_create_ok'] = "相册“%t%”已创建";
 $labels['pf_md_token'] = "令牌";
 $labels['pf_conf_error'] = '配置错误，请检查“照片”设置中的 Pixelfed/Mastodon 配置';
 $labels['pf_md_instance'] = "Pixelfed/Mastodon 实例";
+$labels['app_verify_failed'] = "Roundcube 照片无法登录到 %instance%";
+$labels['app_token_failed'] = "无法获取访问令牌";
+$labels['app_reg_failed'] = "无法在 %instance% 注册 Roundcube 照片";
