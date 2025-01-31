@@ -11,9 +11,33 @@
     border-radius: .25rem;
     text-decoration: none;
 }
-
 #pf_auth_link:hover {
     background-color: #1eb6ff;
+}
+.nfswspan {
+    display: inline-flex;
+    right: 0;
+    position: absolute;
+    margin-right: 5px;
+}
+.tab-button {
+    width: 33%;
+    padding: .2rem 0;
+    border: 0;
+    border-radius: 0;
+    background-color: gainsboro;
+    color: black;
+}
+.tab-active {
+    background-color: dimgray;
+    color: white;
+}
+.tab-button:hover {
+    background-color: #696969;
+}
+.tab-button:focus {
+    box-shadow: unset !important;
+    background: #696969 !important;
 }
 .iframebox.pictures_{
 	height:100%
@@ -39,13 +63,12 @@ a.disabled {
 #content {
 	width: 100%;
 }
-#stype .stype {
-	left: 100px;
-	position: absolute;
-	height: 100px;
-	right: 0;
-	visibility: hidden;
-	padding: 0 5px;
+.stype {
+    position: relative;
+    height: 120px;
+    right: 0;
+    padding: 0;
+    top: 10px;
 }
 #stype {
 	width: 100%;
@@ -64,10 +87,8 @@ a.disabled {
 	outline: 0;
 }
 #pfvisibility {
-	width: 150px !important;
-	margin-bottom: 0 !important;
-	float: left;
-	margin-right: 10px;
+    width: 150px!important;
+    margin-bottom: 0!important;
 }
 .stype label {
 	width: fit-content !important;
@@ -279,11 +300,11 @@ a.disabled {
 		transform: rotate(1turn);
 	}
 }
-#modal-body select{
-	width:100%;
-	margin-bottom:10px;
-	border:1px solid #b2b2b2;
-	outline: 0;
+#modal-body select {
+    width: 100%;
+    margin-bottom: 10px;
+    border: 1px solid #DDD;
+    outline: 0;
 }
 .modal-content {
 	margin: auto;
@@ -346,13 +367,19 @@ a.disabled {
 	background-color:#919ca4;
 	color:#fff
 }
-#modal-body input {
-	width: 100%;
-	height: 22px;
-	margin: 13px auto;
-	border: 1px solid #b2b2b2;
-	outline: 0;
-	border-radius: 5px;
+.tab-bar {
+    width: 502px;
+}
+#spixelfed {
+    top: -50px;
+    z-index: 2;
+}
+#modal-body input:not([type="checkbox"]) {
+    width: 100%;
+    height: 22px;
+    border: 1px solid #dddddd;
+    outline: 0;
+    border-radius: 5px;
 }
 .mv_target,.mv_target::after{
 	border-radius:50%;
@@ -507,11 +534,11 @@ a.disabled {
     color: darkgray;
 }
 #spixelfed .tagify {
-	height: 80px;
-	overflow: auto;
-	background: white;
-	margin-bottom: 10px;
-	margin-top: -5px;
+    height: 120px;
+    overflow: auto;
+    background: #fff;
+    margin-bottom: 10px;
+    width: 466px;
 }
 #metadata .tagify {
 	width: 100%;

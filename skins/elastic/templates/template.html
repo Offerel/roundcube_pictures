@@ -67,18 +67,14 @@
 					<span class="close" onClick="document.getElementById('share_edit').style.display='none'; rm_checks(); return false;">&times;</span>
 					<h2 id="sheader"></h2>
 				</div>
+				<div class="tab-bar"><button value="spublic" class="tab-button">Public</button><button value="sintern" class="tab-button">Intern</button><button value="spixelfed" class="tab-button">Mastodon</button></div>
 				<div id="modal-body" class="modal-body sebody">
+					
 					<form>		
 						<label for="sname"><roundcube:label name="pictures.ShareName" quoting="html" /></label>
 						<input type="text" id="sname" tabindex="1"><button id="rsh" title="Delete Share" disabled></button>
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
-
-						<fieldset id="stype"><legend><roundcube:label name="pictures.ch_sharetype" quoting="html" /></legend>
-							<div class="sch">
-								<input type="radio" id="public" name="stab" class="rdo" checked="checked"><label for="public"><roundcube:label name="pictures.public" quoting="html" /></label>
-								<input type="radio" id="intern" name="stab" class="rdo"><label for="intern"><roundcube:label name="pictures.intern" quoting="html" /></label>
-								<input type="radio" id="pixelfed" name="stab" class="rdo"><label for="pixelfed"><roundcube:label name="pictures.pixelfed" quoting="html" /></label>
-							</div>
+						
 							<div class="stype" id="spublic" style="visibility: visible;">
 								<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
 								<input type="hidden" id="sid"><input type="hidden" id="uid">
@@ -98,10 +94,11 @@
 									<option value="unlisted"><roundcube:label name="pictures.unlisted" quoting="text" /> </option>
 									<option value="private"><roundcube:label name="pictures.private" quoting="text" /></option>
 								</select>
-								<label for="pfsensitive"><roundcube:label name="pictures.pfsensitive" quoting="html" /></label><input type="checkbox" title="pfsensitive" id="pfsensitive">
+								<div class="nfswspan">
+									<label for="pfsensitive"><roundcube:label name="pictures.pfsensitive" quoting="html" /></label>
+									<input type="checkbox" title="pfsensitive" id="pfsensitive">
+								</div>
 							</div>
-						</fieldset>
-						
 						<div id="shareedit">
 							<roundcube:button command="sharepic" id="sbtn" type="link"  class="btn btn-primary" label="pictures.share">
 							<div id="link">&nbsp;</div><button title="Copy to Clipboard" id="btnclp"></button>

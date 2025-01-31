@@ -256,7 +256,7 @@ window.onload = function(){
 			user: this.value
 		});
 	});
-
+/*
 	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
 		sendRequest(pixelfed_verify);
 		elem.addEventListener("input", (event) => {
@@ -293,6 +293,36 @@ window.onload = function(){
 				let text = rcmail.gettext('pftomuch','pictures');
 				let max_attachments = document.getElementById('max_attachments').value;
 				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
+			}
+		});
+	}
+*/
+	for (let e of document.querySelectorAll('.tab-bar button')) {
+		e.addEventListener('click', b => {
+			b.preventDefault();
+			document.getElementById('sintern').style.display = 'none';
+			document.getElementById('spublic').style.display = 'none';
+			document.getElementById('spixelfed').style.display = 'none';
+			document.getElementById(e.value).style.display = 'block';
+
+			document.querySelector('[value="sintern"]').classList.remove('tab-active');
+			document.querySelector('[value="spublic"]').classList.remove('tab-active');
+			document.querySelector('[value="spixelfed"]').classList.remove('tab-active');
+			document.querySelector('[value="'+e.value+'"]').classList.add('tab-active');
+			
+			if(e.value === 'spixelfed') {
+				document.getElementById('sname').disabled = true;
+				document.getElementById('shares').disabled = true;
+				document.getElementById('rsh').disabled = true;
+
+				MastoStatus.whitelist = document.getElementById('mstdtags').value.split(',');
+				let text = rcmail.gettext('pftomuch','pictures');
+				let max_attachments = document.getElementById('max_attachments').value;
+				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
+			} else {
+				document.getElementById('sname').disabled = false;
+				document.getElementById('rsh').disabled = false;
+				if(document.getElementById('shares')) document.getElementById('shares').disabled = false;
 			}
 		});
 	}
@@ -718,7 +748,8 @@ function selectShare() {
 	sbtn.tabIndex = 5;
 	sbtn.title = rcmail.gettext('extlinktitle','pictures');
 
-	document.getElementById('public').click();
+	document.querySelector('[value="spublic"]').click();
+	sendRequest(pixelfed_verify);
 }
 
 function add_album() {
