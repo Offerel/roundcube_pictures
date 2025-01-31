@@ -33,7 +33,7 @@
     color: white;
 }
 .tab-button:hover {
-    background-color: #696969;
+    background-color: darkgray;
 }
 .tab-button:focus {
     box-shadow: unset !important;

@@ -256,47 +256,7 @@ window.onload = function(){
 			user: this.value
 		});
 	});
-/*
-	for (let elem of document.querySelectorAll('input[type="radio"][name="stab"]')) {
-		sendRequest(pixelfed_verify);
-		elem.addEventListener("input", (event) => {
-			if(event.target.id == 'public') {
-				document.getElementById('spublic').style.visibility = 'visible';
-				document.getElementById('sintern').style.visibility = 'hidden';
-				document.getElementById('spixelfed').style.visibility = 'hidden';
-				document.getElementById('sbtn').classList.remove('disabled');
-				document.getElementById('sname').disabled = false;
-				document.getElementById('shares').disabled = false;
-				document.getElementById('rsh').disabled = false;
-			}
 
-			if(event.target.id == 'intern') {
-				document.getElementById('spublic').style.visibility = 'hidden';
-				document.getElementById('sintern').style.visibility = 'visible';
-				document.getElementById('spixelfed').style.visibility = 'hidden';
-				document.getElementById('sname').focus();
-				document.getElementById('sbtn').classList.remove('disabled');
-				document.getElementById('sname').disabled = false;
-				document.getElementById('shares').disabled = false;
-				document.getElementById('rsh').disabled = false;
-			}
-
-			if(event.target.id == 'pixelfed') {
-				document.getElementById('spublic').style.visibility = 'hidden';
-				document.getElementById('sintern').style.visibility = 'hidden';
-				document.getElementById('spixelfed').style.visibility = 'visible';
-				document.getElementById('pstatus').focus();
-				document.getElementById('sname').disabled = true;
-				document.getElementById('shares').disabled = true;
-				document.getElementById('rsh').disabled = true;	
-				MastoStatus.whitelist = document.getElementById('mstdtags').value.split(',');
-				let text = rcmail.gettext('pftomuch','pictures');
-				let max_attachments = document.getElementById('max_attachments').value;
-				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
-			}
-		});
-	}
-*/
 	for (let e of document.querySelectorAll('.tab-bar button')) {
 		e.addEventListener('click', b => {
 			b.preventDefault();
@@ -361,6 +321,7 @@ function pixelfed_verify(response) {
 		document.getElementById('sbtn').classList.remove('disabled');
 		document.getElementById('max_attachments').value = response.max_attachments;
 		document.getElementById('type').value = response.type;
+		document.querySelector('[value="spixelfed"]').innerText = response.type;
 		document.getElementById('mstdtags').value = response.tags;
 	} else {
 		document.getElementById('pstatus').disabled = true;
