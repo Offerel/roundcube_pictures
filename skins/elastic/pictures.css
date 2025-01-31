@@ -1,3 +1,20 @@
+#pf_auth_link {
+    display: inline-block;
+    background-color: #37beff;
+    width: fit-content;
+    padding: .7em;
+    border-color: #37beff;
+    color: white;
+    font-weight: 400;
+    font-family: Roboto, sans-serif;
+    font-size: 1rem;
+    border-radius: .25rem;
+    text-decoration: none;
+}
+
+#pf_auth_link:hover {
+    background-color: #1eb6ff;
+}
 .iframebox.pictures_{
 	height:100%
 }

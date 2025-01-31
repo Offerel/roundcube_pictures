@@ -1,6 +1,6 @@
 {
 	"name": "offerel/pictures",
-	"description": "A pictures/gallery plugin for Roundcube like Google Photos",
+	"description": "A photos/gallery plugin for Roundcube like Google Photos",
 	"keywords": ["pictures","plugin","gallery","photos","images","camera","roundcube"],
 	"homepage": "https://codeberg.org/offerel/",
 	"type": "roundcube-plugin",

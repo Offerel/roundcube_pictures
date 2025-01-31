@@ -39,9 +39,7 @@ function registerApp(e) {
 	e.stopPropagation();
 	let instance = document.getElementById('pixelfed_instance');
 	let url = instance.value;
-	let token = '';
-	let client_id = 'fsfsfdokf';
-	let client_secret = 'sdfsdfffffewfds';
+	let token, client_id, client_secret;
 	let scope = 'read write';
 	let redirect_uri = location.protocol + '//' + location.host + location.pathname + '?_task=pictures';
 	instance.value = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
@@ -117,7 +115,12 @@ function registerApp(e) {
 
 		document.cookie = "appval=" + (cookie_data || "") + "; max-age=1800; secure; path=/";
 
-		let wind = window.open(instance.value + '/oauth/authorize?' + params.toString(), '_top', 'width=300,height=200,menubar=no,status=no');
+		let width = 700;
+		let height = 400;
+		let left = window.screen.availLeft + ((window.screen.availWidth / 2) - (width / 2));
+		let top = (window.screen.availHeight / 2) - (height / 2);
+
+		let newWindow = window.open(instance.value + '/oauth/authorize?' + params.toString(), 'popup', 'width='+ width +',height='+ height +',left='+ left +',top='+ top / 2 +',menubar=no,status=no');
 	}
 }
 

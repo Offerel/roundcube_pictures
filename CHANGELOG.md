@@ -1,3 +1,9 @@
+### v1.5.6
+- Added Mastodon Sharing
+- Added automated way of create Mastodon/Pixelfed App
+- Added sharing of multiple photos to Mastodon/Pixelfed
+- CSS Fixes
+
 ### v1.5.5
 - Fix Infobox
 - Added Slideshow

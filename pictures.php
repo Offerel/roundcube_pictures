@@ -173,7 +173,7 @@ class pictures extends rcube_plugin {
 					let xhr = new XMLHttpRequest();
 					xhr.onload = function() {
 						let result = this.response;
-						if(result.code == 200) location.href = rdu;
+						if(result.code == 200) window.close();
 					}
 					xhr.open("POST", "./plugins/pictures/photos.php");
 					xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
