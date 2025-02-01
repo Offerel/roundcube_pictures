@@ -9,18 +9,45 @@
 window.rcmail && rcmail.addEventListener("init", function(a) {
 	if(document.getElementById('pixelfed_instance')) {
 		let instance = document.getElementById('pixelfed_instance');
-		instance.addEventListener('change', checkInstance);
-		document.getElementById('pixelfed_token').addEventListener('change', checkToken);
+		instance.addEventListener('change', e => {
+			let url = instance.value.endsWith('/') ? instance.value.substr(0, instance.value.length - 1):instance.value;
+			
+			let result = sendRequest(url, null, '/api/v2/instance', 'GET');
+			if(result.status == 200) {
+				if(result.response.version !== undefined) {
+					let version, type = result.response.title;
+					switch(type) {
+						case 'Pixelfed':
+							version = result.response.version.split('; ')[1];
+							version = substr(0, version.length - 1);
+							break;
+						case 'Mastodon':
+							version = result.response.version;
+							break;
+						default:
+							return false;
+					}
+					
+					rcmail.display_message(type + ' instance with ' + version + ' found', 'confirmation');
+	
+					instance.classList.add('success');
+					instance.classList.remove('error');
+					document.getElementById('pft').value = type;
+					document.getElementById('pfm').value = result.response.configuration.statuses.max_media_attachments;
+					document.getElementById('pfc').value = result.response.configuration.statuses.max_characters;
+				} else {
+					rcmail.display_message('Invalid URL, check failed', 'error');
+					instance.classList.add('error');
+					instance.classList.remove('success');
+				}
+			}
+			instance.value = url;
+		});
 		
-		let token = document.getElementById('pixelfed_token').parentElement.parentElement;
 		let hint_tr = document.createElement('tr');
 		let hint_td = document.createElement('td');
 		hint_td.colSpan = 2;
 		hint_td.classList.add('tdhint');
-		let hint = rcmail.gettext('pfapphint','pictures');
-		let url = instance.value;
-		let base_url = (url.endsWith('/')) ? url.substr(0, url.length - 1):url;
-		url = base_url + '/settings/applications';
 
 		let auth_link = document.createElement('a');
 		auth_link.id = 'pf_auth_link';
@@ -30,7 +57,9 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 
 		hint_td.appendChild(auth_link);
 		hint_tr.appendChild(hint_td);
-		token.parentNode.insertBefore(hint_tr, token);
+
+		let pft = document.getElementById('pft').parentElement.parentElement;
+		pft.parentNode.insertBefore(hint_tr, pft);
 	}
 });
 
@@ -66,7 +95,6 @@ function registerApp(e) {
 		rcmail.display_message(rcmail.gettext('app_verify_failed','pictures'), 'error');
 		return false;
 	}
-	
 
 	getCode();
 
@@ -116,12 +144,16 @@ function registerApp(e) {
 		document.cookie = "appval=" + (cookie_data || "") + "; max-age=1800; secure; path=/";
 
 		let width = 700;
-		let height = 400;
+		let height = 580;
 		let left = window.screen.availLeft + ((window.screen.availWidth / 2) - (width / 2));
 		let top = (window.screen.availHeight / 2) - (height / 2);
 
 		let newWindow = window.open(instance.value + '/oauth/authorize?' + params.toString(), 'popup', 'width='+ width +',height='+ height +',left='+ left +',top='+ top / 2 +',menubar=no,status=no');
 	}
+}
+
+function ProcessChildMessage(message) {
+	document.getElementById('pixelfed_token').value = message;
 }
 
 function sendRequest(url, data, endpoint, method = 'POST', token) {
@@ -138,74 +170,4 @@ function sendRequest(url, data, endpoint, method = 'POST', token) {
 	if(token !== undefined) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
 	xhr.send(data);
 	return result;
-}
-
-function checkToken() {
-	let token = document.getElementById('pixelfed_token');
-	let instance = document.getElementById('pixelfed_instance');
-	let url = instance.value.endsWith('/') ? instance.value.substr(0, instance.value.length - 1):instance.value;
-
-	xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			let data = JSON.parse(this.responseText);
-			if(data.acct !== undefined) {
-				rcmail.display_message('Authentication for ' + data.acct + ' successful', 'confirmation');
-				token.classList.add('success');
-				token.classList.remove('error');
-			} else {
-				rcmail.display_message('Authentication failed', 'error');
-				token.classList.remove('success');
-				token.classList.add('error');
-			}
-		} else {
-			rcmail.display_message('Pixelfed Server error, please check instance', 'error');
-			token.classList.remove('success');
-			token.classList.add('error');
-		}
-	}
-
-	xhr.open('GET', url + '/api/v1/accounts/verify_credentials');
-	xhr.setRequestHeader('Authorization', 'Bearer ' + token.value);
-	xhr.send();
-}
-
-function checkInstance() {
-	let instance = document.getElementById('pixelfed_instance');
-	let aplink = document.getElementById('aplink');
-	let url = instance.value.endsWith('/') ? instance.value.substr(0, instance.value.length - 1):instance.value;
-
-	xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			let data = JSON.parse(this.responseText);
-			if(data.version !== undefined) {
-				let version = '';
-				switch(data.title) {
-					case 'Pixelfed':
-						version = data.version.split('; ')[1];
-						break;
-					case 'Mastodon':
-						version = data.version;
-						break;
-					default:
-						return false;
-				}
-				
-				rcmail.display_message(data.title + ' instance with ' + version + ' found', 'confirmation');
-
-				aplink.classList.remove('disabled');
-				instance.classList.add('success');
-				instance.classList.remove('error');
-				aplink.href = url + '/settings/applications';
-			} else {
-				rcmail.display_message('Invalid Pixelfed URL, version check failed', 'error');
-				instance.classList.add('error');
-				instance.classList.remove('success');
-				aplink.classList.add('disabled');
-			}
-		}
-	}
-	xhr.open('GET', url + '/api/v2/instance');
-	xhr.send();
 }

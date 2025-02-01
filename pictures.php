@@ -153,6 +153,8 @@ class pictures extends rcube_plugin {
 						if(xhr.status === 200) {
 							let nToken = result.access_token;
 							saveVals(cArr["instance"],nToken, cArr["redirect_uri"]);
+							window.opener.ProcessChildMessage(nToken);
+							window.close();
 						} else {
 							console.error("error saving token")
 						}
@@ -173,7 +175,6 @@ class pictures extends rcube_plugin {
 					let xhr = new XMLHttpRequest();
 					xhr.onload = function() {
 						let result = this.response;
-						if(result.code == 200) window.close();
 					}
 					xhr.open("POST", "./plugins/pictures/photos.php");
 					xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
@@ -189,6 +190,9 @@ class pictures extends rcube_plugin {
 			$this->register_action('index', array($this, 'action'));
 			$rcmail->output->set_env('refresh_interval', 0);
 			$rcmail->output->set_env('sdays', $rcmail->config->get('sharedays', 60));
+			$rcmail->output->set_env('c', $rcmail->config->get('pfc', 0));
+			$rcmail->output->set_env('pfm', $rcmail->config->get('pfm', 0));
+			$rcmail->output->set_env('t', $rcmail->config->get('pft', 'Mastodon'));
 			$this->include_script('js/glightbox/glightbox.min.js');
 			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
 			$this->include_stylesheet('js/tagify/tagify.css');
@@ -253,20 +257,34 @@ class pictures extends rcube_plugin {
 		$input = new html_inputfield(array('name' => 'pixelfed_token', 'id' => $field_id, 'type' => 'hidden'));
 		$p['blocks']['main']['options']['pixelfed_token'] = array(
 														'content'=> $input->show($rcmail->config->get('pixelfed_token')));
+		$field_id='pft';
+		$input = new html_inputfield(array('name' => 'pft', 'id' => $field_id, 'type' => 'hidden'));
+		$p['blocks']['main']['options']['pft'] = array(
+														'content'=> $input->show($rcmail->config->get('pft')));
+		$field_id='pfm';
+		$input = new html_inputfield(array('name' => 'pfm', 'id' => $field_id, 'type' => 'hidden'));
+		$p['blocks']['main']['options']['pfm'] = array(
+														'content'=> $input->show($rcmail->config->get('pfm')));
+		$field_id='pfc';
+		$input = new html_inputfield(array('name' => 'pfc', 'id' => $field_id, 'type' => 'hidden'));
+		$p['blocks']['main']['options']['pfc'] = array(
+														'content'=> $input->show($rcmail->config->get('pfc')));
 
 		return $p;
 	}
 
 	function preferences_save($p) {
 		if ($p['section'] == 'pictures') {
-
             $p['prefs'] = array(
                 'ptheme'			=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
 				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
 				'pmargins'			=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
 				'sharedays'			=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
 				'pixelfed_instance'	=> rcube_utils::get_input_value('pixelfed_instance', rcube_utils::INPUT_POST),
-				'pixelfed_token'	=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST)
+				'pixelfed_token'	=> rcube_utils::get_input_value('pixelfed_token', rcube_utils::INPUT_POST),
+				'pft'				=> rcube_utils::get_input_value('pft', rcube_utils::INPUT_POST),
+				'pfm'				=> intval(rcube_utils::get_input_value('pfm', rcube_utils::INPUT_POST)),
+				'pfc'				=> intval(rcube_utils::get_input_value('pfc', rcube_utils::INPUT_POST))
             );
 		}
 

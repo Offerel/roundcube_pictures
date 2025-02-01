@@ -271,10 +271,7 @@ window.onload = function(){
 			document.querySelector('[value="'+e.value+'"]').classList.add('tab-active');
 			
 			if(e.value === 'spixelfed') {
-				document.getElementById('sname').disabled = true;
-				document.getElementById('shares').disabled = true;
-				document.getElementById('rsh').disabled = true;
-
+				if(document.getElementById('max_attachments').value == 0) rcmail.display_message(rcmail.gettext('pf_conf_error','pictures'), 'error');
 				MastoStatus.whitelist = document.getElementById('mstdtags').value.split(',');
 				let text = rcmail.gettext('pftomuch','pictures');
 				let max_attachments = document.getElementById('max_attachments').value;
@@ -317,17 +314,10 @@ function loop_slide(duration=3) {
 }
 
 function pixelfed_verify(response) {
-	if(response.code == 200 && response.base_url != null) {
-		document.getElementById('sbtn').classList.remove('disabled');
-		document.getElementById('max_attachments').value = response.max_attachments;
-		document.getElementById('type').value = response.type;
-		document.querySelector('[value="spixelfed"]').innerText = response.type;
+	console.log(response);
+	if(response.code == 200) {
 		document.getElementById('mstdtags').value = response.tags;
 	} else {
-		document.getElementById('pstatus').disabled = true;
-		document.getElementById('pfvisibility').disabled = true;
-		document.getElementById('pfsensitive').disabled = true;
-		document.getElementById('sbtn').classList.add('disabled');
 		rcmail.display_message(rcmail.gettext('pf_conf_error','pictures'), 'error');
 	}
 }
@@ -711,6 +701,21 @@ function selectShare() {
 
 	document.querySelector('[value="spublic"]').click();
 	sendRequest(pixelfed_verify);
+
+	document.getElementById('max_attachments').value = rcmail.env.pfm;
+	document.getElementById('max_chars').value = rcmail.env.c;
+	document.getElementById('type').value = rcmail.env.t;
+	document.querySelector('[value="spixelfed"]').innerText = rcmail.env.t;
+	
+	if(document.getElementById('max_attachments').value > 0) {
+		document.getElementById('sbtn').classList.remove('disabled');
+	} else {
+		document.getElementById('pstatus').disabled = true;
+		document.getElementById('pfvisibility').disabled = true;
+		document.getElementById('pfsensitive').disabled = true;
+		document.getElementById('sbtn').classList.add('disabled');
+	}
+	
 }
 
 function add_album() {
@@ -1025,7 +1030,6 @@ function sharepicture() {
 }
 
 function share(response) {
-	console.log(response);
 	let sbtn = document.getElementById('sbtn');
 	let clpbtn = document.getElementById('btnclp');
 	let link = document.getElementById('link');
