@@ -839,7 +839,7 @@ function getshares(response) {
 	let current = url.searchParams.get('p').split('/').pop();
 
 	document.getElementById('suser').value = "";
-	document.getElementById('suser').style.borderColor = "#b2b2b2";
+	document.getElementById('suser').style.borderColor = "#ddd";
 	document.getElementById('sbtn').style.display = 'inline-block';
 	document.getElementById('btnclp').style.display = 'none';
 

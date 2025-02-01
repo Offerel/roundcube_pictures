@@ -72,7 +72,6 @@ a.disabled {
     height: 6em;
     right: 0;
     padding: 0;
-    top: 10px;
 }
 #pstatus {
 	width: 100%;
@@ -363,10 +362,10 @@ a.disabled {
 	color:#fff
 }
 .tab-bar {
-    width: calc(100% + 3px);
+    width: calc(100% + 4px);
 }
 #spixelfed {
-    top: -50px;
+    top: -52px;
     z-index: 2;
 }
 #modal-body input:not([type="checkbox"]) {
@@ -440,8 +439,11 @@ a.disabled {
 	position: relative;
 	z-index: 2;
 }
+#modal-body form {
+    margin-top: 5px;
+}
 #share_target {
-	top: 23px;
+	top: 28px;
 	position: absolute;
 	z-index: 1;
 	width: calc(100% - 50px);
