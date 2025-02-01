@@ -210,7 +210,7 @@ function share($data) {
 
 	if($type === 'pixelfed') {
 		$pixelfed = sharePixelfed(filter_var($data['pf_text'], FILTER_UNSAFE_RAW), filter_var($data['pf_sens'], FILTER_VALIDATE_BOOLEAN), filter_var($data['pf_vis'], FILTER_UNSAFE_RAW), $images, filter_var($data['pf_max'], FILTER_SANITIZE_NUMBER_INT));
-		if(count($pixelfed) > 1 && $pixelfed['status'] == 200) {
+		if(count($pixelfed) > 1 && isset($pixelfed['id'])) {
 			$response = [
 				'code' => 200,
 				'pixelfed' => $pixelfed

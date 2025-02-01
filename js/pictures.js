@@ -988,11 +988,7 @@ function albDel(response) {
 }
 
 function sharepicture() {
-	let type = '';
-	if(document.getElementById('intern').checked) type = 'intern';
-	if(document.getElementById('public').checked) type = 'public';
-	if(document.getElementById('pixelfed').checked) type = 'pixelfed';
-
+	let type = document.querySelector('.tab-active').value.substring(1);
 	if(type === 'pixelfed' && document.getElementById('pstatus').value == '') {
 		document.getElementById('pstatus').style.borderColor = 'red';
 		rcmail.display_message(rcmail.gettext('empty_status','pictures'), 'error')
