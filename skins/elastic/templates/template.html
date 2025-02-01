@@ -74,11 +74,18 @@
 						<input type="text" id="sname" tabindex="1"><button id="rsh" title="Delete Share" disabled></button>
 						<div id="share_target"><div class="share_target"><roundcube:label name="loading" quoting="html" /></div></div>
 						<div class="stype" id="spublic" style="visibility: visible;">
-							<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
-							<input type="hidden" id="sid"><input type="hidden" id="uid">
-							<br /><label for="never"><roundcube:label name="pictures.noexpire" quoting="html" /></label><input type="checkbox" tabindex="4" title="never" id="never">
-							<br /><label for="expiredate" style="float: revert;"><roundcube:label name="pictures.ExpDate" quoting="html" /></label>
-							<input type="date" tabindex="5" id="expiredate" >
+							<span class="chbspan">
+								<label for="download"><roundcube:label name="pictures.downloadable" quoting="html" /></label><input type="checkbox" id="download" name="download" tabindex="3">
+								<input type="hidden" id="sid"><input type="hidden" id="uid">
+							</span>
+							<span class="chbspan">
+								<label for="never"><roundcube:label name="pictures.noexpire" quoting="html" /></label>
+								<input type="checkbox" tabindex="4" title="never" id="never">
+							</span>
+							<span class="chbspan">
+								<label for="expiredate" style="float: revert;"><roundcube:label name="pictures.ExpDate" quoting="html" /></label>
+								<input type="date" tabindex="5" id="expiredate" >
+							</span>
 						</div>
 						<div class="stype" id="sintern">
 							<label for="suser"><roundcube:label name="pictures.IntUser" quoting="html" /></label>

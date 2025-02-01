@@ -20,6 +20,10 @@
     position: absolute;
     margin-right: 5px;
 }
+.chbspan {
+    display: flex;
+    margin-bottom: .2em;
+}
 .tab-button {
     width: 33%;
     padding: .2rem 0;
@@ -65,19 +69,10 @@ a.disabled {
 }
 .stype {
     position: relative;
-    height: 120px;
+    height: 6em;
     right: 0;
     padding: 0;
     top: 10px;
-}
-#stype {
-	width: 100%;
-	position: relative;
-	height: 150px;
-	border: 2px groove ThreeDFace;
-	margin: revert;
-	padding: revert;
-	margin-bottom: 10px;
 }
 #pstatus {
 	width: 100%;
@@ -368,7 +363,7 @@ a.disabled {
 	color:#fff
 }
 .tab-bar {
-    width: 502px;
+    width: calc(100% + 3px);
 }
 #spixelfed {
     top: -50px;
@@ -520,25 +515,30 @@ a.disabled {
 	content: '\f030';
 }
 #modal-body label {
-	font-weight: bold;
-	width: 150px;
-	float: left;
-	text-align: left;
-	font-size: .9em;
+    font-weight: 700;
+    width: 150px;
+    float: left;
+    text-align: left;
+    font-size: .9em;
+    white-space: nowrap;
+    align-content: center;
 }
 #modal-body label:after {
 	content: ": ";
+}
+#expiredate {
+    margin: 0 !important;
 }
 #sname:disabled {
     background-color: whitesmoke;
     color: darkgray;
 }
 #spixelfed .tagify {
-    height: 120px;
+    height: 6em;
     overflow: auto;
     background: #fff;
     margin-bottom: 10px;
-    width: 466px;
+    width: 100%;
 }
 #metadata .tagify {
 	width: 100%;
