@@ -583,12 +583,15 @@ function setKeywords(response) {
 }
 
 function count_checks() {
-	if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
+	let marked = document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
+	if(marked > 0) {
+		document.getElementById('scount').innerText = marked + ' selected';
 		window.parent.document.getElementById('movepicture').classList.remove('disabled');
 		window.parent.document.getElementById('delpicture').classList.remove('disabled');
 		window.parent.document.getElementById('sharepicture').classList.remove('disabled');
 		window.parent.document.getElementById('editmeta').classList.remove('disabled');
 	} else {
+		document.getElementById('scount').innerText = '';
 		window.parent.document.getElementById('movepicture').classList.add('disabled');
 		window.parent.document.getElementById('delpicture').classList.add('disabled');
 		window.parent.document.getElementById('sharepicture').classList.add('disabled');
@@ -606,6 +609,7 @@ function rm_checks() {
 
 	checked = document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
 	if(checked.length < 1) {
+		document.getElementById("picturescontentframe").contentWindow.document.getElementById('scount').innerText = '';
 		document.getElementById("sharepicture").classList.add('disabled');
 		document.getElementById("delpicture").classList.add('disabled');
 		document.getElementById("editmeta").classList.add('disabled');

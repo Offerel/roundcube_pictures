@@ -639,6 +639,15 @@ footer a {
 	padding-left: 20px;
 	padding-right: 20px;
 	margin-right: auto !important;
+	background-color: white;
+}
+#scount {
+    position: fixed;
+    right: 30px;
+    z-index: 3;
+    color: #000000;
+    filter: invert(1);
+    mix-blend-mode: difference;
 }
 .sshare {
 	background-color: #212121;

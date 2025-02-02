@@ -1,6 +1,9 @@
 body {
     background-color: #212529;
 }
+.picbdy {
+	background-color: #212529;
+}
 ul.breadcrumb {
     color: white;
 }

@@ -987,6 +987,7 @@ function showPage($thumbnails, $dir) {
 	\t\t\t\t\t$albumnav
 	\t\t\t\t</ul>
 	\t\t\t</div>
+	\t\t\t<span id='scount'></span>
 	\t\t\t<div id='progress' class='progress'><div class='progressbar'></div></div>
 	\t\t\t<div id='galdiv'>";
 	$page.= $thumbnails;
@@ -1271,12 +1272,15 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		function count_checks() {
-			if(document.querySelectorAll('input[type=\"checkbox\"]:checked').length > 0) {
+			let marked = document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
+			if(marked > 0) {
+				document.getElementById('scount').innerText = marked + ' selected';
 				window.parent.document.getElementById('movepicture').classList.remove('disabled');
 				window.parent.document.getElementById('delpicture').classList.remove('disabled');
 				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
 				window.parent.document.getElementById('editmeta').classList.remove('disabled');
 			} else {
+			 	document.getElementById('scount').innerText = '';
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 				window.parent.document.getElementById('sharepicture').classList.add('disabled');
