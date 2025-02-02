@@ -137,3 +137,4 @@ $labels['alb_create_failed'] = "Das Album '%t%' konnte nicht erstellt werden";
 $labels['app_reg_failed'] = "Roundcube Fotos Registrierung auf %instance% fehlgeschlagen";
 $labels['app_token_failed'] = "Fehler beim Versuch Zugriffs Token zu erhalten";
 $labels['app_verify_failed'] = "Die Anmeldung von Roundcube Fotos an %instance% ist fehlgeschlagen";
+$labels['pselected'] = "%count% ausgewählt";

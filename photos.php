@@ -951,6 +951,7 @@ function rsfolderjpg($filename) {
 
 function showPage($thumbnails, $dir) {
 	$rcmail = rcmail::get_instance();
+	$pselected = $rcmail->gettext('pselected','pictures');
 	$theme = $rcmail->config->get('ptheme');
 	$pmargins = $rcmail->config->get('pmargins');
 	$dir = ltrim(rawurldecode($dir), '/');
@@ -1148,8 +1149,6 @@ function showPage($thumbnails, $dir) {
 			}, {once: true});
 		});
 
-		
-		
 		var prevScrollpos = window.scrollY;
 		var header = document.getElementById('header');
 
@@ -1166,6 +1165,10 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		checkboxes();
+
+		document.getElementById('scount').addEventListener('click', e => {
+			parent.rm_checks();
+		});
 
 		function stop_loop() {
 			if(document.getElementById('pbtn')) {
@@ -1273,14 +1276,18 @@ function showPage($thumbnails, $dir) {
 		
 		function count_checks() {
 			let marked = document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
+			let scount = document.getElementById('scount');
 			if(marked > 0) {
-				document.getElementById('scount').innerText = marked + ' selected';
+				let text = '$pselected'.replace('%count%', marked);
+				scount.innerText = text;
+				scount.style.display = 'inline';
 				window.parent.document.getElementById('movepicture').classList.remove('disabled');
 				window.parent.document.getElementById('delpicture').classList.remove('disabled');
 				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
 				window.parent.document.getElementById('editmeta').classList.remove('disabled');
 			} else {
-			 	document.getElementById('scount').innerText = '';
+			 	scount.innerText = '';
+				scount.style.display = 'none';
 				window.parent.document.getElementById('movepicture').classList.add('disabled');
 				window.parent.document.getElementById('delpicture').classList.add('disabled');
 				window.parent.document.getElementById('sharepicture').classList.add('disabled');
