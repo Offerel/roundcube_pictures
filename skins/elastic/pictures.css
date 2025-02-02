@@ -14,11 +14,19 @@
 #pf_auth_link:hover {
     background-color: #1eb6ff;
 }
+.pfmdopts {
+    display: flex;
+    position: relative;
+    height: 1.5em;
+}
+#mdchars {
+    width: 5em;
+    text-align: right;
+    user-select: none;
+}
 .nfswspan {
-    display: inline-flex;
-    right: 0;
-    position: absolute;
-    margin-right: 5px;
+    width: 100%;
+    text-align: center;
 }
 .chbspan {
     display: flex;

@@ -247,6 +247,10 @@ window.onload = function(){
 				position: 'text',
 				mapValueTo: 'text',
 				highlightFirst: true
+			},
+			callbacks: {
+				"change": (e) => calcLength(e.detail.value),
+				"paste": (e) => calcLength(e.detail.event.target.innerText),
 			}
     	})
 	}
@@ -276,14 +280,35 @@ window.onload = function(){
 				let text = rcmail.gettext('pftomuch','pictures');
 				let max_attachments = document.getElementById('max_attachments').value;
 				if(document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length > max_attachments) rcmail.display_message(text.replace('%max%', max_attachments), 'warning');
+				if(parseInt(document.getElementById('mdchars').innerText) < 0) document.getElementById('sbtn').classList.add('disabled');
 			} else {
 				document.getElementById('sname').disabled = false;
 				document.getElementById('rsh').disabled = false;
 				if(document.getElementById('shares')) document.getElementById('shares').disabled = false;
+				document.getElementById('sbtn').classList.remove('disabled');
 			}
 		});
 	}
+
+	document.querySelector('#spixelfed .tagify__input').addEventListener('input', s => {
+		calcLength(s.target.innerText);
+	});
 };
+
+function calcLength(text) {
+	text = text.trim().replaceAll('[[{"value":"', '#').replaceAll('","prefix":"#"}]]', '');
+	let diff = parseInt(document.getElementById('max_chars').value) - text.length;
+	let mdchars = document.getElementById('mdchars');
+	let btn = document.getElementById('sbtn');
+	mdchars.innerText = diff;
+	if(diff < 0) {
+		mdchars.style.color = 'red';
+		btn.classList.add('disabled')
+	} else {
+		mdchars.style.color = 'unset';
+		btn.classList.remove('disabled')
+	}
+}
 
 function stop_loop() {
 	if(document.getElementById('pbtn')) {
@@ -313,8 +338,7 @@ function loop_slide(duration=3) {
   }
 }
 
-function pixelfed_verify(response) {
-	console.log(response);
+function getTags(response) {
 	if(response.code == 200) {
 		document.getElementById('mstdtags').value = response.tags;
 	} else {
@@ -700,7 +724,7 @@ function selectShare() {
 	sbtn.title = rcmail.gettext('extlinktitle','pictures');
 
 	document.querySelector('[value="spublic"]').click();
-	sendRequest(pixelfed_verify);
+	sendRequest(getTags);
 
 	document.getElementById('max_attachments').value = rcmail.env.pfm;
 	document.getElementById('max_chars').value = rcmail.env.c;

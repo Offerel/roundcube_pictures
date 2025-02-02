@@ -76,8 +76,8 @@ if(isset($_FILES['galleryfiles'])) {
 $jarr  = json_decode(file_get_contents('php://input'), true);
 if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	switch($jarr['action']) {
-		case 'pixelfed_verify':
-			$response = pixelfed_verify();
+		case 'getTags':
+			$response = getTags();
 			break;
 		case 'getSubs':
 			$response = getSubs();
@@ -443,7 +443,7 @@ function getSubs() {
 	return $response;
 }
 
-function pixelfed_verify() {
+function getTags() {
 	global $rcmail;
 	$base_url = $rcmail->config->get('pixelfed_instance');
 	$token = $rcmail->config->get('pixelfed_token');
