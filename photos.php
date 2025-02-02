@@ -7,6 +7,7 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
+// SELECT pic_id, pic_path, FROM_UNIXTIME(pic_taken, '%Y-%m-%d') as date FROM pic_pictures WHERE user_id = $uid ORDER BY pic_taken desc;
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 $rcmail = rcmail::get_instance();
