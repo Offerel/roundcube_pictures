@@ -1,6 +1,6 @@
 <?php
 /**
- * Roundcube Pictures Plugin
+ * Roundcube Photos Plugin
  *
  * @version 1.5.6
  * @author Offerel
@@ -566,7 +566,7 @@ function sharePixelfed($status, $sensitive, $visibility, $images, $max) {
 		imagewebp($image, "$tmpname", 60);
 
 		curl_setopt($curl_session, CURLOPT_POSTFIELDS, [
-			'description' => 'Shared by Roundcube Pictures',
+			'description' => 'Shared by Roundcube Photos',
 			'file' => new CURLFile($tmpname, $iname, 'image/webp')
 		]);
 

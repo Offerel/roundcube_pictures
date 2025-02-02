@@ -1,5 +1,5 @@
 /**
- * Roundcube Pictures Plugin
+ * Roundcube Photos Plugin
  *
  * @version 1.5.6
  * @author Offerel
@@ -583,22 +583,22 @@ function setKeywords(response) {
 }
 
 function count_checks() {
-	let marked = document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
-	let scount = document.getElementById('scount');
-	if(marked > 0) {
-		scount.innerText = marked + ' selected';
+	let checked = document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
+	let scount = document.getElementById("picturescontentframe").contentWindow.document.getElementById('scount');
+	if(checked > 0) {
+		scount.innerText = checked + ' selected';
 		scount.style.display = 'inline';
-		window.parent.document.getElementById('movepicture').classList.remove('disabled');
-		window.parent.document.getElementById('delpicture').classList.remove('disabled');
-		window.parent.document.getElementById('sharepicture').classList.remove('disabled');
-		window.parent.document.getElementById('editmeta').classList.remove('disabled');
+		document.getElementById('movepicture').classList.remove('disabled');
+		document.getElementById('delpicture').classList.remove('disabled');
+		document.getElementById('sharepicture').classList.remove('disabled');
+		document.getElementById('editmeta').classList.remove('disabled');
 	} else {
 		scount.innerText = '';
 		scount.style.display = 'none';
-		window.parent.document.getElementById('movepicture').classList.add('disabled');
-		window.parent.document.getElementById('delpicture').classList.add('disabled');
-		window.parent.document.getElementById('sharepicture').classList.add('disabled');
-		window.parent.document.getElementById('editmeta').classList.add('disabled');
+		document.getElementById('movepicture').classList.add('disabled');
+		document.getElementById('delpicture').classList.add('disabled');
+		document.getElementById('sharepicture').classList.add('disabled');
+		document.getElementById('editmeta').classList.add('disabled');
 	}
 }
 
@@ -1065,7 +1065,7 @@ function share(response) {
 	let sbtn = document.getElementById('sbtn');
 	let clpbtn = document.getElementById('btnclp');
 	let link = document.getElementById('link');
-
+	
 	if(response.type === 'intern') {
 		document.getElementById('expiredate').disabled = false;
 		document.getElementById('expiredate').style.color = 'black';
@@ -1074,7 +1074,8 @@ function share(response) {
 	}
 
 	if(response.type === 'pixelfed') {
-		if(response.pixelfed.uri) rcmail.display_message('Shared to Pixelfed', 'confirmation');
+		let text = rcmail.gettext("shared_to", "pictures");
+		if(response.pixelfed.uri) rcmail.display_message(text.replace('%type%', document.querySelector('#spixelfed #type').value), 'confirmation');
 		document.getElementById('share_edit').style.display='none';
 	}
 
@@ -1096,6 +1097,7 @@ function share(response) {
 	}
 	
 	dloader('#share_edit', sbtn, 'remove');
+	rm_checks();
 	count_checks();
 }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Roundcube Pictures Plugin
+ * Roundcube Photos Plugin
  *
  * @version 1.5.6
  * @author Offerel
@@ -61,7 +61,7 @@ foreach($users as $user) {
 	$webp_basepath =  $basepath."/".$username."/webp";
 	$broken = array();
 	
-	logm("Search media for $username");
+	logm("Search photos for $username");
 	scanGallery($pictures_basepath, $pictures_basepath, $thumb_basepath, $webp_basepath, $uid);
 	$bcount = count($broken);
 	$bc = $bc + $bcount;
@@ -71,7 +71,7 @@ foreach($users as $user) {
 		}
 	}
 
-	logm("Finished pictures in ".etime($utime));
+	logm("Finished photos in ".etime($utime));
 
 	logm("Search orphaned thumbnail files");
 	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
@@ -637,9 +637,9 @@ function pntfy($user, $password, $purl, $message) {
 			'header' =>
 				"Content-Type: text/plain\r\n".
 				$authHeader.
-				"Title: Roundcube Pictures\r\n".
+				"Title: Roundcube Photos\r\n".
 				"Priority: $priority\r\n".
-				"Tags: Roundcube,Pictures",
+				"Tags: Roundcube,Photos",
 			'content' => $message."\r\n\r\nFor details please check maintenance.log"
 		]
 	])), true);

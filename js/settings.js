@@ -1,5 +1,5 @@
 /**
- * Roundcube Pictures Plugin
+ * Roundcube Photos Plugin
  *
  * @version 1.5.6
  * @author Offerel

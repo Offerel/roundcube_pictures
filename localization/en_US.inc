@@ -137,4 +137,5 @@ $labels['app_reg_failed'] = "Roundcube Photos registration failed at %instance%"
 $labels['app_token_failed'] = "Get access token failed";
 $labels['app_verify_failed'] = "The login of Roundcube Photos to %instance% has failed";
 $labels['pselected'] = "%count% selected";
+$labels['shared_to'] = "Successfully shared with %type% instance";
 ?>
