@@ -7,7 +7,6 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
-// SELECT pic_id, pic_path, FROM_UNIXTIME(pic_taken, '%Y-%m-%d') as date FROM pic_pictures WHERE user_id = $uid ORDER BY pic_taken desc;
 define('INSTALL_PATH', realpath(__DIR__ . '/../../') . '/');
 include INSTALL_PATH . 'program/include/iniset.php';
 $rcmail = rcmail::get_instance();
@@ -143,6 +142,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 				'tk' => $jarr['data']['token']
 			];
 			break;
+		case 'timeline':
+			$response = getTimeline($jarr['data']);
+			break;
 		default:
 			error_log('Unknown action \''.$jarr['action'].'\'');
 			$response = [
@@ -154,6 +156,48 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+}
+
+function getTimeline($data) {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$user_id = $rcmail->user->ID;
+	$icount = $rcmail->config->get("thumbs_pr_page", false);
+	$offset = filter_var($data['offset'], FILTER_SANITIZE_NUMBER_INT);
+	$query = "SELECT `pic_id`, `pic_path`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
+	$dbh->query($query);
+	$rows = $dbh->num_rows();
+	$db_data = [];
+	$lkey = 0;
+	for ($i=0; $i < $rows; $i++) { 
+		array_push($db_data, $dbh->fetch_assoc());
+	}
+
+	$tmp_data = $db_data;
+	$send_images = array_splice($db_data, $offset, $icount);
+
+	$last_date = end($send_images)['date'];
+
+	foreach ($send_images as $key => $value) {
+		if($value['date'] === $last_date) unset($send_images[$key]);
+	}
+
+	$lday = [];
+	foreach ($tmp_data as $key => $value) {
+		if($value['date'] === $last_date) {
+			$lday[] = $value;
+			$lkey = $key;
+		}
+	}
+
+	$response = [
+		'code' => 200,
+		'images' => array_merge($send_images, $lday),
+		'offset' => $offset,
+		'noffset' => ++$lkey
+	];
+
+	return $response;
 }
 
 function validateUser($data) {
