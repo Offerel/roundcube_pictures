@@ -2,7 +2,10 @@
 - Added Mastodon Sharing
 - Added automated way of create Mastodon/Pixelfed App
 - Added sharing of multiple photos to Mastodon/Pixelfed
-- CSS Fixes
+- Added check for char Char Counts
+- Added info about selected photos
+- Fix CSS
+- Fix photo selection
 
 ### v1.5.5
 - Fix Infobox
