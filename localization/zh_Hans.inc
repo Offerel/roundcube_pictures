@@ -139,3 +139,5 @@ $labels['pf_md_instance'] = "Pixelfed/Mastodon 实例";
 $labels['app_verify_failed'] = "Roundcube 照片无法登录到 %instance%";
 $labels['app_token_failed'] = "无法获取访问令牌";
 $labels['app_reg_failed'] = "无法在 %instance% 注册 Roundcube 照片";
+$labels['pselected'] = "已选择 %count% 张";
+$labels['shared_to'] = "已成功与 %type% 实例分享";
