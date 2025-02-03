@@ -206,7 +206,6 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 							} else {
 								$exif_arr['MIMEType'] = mime_content_type($image);
 							}
-							
 						}
 
 						$imgarr[] = array_filter($exif_arr);
@@ -383,13 +382,23 @@ function create_webp($file, $webp, $base) {
 	$webp_image = str_replace($base, $webp, $image);
 	$webp_parts = pathinfo($webp_image);
 	$webp_image = $webp_parts['dirname'].'/'.$webp_parts['filename'].'.webp';
-	if($file['MIMEType'] != "image/jpeg") return array(0, $webp_image);
+
 	logm("Create webp $webp_image", 3);
 	$otime = filemtime($image);
 	if($otime == @filemtime($webp_image)) return array($otime, $webp_image);
 	$owidth = $file['ExifImageWidth'];
 	$oheight = $file['ExifImageHeight'];
-	$imaget = @imagecreatefromjpeg($image);
+
+	switch ($file['MIMEType']) {
+		case 'image/gif': $imaget = @imagecreatefromgif($image); break;
+		case 'image/jpeg': $imaget = @imagecreatefromjpeg($image); break;
+		case 'image/png': $imaget = @imagecreatefrompng($image); break;
+		case 'image/bmp': $imaget = @imagecreatefrombmp($image); break;
+		case 'image/webp': $imaget = @imagecreatefromwebp($image); break;
+		case 'image/avif': $imaget = @imagecreatefromavif($image); break;
+		default: logm("Unsupported media format $image", 1); return array(0, $webp_image);
+	}
+
 	if($imaget === false) return array(0, $webp_image);
 	
 	if(isset($file['Orientation'])) {

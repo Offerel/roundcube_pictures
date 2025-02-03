@@ -155,16 +155,16 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
-	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES));
+	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
 function getTimeline($data) {
-	global $rcmail;
+	global $rcmail, $thumb_path, $exif_mode;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
 	$icount = $rcmail->config->get("thumbs_pr_page", false);
 	$offset = filter_var($data['offset'], FILTER_SANITIZE_NUMBER_INT);
-	$query = "SELECT `pic_id`, `pic_path`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
+	$query = "SELECT `pic_id`, `pic_type`, `pic_path`, `pic_taken`, `pic_EXIF`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
 	$dbh->query($query);
 	$rows = $dbh->num_rows();
 	$db_data = [];
@@ -190,9 +190,74 @@ function getTimeline($data) {
 		}
 	}
 
+	$merged_arr = array_merge($send_images, $lday);
+
+	$odate = '';
+
+	$html = ($offset == 0) ? '<html>
+	<head>
+		<title>$gal</title>
+			<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+			<link rel="stylesheet" href="js/justifiedGallery/justifiedGallery.min.css" type="text/css" />
+			<link rel="stylesheet" href="skins/main.min.css" type="text/css" />
+			<link rel="stylesheet" href="skins/pth_$theme.css" type="text/css" />
+			<link rel="stylesheet" href="js/glightbox/glightbox.min.css" type="text/css" />
+			<link rel="stylesheet" href="js/plyr/plyr.css" type="text/css" />
+			<script src="../../program/js/jquery.min.js"></script>
+			<script src="js/justifiedGallery/jquery.justifiedGallery.min.js"></script>
+			<script src="js/glightbox/glightbox.min.js"></script>
+			<script src="js/plyr/plyr.js"></script>
+	</head>
+	<body><div id="timeline"><div>':'';
+	
+	foreach ($merged_arr as $key => $value) {
+		if($odate !== $value['date']) {
+			$odate = $value['date'];
+			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
+			$html.= "</div><div class='ddiv'><span class='dhfmt'>$fmtdate</span></div><div class='dgal'>";
+		}
+		
+		$path = $value['pic_path'];
+		$linkUrl = "simg.php?".http_build_query(array('file' => $path, 't' => 0, 'w' => 5));
+		$type = $value['pic_type'];
+		$fpath = '/'.trim($thumb_path, '/').'/'.$path;
+		$parts = pathinfo($fpath);
+		$npath = $parts['dirname'].'/'.$parts['filename'].'.webp';
+		$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
+		$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
+		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
+		$file = basename($path);
+		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
+		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
+	}
+
+	$html.= ($offset == 0) ? "
+	</div>
+		<script>
+		$('.dgal').justifiedGallery({
+			rowHeight: 220,
+			margins: 7,
+			border: 0,
+			rel: 'gallery',
+			lastRow: 'nojustify',
+			captions: false,
+			randomize: false,
+		});
+		/*
+		$('body').justifiedGallery().on('jg.complete', function(e) {
+			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
+				lazyload();
+			}
+		});
+		*/
+		</script>
+	</body></html>":'';
+
+	die($html);
+
 	$response = [
 		'code' => 200,
-		'images' => array_merge($send_images, $lday),
+		'images' => $merged_arr,
 		'offset' => $offset,
 		'noffset' => ++$lkey
 	];
@@ -2188,6 +2253,12 @@ function delimg($file) {
 
 	$webp = str_replace($pictures_path, $webp_path, $file).".webp";
 	if(file_exists($webp)) unlink($webp);
+}
+
+if(isset($_GET['f'])) {
+	getTimeline([
+		"offset" => 0,
+	]);
 }
 
 if( isset($_GET['p']) ) {

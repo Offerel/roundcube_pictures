@@ -750,3 +750,11 @@ a.mapl {
 .glightbox-open {
 	overflow: unset !important;
 }
+#timeline {
+    padding: 2em;
+}
+.dhfmt {
+    line-height: 2em;
+    font-size: 1.7rem;
+    font-weight: 500;
+}	
