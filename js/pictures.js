@@ -21,6 +21,16 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("delpicture", delete_picture, !0);
 	rcmail.register_command("searchphoto", searchform, !0);
 	rcmail.register_command("edit_meta", metaform, !0);
+
+	if(document.getElementById('fnav')) {
+		let nav = localStorage.getItem("pnav");
+
+		if(nav == 0) {
+			document.getElementById('naclose').classList.add('closed');
+			document.querySelector('#fnav ul').classList.add('closed');
+			document.querySelector('#fnav').classList.add('closed');
+		}
+	}
 });
 
 window.onload = function(){
@@ -167,10 +177,6 @@ window.onload = function(){
 			document.getElementById('naclose').classList.add('closed');
 			document.querySelector('#fnav ul').classList.add('closed');
 			document.querySelector('#fnav').classList.add('closed');
-		} else {
-		//	document.getElementById('naclose').classList.remove('closed');
-		//	document.querySelector('#fnav ul').classList.remove('closed');
-		//	document.querySelector('#fnav').classList.remove('closed');
 		}
 
 		for (let e of document.querySelectorAll('#fnav a')) {
