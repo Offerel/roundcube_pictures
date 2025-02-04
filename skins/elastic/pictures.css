@@ -1,3 +1,65 @@
+#fnav {
+    height: 100%;
+    position: absolute;
+    width: 10em;
+    overflow: hidden;
+    padding: 0 5px 0 0;
+}
+#fnav.closed {
+    visibility: hidden;
+}
+#fnav ul {
+    width: calc(100% - 10px);
+    border-right: 1px solid #d4dbde;
+    height: 100%;
+    padding: 1em 0;
+    top: 0;
+    position: absolute;
+    background-color: #ffffffba;
+    backdrop-filter: blur(5px);
+    box-shadow: 5px 0 10px -5px rgba(0,0,0,.34);
+	transition: left 0.7s;
+    left: 0;
+}
+#fnav ul.closed {
+    left: -140px;
+}
+#naclose {
+    position: relative;
+    display: block;
+    top: 0;
+    left: 140px;
+    transition: left .7s;
+    width: 20px;
+    cursor: pointer;
+}
+#naclose.closed {
+	left: 0px;
+	transition: left 0.7s;
+}
+#fnav li {
+    display: flex;
+    margin: .5em 0;
+    width: 100%;
+}
+#fnav > ul > li:last-child {
+    bottom: 60px;
+    position: absolute;
+}
+#fnav a {
+    text-decoration: none;
+    font-weight: 700;
+    color: black;
+}
+#fnav [aria-current=page] {
+    background-color: #7fffd4;
+    width: 100%;
+}
+#fnav svg {
+    height: 1.5em;
+    width: 1.5em;
+    margin: 0 .5em;
+}
 #pf_auth_link {
     display: inline-block;
     background-color: #37beff;

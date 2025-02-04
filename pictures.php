@@ -573,7 +573,7 @@ function showShare($thumbnails, $share) {
 			<script src='plugins/pictures/js/justifiedGallery/jquery.justifiedGallery.min.js'></script>
 			<script src='plugins/pictures/js/glightbox/glightbox.min.js'></script>
 			<script src='plugins/pictures/js/plyr/plyr.js'></script>
-			<script src='plugins/pictures/js/pictures.js'></script>
+			<script src='plugins/pictures/js/pshare.min.js'></script>
 			";
 	$page.= "\n\t\t</head>\n\t\t<body class='picbdy sshare'><div id='slide_progress'></div>";
 	$page.= "\n\t\t\t<div id='header' style='position: fixed; padding-left: 0; width: 100%'><h2 style='align-items: center; display: inline-flex; padding-left: 20px;text-shadow: 1px 1px 3px rgba(15,15,15,1);color: white;'>$head</h2>";

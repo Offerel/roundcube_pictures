@@ -162,6 +162,7 @@ function getTimeline($data) {
 	global $rcmail, $thumb_path, $exif_mode;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
+	$theme = $rcmail->config->get('ptheme');
 	$icount = $rcmail->config->get("thumbs_pr_page", false);
 	$offset = filter_var($data['offset'], FILTER_SANITIZE_NUMBER_INT);
 	$query = "SELECT `pic_id`, `pic_type`, `pic_path`, `pic_taken`, `pic_EXIF`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
@@ -194,21 +195,21 @@ function getTimeline($data) {
 
 	$odate = '';
 
-	$html = ($offset == 0) ? '<html>
+	$html = ($offset == 0) ? "<html>
 	<head>
-		<title>$gal</title>
-			<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-			<link rel="stylesheet" href="js/justifiedGallery/justifiedGallery.min.css" type="text/css" />
-			<link rel="stylesheet" href="skins/main.min.css" type="text/css" />
-			<link rel="stylesheet" href="skins/pth_$theme.css" type="text/css" />
-			<link rel="stylesheet" href="js/glightbox/glightbox.min.css" type="text/css" />
-			<link rel="stylesheet" href="js/plyr/plyr.css" type="text/css" />
-			<script src="../../program/js/jquery.min.js"></script>
-			<script src="js/justifiedGallery/jquery.justifiedGallery.min.js"></script>
-			<script src="js/glightbox/glightbox.min.js"></script>
-			<script src="js/plyr/plyr.js"></script>
+		<title>Roundcube Photos - Timeline</title>
+			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
+			<link rel='stylesheet' href='js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
+			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
+			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
+			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
+			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
+			<script src='../../program/js/jquery.min.js'></script>
+			<script src='js/justifiedGallery/jquery.justifiedGallery.min.js'></script>
+			<script src='js/glightbox/glightbox.min.js'></script>
+			<script src='js/plyr/plyr.js'></script>
 	</head>
-	<body><div id="timeline"><div>':'';
+	<body><div id='timeline'><div>":'';
 	
 	foreach ($merged_arr as $key => $value) {
 		if($odate !== $value['date']) {
@@ -235,8 +236,8 @@ function getTimeline($data) {
 	</div>
 		<script>
 		$('.dgal').justifiedGallery({
-			rowHeight: 220,
-			margins: 7,
+			rowHeight: 200,
+			margins: 5,
 			border: 0,
 			rel: 'gallery',
 			lastRow: 'nojustify',
