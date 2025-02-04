@@ -128,16 +128,9 @@ class pictures extends rcube_plugin {
 			$code = filter_var($_GET['code'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 			$html = '<script>
 				window.addEventListener("load", (event) => {
-					let cookieArr = document.cookie.split(";");
-					let cVal;
-					for(let i=0; i < cookieArr.length; i++) {
-						if(cookieArr[i].includes("appval")) {
-							cVal = cookieArr[i].replace("appval=","");
-							break;
-						}
-					}
-					
-					let cArr = JSON.parse(cVal);
+					let cArr = JSON.parse(localStorage.getItem("appval"));
+					localStorage.removeItem("appval");
+
 					let data = new FormData();
 					data.append("client_id", cArr["client_id"]);
 					data.append("client_secret", cArr["client_secret"]);

@@ -753,8 +753,30 @@ a.mapl {
 #timeline {
     padding: 2em;
 }
+.ddiv {
+    display: flex;
+    margin: .5em 0;
+}
 .dhfmt {
-    line-height: 2em;
-    font-size: 1.7rem;
+    line-height: 1.2em;
+    font-size: 1.2em;
     font-weight: 500;
-}	
+    display: inline-block;
+    cursor: pointer;
+}
+.marker {
+    align-content: baseline;
+    width: 0;
+    opacity: 0;
+    transition: width .3s,opacity .7s;
+    display: inline-block;
+    line-height: 1.2em;
+    cursor: pointer;
+}
+.ddiv:hover>.marker {
+    width: 1.7em;
+    opacity: 1;
+}
+.ddiv > .marker > svg {
+    height: 20px;
+}

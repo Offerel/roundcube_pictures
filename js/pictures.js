@@ -22,13 +22,29 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("searchphoto", searchform, !0);
 	rcmail.register_command("edit_meta", metaform, !0);
 
+	switch (localStorage.getItem("ppage")) {
+		case 'ntimeline':
+			changeNav(document.getElementById(localStorage.getItem("ppage")));
+			document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1';
+			break;
+		case 'nalbums':
+			changeNav(document.getElementById(localStorage.getItem("ppage")));
+			document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php';
+			break;
+		default:
+			break;
+	}
+
 	if(document.getElementById('fnav')) {
 		let nav = localStorage.getItem("pnav");
 
-		if(nav == 0) {
-			document.getElementById('naclose').classList.add('closed');
-			document.querySelector('#fnav ul').classList.add('closed');
-			document.querySelector('#fnav').classList.add('closed');
+		if(nav != 0) {
+			document.getElementById('naclose').classList.remove('closed');
+			document.querySelector('#fnav ul').classList.remove('closed');
+			document.querySelector('#fnav').classList.remove('closed');
+			document.getElementById('naclose').innerHTML = '&times;';
+		} else {
+			document.getElementById('naclose').innerHTML = '&Congruent;';
 		}
 	}
 });
@@ -173,17 +189,11 @@ window.onload = function(){
 	if(document.getElementById('fnav')) {
 		let nav = localStorage.getItem("pnav");
 
-		if(nav == 0) {
-			document.getElementById('naclose').classList.add('closed');
-			document.querySelector('#fnav ul').classList.add('closed');
-			document.querySelector('#fnav').classList.add('closed');
-		}
-
 		for (let e of document.querySelectorAll('#fnav a')) {
 			e.addEventListener('click', el => {
 				switch (e.id) {
-					case 'ntimeline': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1'; break;
-					case 'nalbums': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php'; break;
+					case 'ntimeline': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1'; changeNav(e); break;
+					case 'nalbums': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php'; changeNav(e); break;
 					case 'nsearch': searchform(); break;
 					case 'nmap': searchform(); break;
 					case 'nfav': searchform(); break;
@@ -200,6 +210,7 @@ window.onload = function(){
 				document.querySelector('#fnav ul').classList.remove('closed');
 				document.querySelector('#fnav').classList.remove('closed');
 				nav = 1;
+				document.getElementById('naclose').innerHTML = '&times;'
 			} else {
 				e.target.classList.add('closed');
 				document.querySelector('#fnav ul').classList.add('closed');
@@ -207,12 +218,22 @@ window.onload = function(){
 					document.querySelector('#fnav').classList.add('closed');
 				}, 700);
 				nav = 0;
+				document.getElementById('naclose').innerHTML = '&Congruent;';
 			}
 
 			localStorage.setItem("pnav", nav);
 		});
 	}
 };
+
+function changeNav(e) {
+	for (let li of document.querySelectorAll('#fnav li')) {
+		li.removeAttribute("aria-current");
+	}
+
+	e.parentElement.setAttribute("aria-current", "page");
+	localStorage.setItem("ppage", e.id);
+}
 
 function calcLength(text) {
 	text = text.trim().replaceAll('[[{"value":"', '#').replaceAll('","prefix":"#"}]]', '');

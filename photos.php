@@ -215,7 +215,7 @@ function getTimeline($data) {
 		if($odate !== $value['date']) {
 			$odate = $value['date'];
 			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
-			$html.= "</div><div class='ddiv'><span class='dhfmt'>$fmtdate</span></div><div class='dgal'>";
+			$html.= "</div><div class='ddiv' data-day='$odate'><span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span><span class='dhfmt'>$fmtdate</span></div><div class='dgal'>";
 		}
 		
 		$path = $value['pic_path'];
@@ -229,7 +229,7 @@ function getTimeline($data) {
 		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$file = basename($path);
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
+		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' data-dday='$odate' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
 	}
 
 	$html.= ($offset == 0) ? "
@@ -251,6 +251,24 @@ function getTimeline($data) {
 			}
 		});
 		*/
+
+		for (let e of document.querySelectorAll('.marker, .dhfmt')) {
+			e.addEventListener('click', d => {
+				let cb = e.parentNode.dataset.day;
+				
+				if (e.dataset.cb == 1) {
+					for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
+						c.checked = false;
+					}
+					e.dataset.cb = 0;
+				} else {
+					for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
+						c.checked = true;
+					}
+					e.dataset.cb = 1;
+				}
+			});
+		}
 		</script>
 	</body></html>":'';
 

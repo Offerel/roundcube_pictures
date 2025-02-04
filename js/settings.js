@@ -132,7 +132,7 @@ function registerApp(e) {
 			response_type: 'code'
 		});
 
-		const cookie_data = JSON.stringify({
+		const data = JSON.stringify({
 			client_id:client_id,
 			client_secret:client_secret,
 			redirect_uri:redirect_uri,
@@ -141,14 +141,14 @@ function registerApp(e) {
 			scope:scope
 		});
 
-		document.cookie = "appval=" + (cookie_data || "") + "; max-age=1800; secure; path=/";
+		localStorage.setItem('appval', data);
 
 		let width = 700;
 		let height = 580;
 		let left = window.screen.availLeft + ((window.screen.availWidth / 2) - (width / 2));
 		let top = (window.screen.availHeight / 2) - (height / 2);
 
-		let newWindow = window.open(instance.value + '/oauth/authorize?' + params.toString(), 'popup', 'width='+ width +',height='+ height +',left='+ left +',top='+ top / 2 +',menubar=no,status=no');
+		window.open(instance.value + '/oauth/authorize?' + params.toString(), 'popup', 'width='+ width +',height='+ height +',left='+ left +',top='+ top / 2 +',menubar=no,status=no');
 	}
 }
 
