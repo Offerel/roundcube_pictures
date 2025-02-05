@@ -17,6 +17,8 @@ window.onload = function(){
 	});
 	*/
 
+	checkboxes();
+
 	for (let e of document.querySelectorAll('.marker, .dhfmt')) {
 		e.addEventListener('click', d => {
 			let cb = e.parentNode.dataset.day;
@@ -60,4 +62,23 @@ function count_checks() {
 		window.parent.document.getElementById('sharepicture').classList.add('disabled');
 		window.parent.document.getElementById('editmeta').classList.add('disabled');
 	}
+}
+
+function checkboxes() {
+	let chkboxes = $('.icheckbox');
+	let lastChecked = null;
+	chkboxes.click(function(e) {
+		if(!lastChecked) {
+			lastChecked = this;
+			return;
+		}
+
+		if(e.shiftKey) {
+			let start = chkboxes.index(this);
+			let end = chkboxes.index(lastChecked);
+			chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
+
+		}
+		lastChecked = this;
+	});
 }
