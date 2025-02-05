@@ -953,7 +953,7 @@ function move_picture() {
 	dloader('#img_edit', mvp, 'add');
 	let media = [];
 
-	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked')) {
+	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('.icheckbox:checked')) {
 		url = new URL(e.parentElement.firstChild.href);
 		media.push(url.searchParams.get('file'));
 	}

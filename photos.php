@@ -1138,6 +1138,10 @@ function showPage($thumbnails, $dir) {
 			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
 				lazyload();
 			}
+
+			for(e of document.getElementsByClassName('icheckbox')) {
+				e.addEventListener('change', count_checks);
+			}
 		});
 		
 		$(window).scroll(function() {
@@ -1770,7 +1774,8 @@ function showGallery($requestedDir, $offset = 0) {
 					$type = 'video';
 				}
 				
-				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input name='images' value='$file' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
+				//$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input name='images' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
+				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
 				
 				$files[] = array(
 					"name" => $file,
