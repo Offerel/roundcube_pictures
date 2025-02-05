@@ -393,18 +393,17 @@ function imgMove($data) {
 	$nepath = filter_var($data['nepath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 	$images = isset($data['images']) ? $data['images']:[];
 	$source = isset($data['source']) ? urldecode($data['source']):'';
-
+	/*
 	if (!is_dir($pictures_path.$target.$nepath)) mkdir($pictures_path.$target.'/'.$nepath, 0755, true);
 	foreach($images as $image) {
 		chSymLink($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
 		mvimg($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
 		mvdb($source.'/'.$image, $target.'/'.$nepath.'/'.$image);
 	}
-
+	*/
 	$response = [
 		'code' => 200,
 	];
-
 	return $response;
 }
 

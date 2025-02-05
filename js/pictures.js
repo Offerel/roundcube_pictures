@@ -679,7 +679,7 @@ function getSubs(response) {
 	select.selectedIndex = 0;
 	select.options[0].disabled = true;
 
-	document.getElementById('mv_target').firstChild.replaceWith(select);
+	//document.getElementById('mv_target').firstChild.replaceWith(select);
 	document.getElementById('mv_target_img').firstChild.replaceWith(select);
 	setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
 }
@@ -952,13 +952,19 @@ function move_picture() {
 	let mvp = document.getElementById('mvp');
 	dloader('#img_edit', mvp, 'add');
 	var media = [];
-
+	var test = [];
 	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
 		media.push($(this).val())
 	});
 
+	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked')) {
+		url = new URL(e.parentElement.firstChild.href);
+		test.push(url.searchParams.get('file'));
+	}
+
 	sendRequest(imgMove, {
 		images: media,
+		test: test,
 		source: document.getElementById("album_org_img").value,
 		target: document.getElementById("target").selectedOptions[0].value,
 		nepath: document.getElementById("album_name_img").value
@@ -975,22 +981,9 @@ function imgMove(response) {
 }
 
 function mv_img() {
-	var a = window.frames.picturescontentframe.location.search.slice(1),
-		b = "";
-	if (a) {
-		a = a.split("#")[0];
-		a = a.split("&");
-		for (b = 0; b < a.length; b++) {
-			var c = a[b].split("=");
-			if ("p" == c[0]) break
-		}
-		b = c[1]
-	}
-	b = decodeURI(b);
 	$("#img_edit").contents().find("h2").html(rcmail.gettext("move_image", "pictures"));
 	$("#album_name_img").attr("placeholder", rcmail.gettext("new_album", "pictures"));
 	let mvp = document.getElementById('mvp');
-
 	mvp.classList.remove('disabled');
 
 	document.getElementById('album_name_img').addEventListener('input', function() {
