@@ -394,10 +394,10 @@ function imgMove($data) {
 	$images = isset($data['images']) ? $data['images']:[];
 	
 	if (!is_dir($pictures_path.$target.$nepath)) mkdir($pictures_path.$target.'/'.$nepath, 0755, true);
-	foreach($tests as $test) {
-		chSymLink($pictures_path.$test, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$test));
-		mvimg($pictures_path.$test, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$test));
-		mvdb($test, $target.'/'.$nepath.basename($pictures_path.$test));
+	foreach($images as $image) {
+		chSymLink($pictures_path.$image, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$image));
+		mvimg($pictures_path.$image, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$image));
+		mvdb($image, $target.'/'.$nepath.basename($pictures_path.$image));
 	}
 	
 	$response = [
