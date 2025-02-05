@@ -530,8 +530,8 @@ function uploadpicture() {
 }
 
 function selectShare() {
-	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
-	let currentName = url.searchParams.get('p').split('/').pop();
+	let url = new URL(document.getElementById("picturescontentframe").contentWindow.document.documentURI);
+	let currentName = url.searchParams.get('p') ? url.searchParams.get('p'):'';
 	sendRequest(getshares);
 	document.getElementById('sid').value = '';
 	
@@ -695,8 +695,8 @@ function mvbtncl() {
 }
 
 function getshares(response) {
-	let url = new URL(document.querySelector("iframe").contentWindow.document.documentURI);
-	let current = url.searchParams.get('p').split('/').pop();
+	let url = new URL(document.getElementById("picturescontentframe").contentWindow.document.documentURI);
+	let current = url.searchParams.get('p') ? url.searchParams.get('p'):'';
 
 	document.getElementById('suser').value = "";
 	document.getElementById('suser').style.borderColor = "#ddd";
@@ -856,14 +856,21 @@ function sharepicture() {
 	}
 	
 	var pictures = [];
-	
+	let loader = document.createElement('div');
+	loader.className = 'mv_target';
+	loader.id = 'sloader';
+	loader.style.width = '10em';
+	loader.style.height = '10em';
+	loader.style.top = '-30em';
+	loader.style.zIndex = '2';
+	document.getElementById('share_edit').appendChild(loader);
 	dloader('#share_edit', sbtn, 'add');
 	let link = document.getElementById('link');
 	link.style.display = 'none';
-	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		const urlParams = new URL($(this)[0].previousElementSibling.firstChild.src).searchParams;
+	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('.icheckbox:checked')) {
+		const urlParams = new URL(e.previousElementSibling.firstChild.src).searchParams;
 		pictures.push(urlParams.get('file'));
-	});
+	};
 
 	let text = document.getElementById('pstatus').value.replaceAll('[[{"value":"', '#');
 	text = text.replaceAll('","prefix":"#"}]]', '');
@@ -920,6 +927,7 @@ function share(response) {
 	}
 	
 	dloader('#share_edit', sbtn, 'remove');
+	document.getElementById('sloader').remove();
 	rm_checks();
 	count_checks();
 }
