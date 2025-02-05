@@ -145,3 +145,4 @@ $labels['explore'] = "Erkunden";
 $labels['map'] = "Karte";
 $labels['favorites'] = "Favoriten";
 $labels['tags'] = "Tags";
+$labels['mulval'] = "Unterschiedliche Werte";

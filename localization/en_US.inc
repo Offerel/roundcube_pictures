@@ -144,4 +144,5 @@ $labels['explore'] = "Explore";
 $labels['map'] = "Map";
 $labels['favorites'] = "Favorites";
 $labels['tags'] = "Tags";
+$labels['mulval'] = "Multiple Values";
 ?>

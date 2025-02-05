@@ -351,12 +351,10 @@ function searchform() {
 
 function metaform() {
 	let iframe = document.getElementById('picturescontentframe');
-	let nodes = iframe.contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked');
-
 	let media = []
-	for (let i=0; i < nodes.length; i++) {
-		let dir = new URLSearchParams(new URL(nodes[i].baseURI).search).get('p');
-		media.push(dir + '/' + nodes[i].value);
+	for(e of iframe.contentWindow.document.querySelectorAll('.icheckbox:checked')) {
+		let url = new URL(e.parentElement.firstChild.href);
+		media.push(url.searchParams.get('file'));
 	}
 
 	sendRequest(getMetadata, {
@@ -366,21 +364,21 @@ function metaform() {
 
 function getMetadata(response) {
 	if(response.mdata['keywords'] == 2) {
-		tagify.DOM.input.setAttribute('data-placeholder', 'Multiple Values')
+		tagify.DOM.input.setAttribute('data-placeholder', rcmail.gettext('mulval','pictures'));
 		document.getElementById('mekeywords').value = '';
 	} else {
 		document.getElementById('mekeywords').value = response.mdata['keywords'];
 	}
 
 	if(response.mdata['title'] == 2) {
-		document.getElementById('metitle').placeholder = 'Multiple Values';
+		document.getElementById('metitle').placeholder = rcmail.gettext('mulval','pictures');
 		document.getElementById('metitle').value = '';
 	} else {
 		document.getElementById('metitle').value = response.mdata['title'];
 	}
 
 	if(response.mdata['description'] == 2) {
-		document.getElementById('medescription').placeholder = 'Multiple Values';
+		document.getElementById('medescription').placeholder = rcmail.gettext('mulval','pictures');
 		document.getElementById('medescription').value = '';
 	} else {
 		document.getElementById('medescription').value = response.mdata['description'];
