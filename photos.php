@@ -230,7 +230,7 @@ function getTimeline($data) {
 		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$file = basename($path);
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
+		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
 	}
 
 	$html.= ($offset == 0) ? "
@@ -373,10 +373,10 @@ function share($data) {
 function imgDel($data) {
 	global $pictures_path, $user_id;
 	$images = isset($data['images']) ? $data['images']:[];
-	$source = isset($data['source']) ? urldecode($data['source']):'';
+	
 	foreach($images as $image) {
-		delSymLink($pictures_path.$source.'/'.$image);
-		delimg($pictures_path.$source.'/'.$image);
+		delSymLink($pictures_path.$image);
+		delimg($pictures_path.$image);
 		rmdb($source.'/'.$image, $user_id);
 	}
 	
@@ -1774,7 +1774,6 @@ function showGallery($requestedDir, $offset = 0) {
 					$type = 'video';
 				}
 				
-				//$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input name='images' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
 				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
 				
 				$files[] = array(

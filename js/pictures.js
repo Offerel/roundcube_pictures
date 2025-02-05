@@ -993,28 +993,16 @@ function mv_img() {
 }
 
 function delete_picture() {
-	var a = [],
-		b = window.frames.picturescontentframe.location.search.slice(1),
-		c = "";
-	if (b) {
-		b = b.split("#")[0];
-		b = b.split("&");
-		for (c = 0; c < b.length; c++) {
-			var d = b[c].split("=");
-			if ("p" == d[0]) break
-		}
-		c = d[1]
+	var images = [];
+
+	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('.icheckbox:checked')) {
+		url = new URL(e.parentElement.firstChild.href);
+		images.push(url.searchParams.get('file'));
 	}
-	c = decodeURI(c);
 
-	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		a.push($(this).val())
-	});
-
-	if(confirm(rcmail.gettext("picdconfirm", "pictures").replace("%c", a.length))) {
+	if(confirm(rcmail.gettext("picdconfirm", "pictures").replace("%c", images.length))) {
 		sendRequest(imgDel, {
-			images: a,
-			source: c
+			images: images,
 		});
 	} else {
 		return false;
