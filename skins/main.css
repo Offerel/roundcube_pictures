@@ -689,7 +689,7 @@ ul.breadcrumb li {
 	font-size: 18px;
 	font-weight: 700;
 }
-ul.breadcrumb li+li:before {
+ul.breadcrumb li+li:not(:last-child):before {
     content: '/\00a0';
     padding: 0 0 0 .4em;
 }
