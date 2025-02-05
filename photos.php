@@ -392,15 +392,14 @@ function imgMove($data) {
 	$target = isset($data['target']) ? html_entity_decode(trim(filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),'/')):"";
 	$nepath = filter_var($data['nepath'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 	$images = isset($data['images']) ? $data['images']:[];
-	$source = isset($data['source']) ? urldecode($data['source']):'';
-	/*
+	
 	if (!is_dir($pictures_path.$target.$nepath)) mkdir($pictures_path.$target.'/'.$nepath, 0755, true);
-	foreach($images as $image) {
-		chSymLink($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
-		mvimg($pictures_path.$source.'/'.$image, $pictures_path.$target.'/'.$nepath.'/'.$image);
-		mvdb($source.'/'.$image, $target.'/'.$nepath.'/'.$image);
+	foreach($tests as $test) {
+		chSymLink($pictures_path.$test, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$test));
+		mvimg($pictures_path.$test, $pictures_path.$target.'/'.$nepath.basename($pictures_path.$test));
+		mvdb($test, $target.'/'.$nepath.basename($pictures_path.$test));
 	}
-	*/
+	
 	$response = [
 		'code' => 200,
 	];
@@ -2185,7 +2184,8 @@ function mvdb($oldpath, $newPath) {
 		$pic_id = $image['pic_id'];
 		$nnewPath = str_replace($oldpath, $newPath, $image['pic_path']);
 		$query = "UPDATE `pic_pictures` SET `pic_path` = \"$nnewPath\" WHERE `pic_id` = $pic_id";
-		$ret = $dbh->query($query);
+		error_log($query);
+		//$ret = $dbh->query($query);
 	}
 }
 

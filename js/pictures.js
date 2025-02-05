@@ -951,21 +951,15 @@ function dloader(dialogid, button, mode) {
 function move_picture() {
 	let mvp = document.getElementById('mvp');
 	dloader('#img_edit', mvp, 'add');
-	var media = [];
-	var test = [];
-	$("#picturescontentframe").contents().find(":checkbox:checked").each(function() {
-		media.push($(this).val())
-	});
+	let media = [];
 
 	for(e of document.getElementById("picturescontentframe").contentWindow.document.querySelectorAll('input[type=\"checkbox\"]:checked')) {
 		url = new URL(e.parentElement.firstChild.href);
-		test.push(url.searchParams.get('file'));
+		media.push(url.searchParams.get('file'));
 	}
 
 	sendRequest(imgMove, {
 		images: media,
-		test: test,
-		source: document.getElementById("album_org_img").value,
 		target: document.getElementById("target").selectedOptions[0].value,
 		nepath: document.getElementById("album_name_img").value
 	});
