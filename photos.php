@@ -208,8 +208,9 @@ function getTimeline($data) {
 			<script src='js/justifiedGallery/jquery.justifiedGallery.min.js'></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
+			<script src='js/photos.js'></script>
 	</head>
-	<body><div id='timeline'><div>":'';
+	<body><span id='scount' data-text='".$rcmail->gettext('pselected','pictures')."'></span><div id='timeline'><div>":'';
 	
 	foreach ($merged_arr as $key => $value) {
 		if($odate !== $value['date']) {
@@ -229,48 +230,11 @@ function getTimeline($data) {
 		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$file = basename($path);
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' data-dday='$odate' class='icheckbox' type='checkbox' onchange='count_checks()'>$caption</div>";
+		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input name='images' value='$file' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
 	}
 
 	$html.= ($offset == 0) ? "
-	</div>
-		<script>
-		$('.dgal').justifiedGallery({
-			rowHeight: 200,
-			margins: 5,
-			border: 0,
-			rel: 'gallery',
-			lastRow: 'nojustify',
-			captions: false,
-			randomize: false,
-		});
-		/*
-		$('body').justifiedGallery().on('jg.complete', function(e) {
-			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
-				lazyload();
-			}
-		});
-		*/
-
-		for (let e of document.querySelectorAll('.marker, .dhfmt')) {
-			e.addEventListener('click', d => {
-				let cb = e.parentNode.dataset.day;
-				
-				if (e.dataset.cb == 1) {
-					for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
-						c.checked = false;
-					}
-					e.dataset.cb = 0;
-				} else {
-					for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
-						c.checked = true;
-					}
-					e.dataset.cb = 1;
-				}
-			});
-		}
-		</script>
-	</body></html>":'';
+	</div></body></html>":'';
 
 	die($html);
 
@@ -1081,6 +1045,7 @@ function rsfolderjpg($filename) {
 function showPage($thumbnails, $dir) {
 	$rcmail = rcmail::get_instance();
 	$pselected = $rcmail->gettext('pselected','pictures');
+	$nalb = $rcmail->gettext('new_album','pictures');
 	$theme = $rcmail->config->get('ptheme');
 	$pmargins = $rcmail->config->get('pmargins');
 	$dir = ltrim(rawurldecode($dir), '/');
@@ -1115,6 +1080,7 @@ function showPage($thumbnails, $dir) {
 	\t\t\t<div id='header'>
 	\t\t\t\t<ul class='breadcrumb'>
 	\t\t\t\t\t$albumnav
+	\t\t\t\t\t<li><span id='aadd' title='$nalb'><svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' style='width: 1.1em;height: 1.1em;vertical-align: text-top;' viewBox='0 0 1024 1024'><path d='M797.1 64H226.9C136.9 64 64 136.9 64 226.9v570.2c0 90 72.9 162.9 162.9 162.9h570.2c90 0 162.9-72.9 162.9-162.9V226.9c0-90-72.9-162.9-162.9-162.9m.1 529.5H593.5v203.7h-163V593.5H226.9v-163h203.6V226.9h162.9v203.6h203.8v163z'></path></svg></span></li>
 	\t\t\t\t</ul>
 	\t\t\t</div>
 	\t\t\t<span id='scount'></span>
@@ -1135,12 +1101,14 @@ function showPage($thumbnails, $dir) {
 		}
 		
 		let headerN = document.querySelector('#header .breadcrumb');
-		
-		headerN.lastElementChild.addEventListener('click', function(e){
-			if(headerN.childElementCount > 1) {
+		headerN.lastElementChild.previousElementSibling.addEventListener('click', function(e){
+			if(headerN.childElementCount > 2) {
 				e.preventDefault();
 				window.parent.edit_album();
 			}
+		});
+		document.getElementById('aadd').addEventListener('click', e => {
+			parent.add_album();
 		});
 		
 		Array.from(document.getElementsByClassName('folder')).forEach(

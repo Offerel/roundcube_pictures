@@ -1,4 +1,4 @@
-#fnav {
+/*#fnav {
     height: 100%;
     position: absolute;
     width: 12em;
@@ -68,7 +68,7 @@
     height: 1.5em;
     width: 1.5em;
     margin: 0 1em;
-}
+}*/
 #pf_auth_link {
     display: inline-block;
     background-color: #37beff;
@@ -238,6 +238,12 @@ a.disabled {
 }
 #picturestoolbar #addalbum::before {
 	content: "\f0fe";
+}
+#picturestoolbar .time::before {
+    content: '\f274';
+}
+#picturestoolbar .albums::before {
+    content: '\f030';
 }
 #picturestoolbar #movepicture::before {
 	content: "\f03e";

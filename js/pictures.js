@@ -14,7 +14,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("uploadpicture", uploadpicture, !0);
 	rcmail.register_command("sharepic", sharepicture, !0);
 	rcmail.register_command("delete_alb", delete_album, !0);
-	rcmail.register_command("addalbum", add_album, !0);
+	rcmail.register_command("timeline", timeline, !0);
 	rcmail.register_command("add_alb", create_album, !0);
 	rcmail.register_command("movepicture", mv_img, !0);
 	rcmail.register_command("move_image", move_picture, !0);
@@ -22,31 +22,15 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("searchphoto", searchform, !0);
 	rcmail.register_command("edit_meta", metaform, !0);
 
-	switch (localStorage.getItem("ppage")) {
-		case 'ntimeline':
-			changeNav(document.getElementById(localStorage.getItem("ppage")));
-			document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1';
-			break;
-		case 'nalbums':
-			changeNav(document.getElementById(localStorage.getItem("ppage")));
-			document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php';
-			break;
-		default:
-			break;
+	if(localStorage.getItem("pnav") == 'timeline') {
+		document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1';
+		document.getElementById('stimeline').classList.remove('time');
+		document.getElementById('stimeline').classList.add('albums');
+		document.getElementById('stimeline').title = rcmail.gettext('albums','pictures');
+		document.getElementById('stimeline').querySelector('.inner').innerText = rcmail.gettext('albums','pictures');
+		localStorage.setItem("pnav", 'timeline');
 	}
-
-	if(document.getElementById('fnav')) {
-		let nav = localStorage.getItem("pnav");
-
-		if(nav != 0) {
-			document.getElementById('naclose').classList.remove('closed');
-			document.querySelector('#fnav ul').classList.remove('closed');
-			document.querySelector('#fnav').classList.remove('closed');
-			document.getElementById('naclose').innerHTML = '&times;';
-		} else {
-			document.getElementById('naclose').innerHTML = '&Congruent;';
-		}
-	}
+	
 });
 
 window.onload = function(){
@@ -185,54 +169,28 @@ window.onload = function(){
 	document.querySelector('#spixelfed .tagify__input').addEventListener('input', s => {
 		calcLength(s.target.innerText);
 	});
-
-	if(document.getElementById('fnav')) {
-		let nav = localStorage.getItem("pnav");
-
-		for (let e of document.querySelectorAll('#fnav a')) {
-			e.addEventListener('click', el => {
-				switch (e.id) {
-					case 'ntimeline': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1'; changeNav(e); break;
-					case 'nalbums': document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php'; changeNav(e); break;
-					case 'nsearch': searchform(); break;
-					case 'nmap': searchform(); break;
-					case 'nfav': searchform(); break;
-					case 'ntags': searchform(); break;
-					case 'nsettings': location.href = '?_task=settings'; break;
-					default: return false;
-				}
-			});
-		}
-
-		document.getElementById('naclose').addEventListener('click', e => {
-			if(e.target.classList.contains('closed')) {
-				e.target.classList.remove('closed');
-				document.querySelector('#fnav ul').classList.remove('closed');
-				document.querySelector('#fnav').classList.remove('closed');
-				nav = 1;
-				document.getElementById('naclose').innerHTML = '&times;'
-			} else {
-				e.target.classList.add('closed');
-				document.querySelector('#fnav ul').classList.add('closed');
-				setTimeout(() => {
-					document.querySelector('#fnav').classList.add('closed');
-				}, 700);
-				nav = 0;
-				document.getElementById('naclose').innerHTML = '&Congruent;';
-			}
-
-			localStorage.setItem("pnav", nav);
-		});
-	}
 };
 
-function changeNav(e) {
-	for (let li of document.querySelectorAll('#fnav li')) {
-		li.removeAttribute("aria-current");
-	}
+function timeline() {
+	let frame = document.getElementById('picturescontentframe');
+	let url = new URL(frame.src);
+	let btn = document.getElementById('stimeline');
 
-	e.parentElement.setAttribute("aria-current", "page");
-	localStorage.setItem("ppage", e.id);
+	if(url.searchParams.get('f') == null) {
+		frame.src = 'plugins/pictures/photos.php?f=1';
+		btn.classList.remove('time');
+		btn.classList.add('albums');
+		btn.title = rcmail.gettext('albums','pictures');
+		btn.querySelector('.inner').innerText = rcmail.gettext('albums','pictures');
+		localStorage.setItem("pnav", 'timeline');
+	} else {
+		frame.src = 'plugins/pictures/photos.php';
+		btn.classList.remove('albums');
+		btn.classList.add('time');
+		btn.title = rcmail.gettext('timeline','pictures');
+		btn.querySelector('.inner').innerText = rcmail.gettext('timeline','pictures');
+		localStorage.setItem("pnav", 'albums');
+	}
 }
 
 function calcLength(text) {
