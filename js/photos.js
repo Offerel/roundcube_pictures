@@ -397,6 +397,9 @@ function lazyload(slide = false) {
 	let gal = scount.dataset.title;
 
 	if(wposition > wheight || slide) {
+		let boxes = document.querySelectorAll(".icheckbox");
+		let offset = (gal === 'timeline') ? parseInt(boxes[boxes.length -1].dataset.os) + 1:$('.glightbox').length;
+
 		$.ajax({
 			type: 'POST',
 			url: 'photos.php',
@@ -405,13 +408,21 @@ function lazyload(slide = false) {
 			data: JSON.stringify({
 				action: 'lazyload',
 				g: gal,
-				s: $('.glightbox').length,
+				s: offset,
 			}),
 			contentType: 'application/json; charset=utf-8',
 			success: function(response) {
 				aLoader('hidden');
-				$('.fimages').append(response);
+				
+				if(gal == 'timeline') {
+					//response = response.replace('<div></div>','');
+					$('#timeline').append(response);
+				} else {
+					$('.fimages').append(response);
+				}
+				
 				$('.fimages').justifiedGallery('norewind');
+				
 				const html = new DOMParser().parseFromString(response, 'text/html');
 				html.body.childNodes.forEach(element => {
 					if (element instanceof HTMLDivElement) {
@@ -422,6 +433,7 @@ function lazyload(slide = false) {
 					}
 				});
 				lightbox.reload();
+				
 				return false;
 			}
 		});
