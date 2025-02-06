@@ -677,7 +677,7 @@ function getSubs(response) {
 	select.selectedIndex = 0;
 	select.options[0].disabled = true;
 
-	//document.getElementById('mv_target').firstChild.replaceWith(select);
+	if(document.getElementById('mv_target').firstChild) document.getElementById('mv_target').firstChild.replaceWith(select);
 	document.getElementById('mv_target_img').firstChild.replaceWith(select);
 	setTimeout(document.getElementById('target').addEventListener('change', mvbtncl), 1000);
 }

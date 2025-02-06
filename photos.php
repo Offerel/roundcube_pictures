@@ -126,9 +126,15 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			break;
 		case 'lazyload':
 			$dir = $jarr['g'];
-			$offset = filter_var($jarr['s'], FILTER_SANITIZE_NUMBER_INT);
-			$thumbnails = showGallery($dir, $offset);
-			die($thumbnails);
+			if($dir === 'Timeline') {
+				//getTimeline();
+				error_log('timeline');
+				die();
+			} else {
+				$offset = filter_var($jarr['s'], FILTER_SANITIZE_NUMBER_INT);
+				$thumbnails = showGallery($dir, $offset);
+				die($thumbnails);
+			}
 			break;
 		case 'pfmd':
 			$rcmail->config->set('pixelfed_instance', $jarr['data']['instance']);
@@ -210,13 +216,13 @@ function getTimeline($data) {
 			<script src='js/plyr/plyr.js'></script>
 			<script src='js/photos.js'></script>
 	</head>
-	<body><span id='scount' data-text='".$rcmail->gettext('pselected','pictures')."'></span><div id='timeline'><div>":'';
+	<body><span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span><div id='loader' class='lbg'><div class='db-spinner'></div></div><div id='timeline'><div>":'';
 	
 	foreach ($merged_arr as $key => $value) {
 		if($odate !== $value['date']) {
 			$odate = $value['date'];
 			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
-			$html.= "</div><div class='ddiv' data-day='$odate'><span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span><span class='dhfmt'>$fmtdate</span></div><div class='dgal'>";
+			$html.= "</div><div class='ddiv' data-day='$odate'><span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span><span class='dhfmt'>$fmtdate</span></div><div class='fimages'>";
 		}
 		
 		$path = $value['pic_path'];
@@ -227,8 +233,8 @@ function getTimeline($data) {
 		$npath = $parts['dirname'].'/'.$parts['filename'].'.webp';
 		$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
 		$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
-		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$file = basename($path);
+		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
 		$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
 	}
@@ -1045,7 +1051,6 @@ function showPage($thumbnails, $dir) {
 	$pselected = $rcmail->gettext('pselected','pictures');
 	$nalb = $rcmail->gettext('new_album','pictures');
 	$theme = $rcmail->config->get('ptheme');
-	$pmargins = $rcmail->config->get('pmargins');
 	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
 	$maxfiles = ini_get("max_file_uploads");
@@ -1063,6 +1068,7 @@ function showPage($thumbnails, $dir) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
+			<script src='js/photos.js'></script>
 			";
 	$aarr = explode('/',$dir);
 	$path = "";
@@ -1081,410 +1087,10 @@ function showPage($thumbnails, $dir) {
 	\t\t\t\t\t<li><span id='aadd' title='$nalb'><svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' style='width: 1.1em;height: 1.1em;vertical-align: text-top;' viewBox='0 0 1024 1024'><path d='M797.1 64H226.9C136.9 64 64 136.9 64 226.9v570.2c0 90 72.9 162.9 162.9 162.9h570.2c90 0 162.9-72.9 162.9-162.9V226.9c0-90-72.9-162.9-162.9-162.9m.1 529.5H593.5v203.7h-163V593.5H226.9v-163h203.6V226.9h162.9v203.6h203.8v163z'></path></svg></span></li>
 	\t\t\t\t</ul>
 	\t\t\t</div>
-	\t\t\t<span id='scount'></span>
+	\t\t\t<span id='scount' data-text='".$rcmail->gettext('pselected','pictures')."' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='$gal' data-margin='".$rcmail->config->get('pmargins')."'></span>
 	\t\t\t<div id='progress' class='progress'><div class='progressbar'></div></div>
 	\t\t\t<div id='galdiv'>";
 	$page.= $thumbnails;
-	$page.="
-	<script>
-		var clicks = 0;
-		var intervalID;
-		let ntitle = '$gal';
-		let btitle = ntitle.split('/');
-		let ttitle = (ntitle.length > 0) ? 'Fotos - ' + btitle[btitle.length - 1 ]:'Fotos';
-		window.parent.document.title = ttitle;
-
-		if (document.readyState !== 'complete') {
-			aLoader('hidden');
-		}
-		
-		let headerN = document.querySelector('#header .breadcrumb');
-		headerN.lastElementChild.previousElementSibling.addEventListener('click', function(e){
-			if(headerN.childElementCount > 2) {
-				e.preventDefault();
-				window.parent.edit_album();
-			}
-		});
-		document.getElementById('aadd').addEventListener('click', e => {
-			parent.add_album();
-		});
-		
-		Array.from(document.getElementsByClassName('folder')).forEach(
-			function(e,i,a) { e.addEventListener('click', function() {aLoader()}) }
-		);
-
-		$('#folders').justifiedGallery({
-			rowHeight: 220,
-			maxRowHeight: 220,
-			margins: $pmargins,
-			border: 0,
-			rel: 'folders',
-			lastRow: 'nojustify',
-			captions: false,
-			randomize: false,
-		});
-		
-		$('#images').justifiedGallery({
-			rowHeight: 220,
-			margins: $pmargins,
-			border: 0,
-			rel: 'gallery',
-			lastRow: 'nojustify',
-			captions: false,
-			randomize: false,
-		});
-		
-		$('#images').justifiedGallery().on('jg.complete', function(e) {
-			if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth) {
-				lazyload();
-			}
-
-			for(e of document.getElementsByClassName('icheckbox')) {
-				e.addEventListener('change', count_checks);
-			}
-		});
-		
-		$(window).scroll(function() {
-			lazyload();
-		});
-		
-		lightbox = GLightbox({
-			plyr: {
-				config: {
-					muted: true,
-				}
-			},
-			autoplayVideos: false,
-			loop: false,
-			videosWidth: '100%',
-			closeOnOutsideClick: false
-		});
-
-		lightbox.on('slide_changed', (data) => {
-			let cindex = data.current.index + 1;
-			let cimages = lightbox.elements.length;
-			let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
-			let file = new URL(data.current.slideConfig.href).searchParams.get('file').split('/').slice(-1)[0];
-			let dlbtn = document.createElement('button');
-			let fbtn = document.createElement('button');
-			dlbtn.id = 'dlbtn';
-			fbtn.id = 'fbtn';
-			dlbtn.addEventListener('click', e => {
-				window.location = 'simg.php?w=3&file=' + new URL(data.current.slideConfig.href).searchParams.get('file').replace(/([^:])(\/\/+)/g, '$1/');
-			})
-			fbtn.addEventListener('click', e => {
-				if(document.fullscreenElement){
-					document.exitFullscreen() 
-				} else { 
-					document.getElementById('glightbox-body').requestFullscreen();
-				}
-				fbtn.classList.toggle('on');
-			});
-			let closebtn = document.querySelector('.gclose');
-			
-			if(document.getElementById('btn_container')) document.getElementById('btn_container').remove();
-			let btn_container = document.createElement('div');
-			btn_container.id = 'btn_container';
-
-			let iBox = document.getElementById(file);
-			let infobtn = document.createElement('button');
-			infobtn.id = 'infbtn';
-			
-			if(document.getElementById(file)) {
-				infobtn.dataset.iid = file;
-				infobtn.addEventListener('click', iBoxShow, true);
-			} else {
-				infobtn.disabled = true;
-			}
-
-			let pbtn = document.createElement('button');
-			pbtn.id = 'pbtn';
-			if(loop_play) {
-				pbtn.classList.add('on');
-				pbtn.addEventListener('click', stop_loop);
-			} else {
-				pbtn.addEventListener('click', loop_slide.bind(this, 5));
-			}
-			
-			btn_container.appendChild(pbtn);
-			btn_container.appendChild(dlbtn);
-			btn_container.appendChild(infobtn);
-			btn_container.appendChild(fbtn);
-			btn_container.appendChild(closebtn);
-			let gcontainer = document.querySelector('.gcontainer');
-			gcontainer.appendChild(btn_container);
-
-			if(document.getElementById('infobox')) iBoxShow();
-
-			if(document.getElementById('last') && cindex === cimages) {
-				stop_loop();
-			}
-		});
-
-		lightbox.on('slide_before_change', (data) => {
-			let cindex = data.current.index + 1;
-			let cimages = lightbox.elements.length;
-			let last = document.getElementById('last') ? false:true;
-			if(cindex == cimages && last) {
-				setTimeout(lazyload, 100, true);
-			}
-		});
-
-		lightbox.on('close', () => {
-			stop_loop();
-			document.querySelectorAll('.exinfo').forEach(element => {
-				element.classList.remove('eshow');
-			});
-		});
-
-		lightbox.on('open', () => {
-			document.querySelector('.gclose').addEventListener('click', () => {
-				if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
-				if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
-				if(document.getElementById('fbtn'))document.getElementById('fbtn').remove();
-				document.querySelectorAll('.exinfo').forEach(element => {
-					element.classList.remove('eshow');
-				});
-			}, {once: true});
-		});
-
-		var prevScrollpos = window.scrollY;
-		var header = document.getElementById('header');
-
-		window.onscroll = function() {
-			var currentScrollPos = window.scrollY;
-			if (prevScrollpos > currentScrollPos) {
-				header.style.top = '0';
-				(currentScrollPos > 150) ? header.classList.add('shadow'):header.classList.remove('shadow');
-			} else {
-				header.style.top = '-55px';
-				header.classList.remove('shadow')
-			}
-			prevScrollpos = currentScrollPos;
-		}
-		
-		checkboxes();
-
-		document.getElementById('scount').addEventListener('click', e => {
-			parent.rm_checks();
-		});
-
-		function stop_loop() {
-			if(document.getElementById('pbtn')) {
-				let pbtn = document.getElementById('pbtn');
-				pbtn.classList.remove('on');
-				pbtn.addEventListener('click', loop_slide.bind(this, 5));
-			}
-			
-			clearInterval(intervalID);
-			document.getElementById('slide_progress').style.width = 0;
-		}
-
-		function loop_slide(duration=3) {
-			document.getElementById('pbtn').classList.add('on');
-
-			lightbox.nextSlide();
-			var width = 1;
-			intervalID = setInterval(frame, 10);
-			function frame() {
-				if (width >= 100) {
-					clearInterval(intervalID);
-					loop_slide(duration);
-				} else {
-					width = width + (100/(duration*60));
-					document.getElementById('slide_progress').style.width = width + 'vw';
-				}
-			}
-		}
-
-		function iBoxShow(e) {
-			let info = document.getElementById(document.getElementById('infbtn').dataset.iid);
-			let infobox = info.cloneNode(true);
-			infobox.id = 'infobox';
-			infobox.classList.add('eshow');
-
-			if(document.getElementById('infobox')) {
-				document.getElementById('infobox').remove();
-				if(e == undefined) document.querySelector('.gcontainer').append(infobox);
-			} else {
-				document.querySelector('.gcontainer').append(infobox);
-			}
-		}
-		
-		function aLoader(mode = 'visible') {
-			document.getElementById('loader').style.visibility = mode;
-		}
-		
-		function lazyload(slide = false) {
-			if(document.getElementById('last') && !slide) return false;
-			if(document.getElementsByClassName('glightbox').length <= 0 && !slide) return false;
-
-			let wheight = $(document).height() - 10;
-			let wposition = Math.ceil($(window).scrollTop() + $(window).height());
-
-			if(wposition > wheight || slide) {
-				$.ajax({
-					type: 'POST',
-					url: 'photos.php',
-					async: false,
-					beforeSend: aLoader('visible'),
-					data: JSON.stringify({
-						action: 'lazyload',
-						g: '$gal',
-						s: $('.glightbox').length
-					}),
-					contentType: 'application/json; charset=utf-8',
-					success: function(response) {
-						aLoader('hidden');
-						$('#images').append(response);
-						$('#images').justifiedGallery('norewind');
-						const html = new DOMParser().parseFromString(response, 'text/html');
-						html.body.childNodes.forEach(element => {
-							if (element instanceof HTMLDivElement) {
-								lightbox.insertSlide({
-									'href': element.firstChild.href,
-									'type': element.firstChild.dataset.type
-								});
-							}
-						});
-						lightbox.reload();
-						return false;
-					}
-				});
-			}
-		}
-		
-		function checkboxes() {
-			var chkboxes = $('.icheckbox');
-			var lastChecked = null;
-			chkboxes.click(function(e) {
-				if(!lastChecked) {
-					lastChecked = this;
-					return;
-				}
-	
-				if(e.shiftKey) {
-					var start = chkboxes.index(this);
-					var end = chkboxes.index(lastChecked);
-					chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).prop('checked', lastChecked.checked);
-	
-				}
-				lastChecked = this;
-			});
-		}
-		
-		function count_checks() {
-			let marked = document.querySelectorAll('input[type=\"checkbox\"]:checked').length;
-			let scount = document.getElementById('scount');
-			if(marked > 0) {
-				let text = '$pselected'.replace('%count%', marked);
-				scount.innerText = text;
-				scount.style.display = 'inline';
-				window.parent.document.getElementById('movepicture').classList.remove('disabled');
-				window.parent.document.getElementById('delpicture').classList.remove('disabled');
-				window.parent.document.getElementById('sharepicture').classList.remove('disabled');
-				window.parent.document.getElementById('editmeta').classList.remove('disabled');
-			} else {
-			 	scount.innerText = '';
-				scount.style.display = 'none';
-				window.parent.document.getElementById('movepicture').classList.add('disabled');
-				window.parent.document.getElementById('delpicture').classList.add('disabled');
-				window.parent.document.getElementById('sharepicture').classList.add('disabled');
-				window.parent.document.getElementById('editmeta').classList.add('disabled');
-			}
-		}
-		
-		var dropZones = document.getElementsByClassName('dropzone');
-		
-		for (var i = 0; i < dropZones.length; i++) {
-			dropZones[i].addEventListener('dragover', handleDragOver, false);
-			dropZones[i].addEventListener('dragleave', handleDragLeave, false);
-			dropZones[i].addEventListener('drop', handleDrop, false);
-		}
-		
-		function handleDragOver(event){
-			event.preventDefault();
-			if(this.localName != 'body') {
-				this.classList.add('mmn-drop');
-			}
-		}
-		
-		function handleDragLeave(event){
-			event.preventDefault();
-			this.classList.remove('mmn-drop');
-		}
-		
-		function handleDrop(event){
-			event.stopPropagation();
-			event.preventDefault();
-			this.classList.remove('mmn-drop');
-			
-			let url = (this.parentElement.href) ? this.parentElement.href:location.href;
-			let folder = new URL(url).searchParams.get('p');
-			startUpload(event.dataTransfer.files, folder);
-		}
-		
-		function startUpload(files, folder) {
-			let formdata = new FormData();
-			xhr = new XMLHttpRequest();
-			let maxfiles = $maxfiles;
-			let mimeTypes = ['image/jpeg', 'video/mp4'];
-			folder = decodeURIComponent((folder + '').replace(/\+/g, '%20'));
-			let progressBar = document.getElementById('progress');
-			if (files.length > maxfiles) {
-				console.log('You try to upload more than the max count of allowed files(' + maxfiles + ')');
-				return false;
-			} else {
-				for (var i = 0; i < files.length; i++) {
-					if (mimeTypes.indexOf(files.item(i).type) == -1) {
-						console.log('Unsupported filetype(' + files.item(i).name + '), exiting');
-						return false;
-					} else {
-						formdata.append('galleryfiles[]', files.item(i), files.item(i).name);
-						formdata.append('folder',folder);
-					}
-				}
-				
-				xhr.upload.addEventListener('progress', function(event) {
-					let percentComplete = Math.ceil(event.loaded / event.total * 100);
-					progressBar.style.visibility = 'visible';
-					progressBar.firstChild.innerHTML = percentComplete + '%';
-					progressBar.firstChild.style.width = percentComplete + '%';
-				});
-
-				xhr.onload = function() {
-					if (xhr.status === 200) {
-						let data = JSON.parse(xhr.responseText);
-						let bg = '';
-
-						for (var i = 0; i < data.length; i++) {
-							switch(data[i].type) {
-								case 'error': bg = '#dc3545'; break;
-								case 'warning': bg = '#ffc107'; break;
-								default: bg = '#28a745';
-							}
-
-							progressBar.firstChild.style.backgroundColor = bg;
-							console.log(data[i].message);
-						}
-
-						setTimeout(function() {
-							progressBar.style.visibility = 'hidden';
-							progressBar.firstChild.style.width = 0;
-							progressBar.firstChild.style.backgroundColor = '#007bff';
-							location.reload();
-							count_checks();
-						}, 5000);
-					}
-				}
-				
-				xhr.open('POST', 'photos.php');
-				xhr.send(formdata);
-			}
-		}
-	</script>
-	";
-
 	$page.= "</div></body></html>";
 	return $page;
 }
@@ -1810,7 +1416,7 @@ function showGallery($requestedDir, $offset = 0) {
 		$thumbnails.= "\n\t\t\t\t\t</div>";
 	}
 
-	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='justified-gallery'>";
+	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='fimages alb'>";
 	$thumbnails2 = "";
 	$offset_end = 0;
 

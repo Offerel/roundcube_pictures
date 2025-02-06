@@ -639,7 +639,6 @@ footer a {
 	padding-left: 20px;
 	padding-right: 20px;
 	margin-right: auto !important;
-	background-color: white;
 }
 #scount {
 	position: fixed;
@@ -782,4 +781,13 @@ a.mapl {
 }
 .ddiv > .marker > svg {
     height: 20px;
+}
+.dark-mode .dhfmt {
+	color: white;
+}
+.dark-mode .marker svg {
+    fill: cornflowerblue;
+}
+.dark-mode #header li, .dark-mode #header a {
+    color: white;
 }
