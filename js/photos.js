@@ -217,11 +217,13 @@ function markDay() {
 					c.checked = false;
 				}
 				e.dataset.cb = 0;
+				e.parentElement.firstElementChild.classList.remove('marked');
 			} else {
 				for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
 					c.checked = true;
 				}
 				e.dataset.cb = 1;
+				e.parentElement.firstElementChild.classList.add('marked');
 			}
 			count_checks();
 		});

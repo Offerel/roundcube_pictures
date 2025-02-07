@@ -761,10 +761,11 @@ a.mapl {
 }
 .dhfmt {
     line-height: 1.2em;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 500;
     display: inline-block;
     cursor: pointer;
+    font-family: system-ui, "Segoe UI", Roboto, Oxygen-Sans, Cantarell, Ubuntu, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 .marker {
     align-content: baseline;
@@ -775,18 +776,22 @@ a.mapl {
     line-height: 1.2em;
     cursor: pointer;
 }
-.ddiv:hover>.marker {
+.ddiv:hover>.marker, .marker.marked {
     width: 1.7em;
     opacity: 1;
 }
-.ddiv > .marker > svg {
+.marked svg {
+    fill: deepskyblue !important;
+}
+.ddiv>.marker>svg {
     height: 20px;
+    fill: darkgray;
 }
 .dark-mode .dhfmt {
 	color: white;
 }
 .dark-mode .marker svg {
-    fill: cornflowerblue;
+    fill: dimgrey;
 }
 .dark-mode #header li, .dark-mode #header a {
     color: white;
