@@ -787,6 +787,30 @@ a.mapl {
     height: 20px;
     fill: darkgray;
 }
+#scroller {
+    right: 0;
+    position: fixed;
+    width: 60px;
+    height: 100vh;
+    bottom: 0;
+    cursor: n-resize;
+}
+#moveCal {
+    height: 20px;
+    position: absolute;
+    transform: translate(0,-100%);
+    box-shadow: 0 0 20px rgba(16,0,54,.2);
+    border-bottom: 2px solid;
+    cursor: n-resize;
+    white-space: nowrap;
+    right: 0px;
+    background-color: aliceblue;
+    padding: 0 5px;
+    width: 70px;
+}
+.myd {
+    width: 60px;
+}
 .dark-mode .dhfmt {
 	color: white;
 }

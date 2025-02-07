@@ -178,6 +178,18 @@ function getTimeline($data) {
 		array_push($db_data, $dbh->fetch_assoc());
 	}
 
+	if ($offset == 0) {
+		$query = "SELECT FROM_UNIXTIME(`pic_taken`, '%b. %Y') AS `drange` FROM `pic_pictures` WHERE `user_id` = $user_id GROUP BY 1 ORDER BY `pic_taken` DESC;";
+		$res = $dbh->query($query);
+		$rows = $dbh->affected_rows($res);
+		$height = round(100 / $rows,2,PHP_ROUND_HALF_DOWN);
+
+		$mydivs = "";
+		for ($i=0; $i < $rows; $i++) {
+			$mydivs.= "<div class='myd' style='height: $height%' data-range='".$dbh->fetch_assoc($res)['drange']."'></div>";
+		}
+	}
+
 	$tmp_data = $db_data;
 	$send_images = array_splice($db_data, $offset, $icount);
 	$last_date = end($send_images)['date'];
@@ -212,9 +224,9 @@ function getTimeline($data) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
-			<script src='js/photos.js'></script>
+			<script src='js/photos.min.js'></script>
 		</head>
-		<body class='picbdy'><div id='slide_progress'></div>
+		<body class='picbdy'><div id='slide_progress'></div><div id='scroller'><div id='moveCal'></div>$mydivs</div>
 		<div id='loader' class='lbg'><div class='db-spinner'></div></div>
 		<span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span>
 		<div id='timeline'><div>";

@@ -181,6 +181,38 @@ window.onload = function(){
 		dropZones[i].addEventListener('dragleave', handleDragLeave, false);
 		dropZones[i].addEventListener('drop', handleDrop, false);
 	}
+
+	let moveCal = document.getElementById('moveCal');
+
+	const move = (e) => {
+		try {
+			var y = !isTouchDevice() ? e.pageY : e.touches[0].pageY;
+			var x = !isTouchDevice() ? e.pageX : e.touches[0].pageX;	
+		} catch (e) {}
+		moveCal.style.top = y - 2 + "px";
+		let obj = document.elementFromPoint(x,y);
+		if(obj.classList.contains('myd')) {
+			moveCal.innerText = obj.dataset.range;
+			//console.log(obj.dataset.range);
+		}
+	};
+
+	document.addEventListener("mousemove", (e) => {
+		move(e);
+	});
+
+	document.addEventListener("touchmove", (e) => {
+		move(e);
+	});
+}
+
+function isTouchDevice() {
+	try {
+		document.createEvent("TouchEvent");
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
 
 function initGallery() {
