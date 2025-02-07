@@ -198,30 +198,33 @@ function getTimeline($data) {
 	$odate = '';
 
 	if ($offset == 0) {
-		$html = "<!DOCTYPE html><html><head><title>Roundcube Photos - Timeline</title>
-				<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
-				<link rel='stylesheet' href='js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
-				<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
-				<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
-				<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
-				<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
-				<script src='../../program/js/jquery.min.js'></script>
-				<script src='js/justifiedGallery/jquery.justifiedGallery.min.js'></script>
-				<script src='js/glightbox/glightbox.min.js'></script>
-				<script src='js/plyr/plyr.js'></script>
-				<script src='js/photos.js'></script>
-			</head>
-			<body><div id='slide_progress'></div><span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span><div id='loader' class='lbg'><div class='db-spinner'></div></div>
-				<div id='images' class='fimages'>";
-		//$html.= "<div>";
+		$html = "<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Roundcube Photos - Timeline</title>
+			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
+			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
+			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
+			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
+			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
+			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
+			<script src=\"../../program/js/jquery.min.js\"></script>
+			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
+			<script src='js/glightbox/glightbox.min.js'></script>
+			<script src='js/plyr/plyr.js'></script>
+			<script src='js/photos.js'></script>
+		</head>
+		<body class='picbdy'><div id='slide_progress'></div>
+		<div id='loader' class='lbg'><div class='db-spinner'></div></div>
+		<span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span>
+		<div id='timeline'><div>";
 
 		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
-		//$html.= "\n</div></div>\n</body>\n</html>";
-		$html.= "\n</div>\n</body>\n</html>";
+		$html.= "</div></div></body></html>";
 	} else {
 		$html = "<div>";
 		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
-		$html.= "\n</div>";
+		$html.= "</div>";
 	}
 	die($html);
 }
@@ -230,7 +233,7 @@ function buildTimelinePhotos($lkey, $odate, $array) {
 	global $rcmail, $thumb_path, $exif_mode;
 	$html = '';
 	foreach ($array as $key => $value) {
-		/*
+		
 		if($odate !== $value['date']) {
 			$odate = $value['date'];
 			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
@@ -239,7 +242,7 @@ function buildTimelinePhotos($lkey, $odate, $array) {
 				<span class='dhfmt'>$fmtdate</span>
 			</div><div class='fimages'>";
 		}
-		*/
+		
 		$path = $value['pic_path'];
 		$linkUrl = "simg.php?".http_build_query(array('file' => $path, 'w' => 5, 't' => 0));
 		$type = $value['pic_type'];
@@ -251,7 +254,6 @@ function buildTimelinePhotos($lkey, $odate, $array) {
 		$file = basename($path);
 		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		//$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-os='$lkey' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
 		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox' data-os='$lkey' data-dday='$odate'>$caption</div>";
 	}
 	return $html;
@@ -1797,8 +1799,7 @@ function mvdb($oldpath, $newPath) {
 		$pic_id = $image['pic_id'];
 		$nnewPath = str_replace($oldpath, $newPath, $image['pic_path']);
 		$query = "UPDATE `pic_pictures` SET `pic_path` = \"$nnewPath\" WHERE `pic_id` = $pic_id";
-		error_log($query);
-		//$ret = $dbh->query($query);
+		$ret = $dbh->query($query);
 	}
 }
 

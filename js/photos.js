@@ -34,8 +34,7 @@ window.onload = function(){
 		lazyload();
 	});
 
-	const lightbox = GLightbox({
-		//selector: '.glightbox',
+	lightbox = GLightbox({
 		plyr: {
 			config: {
 				muted: true,
@@ -49,7 +48,6 @@ window.onload = function(){
 	});
 
 	lightbox.on('slide_changed', (data) => {
-		/*
 		let cindex = data.current.index + 1;
 		let cimages = lightbox.elements.length;
 		let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
@@ -108,31 +106,25 @@ window.onload = function(){
 		if(document.getElementById('last') && cindex === cimages) {
 			stop_loop();
 		}
-		*/
 	});
 
 	lightbox.on('slide_before_change', (data) => {
-		/*
 		let cindex = data.current.index + 1;
 		let cimages = lightbox.elements.length;
 		let last = document.getElementById('last') ? false:true;
 		if(cindex == cimages && last) {
 			setTimeout(lazyload, 100, true);
 		}
-		*/
 	});
 
 	lightbox.on('close', () => {
-		/*
 		stop_loop();
 		document.querySelectorAll('.exinfo').forEach(element => {
 			element.classList.remove('eshow');
 		});
-		*/
 	});
 
 	lightbox.on('open', () => {
-		/*
 		document.querySelector('.gclose').addEventListener('click', () => {
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
@@ -141,7 +133,6 @@ window.onload = function(){
 				element.classList.remove('eshow');
 			});
 		}, {once: true});
-		*/
 	});
 
 	Array.from(document.getElementsByClassName('folder')).forEach(
@@ -194,12 +185,12 @@ window.onload = function(){
 
 function initGallery() {
 	let gmargin = parseInt(document.getElementById('scount').dataset.margin);
+
 	$('#folders').justifiedGallery({
 		rowHeight: 220,
 		maxRowHeight: 220,
 		margins: gmargin,
 		border: 0,
-		rel: 'folders',
 		lastRow: 'nojustify',
 		captions: false,
 		randomize: false,
@@ -210,7 +201,6 @@ function initGallery() {
 		maxRowHeight: 220,
 		margins: gmargin,
 		border: 0,
-		rel: 'gallery',
 		lastRow: 'nojustify',
 		captions: false,
 		randomize: false,
@@ -438,8 +428,7 @@ function lazyload(slide = false) {
 					$('.fimages').append(response);
 					$('.fimages').justifiedGallery('norewind');
 				}
-				
-				/*			
+
 				const html = new DOMParser().parseFromString(response, 'text/html');
 				html.body.childNodes.forEach(element => {
 					if (element instanceof HTMLDivElement) {
@@ -461,7 +450,6 @@ function lazyload(slide = false) {
 					}
 				});
 				lightbox.reload();
-				*/
 				
 				return false;
 			}
