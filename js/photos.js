@@ -9,7 +9,6 @@
 var intervalID;
 window.onload = function(){
 	let scount = document.getElementById('scount');
-	let gmargin = scount.dataset.margin;
 	let prd = scount.dataset.prd;
 	let btitle = scount.dataset.title.split('/');
 	let ttitle = (btitle.length > 0 && btitle[0] != '') ? prd + ' - ' + btitle[btitle.length - 1 ]:prd;
@@ -19,28 +18,7 @@ window.onload = function(){
 		aLoader('hidden');
 	}
 
-	$('#folders').justifiedGallery({
-		rowHeight: 220,
-		maxRowHeight: 220,
-		margins: gmargin,
-		border: 0,
-		rel: 'folders',
-		lastRow: 'nojustify',
-		captions: false,
-		randomize: false,
-	});
-
-	$('.fimages').justifiedGallery({
-		rowHeight: 190,
-		maxRowHeight: 220,
-		margins: gmargin,
-		border: 0,
-		rel: 'gallery',
-		lastRow: 'nojustify',
-		captions: false,
-		randomize: false,
-	});
-
+	initGallery();
 
 	$('.fimages').justifiedGallery().on('jg.complete', function(e) {
 		if(e.currentTarget.clientHeight > 100 && e.currentTarget.clientHeight < document.documentElement.clientWidth && e.currentTarget.classList.contains('alb')) {
@@ -56,7 +34,8 @@ window.onload = function(){
 		lazyload();
 	});
 
-	lightbox = GLightbox({
+	const lightbox = GLightbox({
+		//selector: '.glightbox',
 		plyr: {
 			config: {
 				muted: true,
@@ -65,10 +44,12 @@ window.onload = function(){
 		autoplayVideos: false,
 		loop: false,
 		videosWidth: '100%',
-		closeOnOutsideClick: false
+		closeOnOutsideClick: false,
+		closeButton: true
 	});
 
 	lightbox.on('slide_changed', (data) => {
+		/*
 		let cindex = data.current.index + 1;
 		let cimages = lightbox.elements.length;
 		let loop_play = (document.getElementById('pbtn')) ? document.getElementById('pbtn').classList.contains('on'):false;
@@ -127,25 +108,31 @@ window.onload = function(){
 		if(document.getElementById('last') && cindex === cimages) {
 			stop_loop();
 		}
+		*/
 	});
 
 	lightbox.on('slide_before_change', (data) => {
+		/*
 		let cindex = data.current.index + 1;
 		let cimages = lightbox.elements.length;
 		let last = document.getElementById('last') ? false:true;
 		if(cindex == cimages && last) {
 			setTimeout(lazyload, 100, true);
 		}
+		*/
 	});
 
 	lightbox.on('close', () => {
+		/*
 		stop_loop();
 		document.querySelectorAll('.exinfo').forEach(element => {
 			element.classList.remove('eshow');
 		});
+		*/
 	});
 
 	lightbox.on('open', () => {
+		/*
 		document.querySelector('.gclose').addEventListener('click', () => {
 			if(document.getElementById('infbtn')) document.getElementById('infbtn').remove();
 			if(document.getElementById('dlbtn'))document.getElementById('dlbtn').remove();
@@ -154,6 +141,7 @@ window.onload = function(){
 				element.classList.remove('eshow');
 			});
 		}, {once: true});
+		*/
 	});
 
 	Array.from(document.getElementsByClassName('folder')).forEach(
@@ -161,28 +149,10 @@ window.onload = function(){
 	);
 
 	checkboxes();
+	markDay();
 
 	let prevScrollpos = window.scrollY;
 	let header = document.getElementById('header');
-
-	for (let e of document.querySelectorAll('.marker, .dhfmt')) {
-		e.addEventListener('click', d => {
-			let cb = e.parentNode.dataset.day;
-			
-			if (e.dataset.cb == 1) {
-				for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
-					c.checked = false;
-				}
-				e.dataset.cb = 0;
-			} else {
-				for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
-					c.checked = true;
-				}
-				e.dataset.cb = 1;
-			}
-			count_checks();
-		});
-	}
 
 	if(header) {
 		let headerN = document.querySelector('#header .breadcrumb');
@@ -219,6 +189,52 @@ window.onload = function(){
 		dropZones[i].addEventListener('dragover', handleDragOver, false);
 		dropZones[i].addEventListener('dragleave', handleDragLeave, false);
 		dropZones[i].addEventListener('drop', handleDrop, false);
+	}
+}
+
+function initGallery() {
+	let gmargin = parseInt(document.getElementById('scount').dataset.margin);
+	$('#folders').justifiedGallery({
+		rowHeight: 220,
+		maxRowHeight: 220,
+		margins: gmargin,
+		border: 0,
+		rel: 'folders',
+		lastRow: 'nojustify',
+		captions: false,
+		randomize: false,
+	});
+
+	$('.fimages').justifiedGallery({
+		rowHeight: 190,
+		maxRowHeight: 220,
+		margins: gmargin,
+		border: 0,
+		rel: 'gallery',
+		lastRow: 'nojustify',
+		captions: false,
+		randomize: false,
+	});
+}
+
+function markDay() {
+	for (let e of document.querySelectorAll('.marker, .dhfmt')) {
+		e.addEventListener('click', d => {
+			let cb = e.parentNode.dataset.day;
+			
+			if (e.dataset.cb == 1) {
+				for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
+					c.checked = false;
+				}
+				e.dataset.cb = 0;
+			} else {
+				for (let c of document.querySelectorAll('[data-dday=\"'+cb+'\"]')) {
+					c.checked = true;
+				}
+				e.dataset.cb = 1;
+			}
+			count_checks();
+		});
 	}
 }
 
@@ -391,10 +407,10 @@ function startUpload(files, folder) {
 function lazyload(slide = false) {
 	if(document.getElementById('last') && !slide) return false;
 	if(document.getElementsByClassName('glightbox').length <= 0 && !slide) return false;
-
+	
 	let wheight = $(document).height() - 10;
 	let wposition = Math.ceil($(window).scrollTop() + $(window).height());
-	let gal = scount.dataset.title;
+	let gal = (document.getElementById('timeline')) ? 'timeline':scount.dataset.title;
 
 	if(wposition > wheight || slide) {
 		let boxes = document.querySelectorAll(".icheckbox");
@@ -415,24 +431,37 @@ function lazyload(slide = false) {
 				aLoader('hidden');
 				
 				if(gal == 'timeline') {
-					//response = response.replace('<div></div>','');
 					$('#timeline').append(response);
+					initGallery();
+					markDay();
 				} else {
 					$('.fimages').append(response);
+					$('.fimages').justifiedGallery('norewind');
 				}
 				
-				$('.fimages').justifiedGallery('norewind');
-				
+				/*			
 				const html = new DOMParser().parseFromString(response, 'text/html');
 				html.body.childNodes.forEach(element => {
 					if (element instanceof HTMLDivElement) {
-						lightbox.insertSlide({
-							'href': element.firstChild.href,
-							'type': element.firstChild.dataset.type
-						});
+						if(gal === 'timeline') {
+							if(element.classList.contains('fimages')) {
+								for (let e of element.querySelectorAll('.image')) {
+									lightbox.insertSlide({
+										'href': e.firstChild.href,
+										'type': e.firstChild.dataset.type
+									});
+								}
+							}
+						} else {
+							lightbox.insertSlide({
+								'href': element.firstChild.href,
+								'type': element.firstChild.dataset.type
+							});
+						}
 					}
 				});
 				lightbox.reload();
+				*/
 				
 				return false;
 			}

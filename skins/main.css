@@ -9,12 +9,14 @@ html {
 	padding: 0 0 10px 0;
 	top: 50px;
 }
+/*
 button.gclose {
 	position: unset!important;
 	top: unset!important;
 	right: unset!important;
 	display: inline-block;
 }
+*/
 [data-type="video"]:after {
 	background: url(../images/video-play.png) no-repeat center center;
 	content: '';

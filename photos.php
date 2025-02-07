@@ -128,7 +128,6 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 			$dir = $jarr['g'];
 			if($dir === 'timeline') {
 				getTimeline($jarr);
-				die();
 			} else {
 				$offset = filter_var($jarr['s'], FILTER_SANITIZE_NUMBER_INT);
 				$thumbnails = showGallery($dir, $offset);
@@ -164,7 +163,7 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 }
 
 function getTimeline($data) {
-	global $rcmail, $thumb_path, $exif_mode;
+	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
 	$theme = $rcmail->config->get('ptheme');
@@ -181,7 +180,6 @@ function getTimeline($data) {
 
 	$tmp_data = $db_data;
 	$send_images = array_splice($db_data, $offset, $icount);
-
 	$last_date = end($send_images)['date'];
 
 	foreach ($send_images as $key => $value) {
@@ -197,13 +195,10 @@ function getTimeline($data) {
 	}
 
 	$merged_arr = array_merge($send_images, $lday);
-
 	$odate = '';
 
 	if ($offset == 0) {
-		$html = "<html>
-		<head>
-			<title>Roundcube Photos - Timeline</title>
+		$html = "<!DOCTYPE html><html><head><title>Roundcube Photos - Timeline</title>
 				<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
 				<link rel='stylesheet' href='js/justifiedGallery/justifiedGallery.min.css' type='text/css' />
 				<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
@@ -215,77 +210,51 @@ function getTimeline($data) {
 				<script src='js/glightbox/glightbox.min.js'></script>
 				<script src='js/plyr/plyr.js'></script>
 				<script src='js/photos.js'></script>
-		</head>
-		<body>
-			<span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='timeline' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span>
-			<div id='loader' class='lbg'><div class='db-spinner'></div></div>
-			<div id='timeline'>";
+			</head>
+			<body><div id='slide_progress'></div><span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span><div id='loader' class='lbg'><div class='db-spinner'></div></div>
+				<div id='images' class='fimages'>";
+		//$html.= "<div>";
 
-		foreach ($merged_arr as $key => $value) {
-			if($odate !== $value['date']) {
-				$odate = $value['date'];
-				$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
-				$html.= "<div class='ddiv' data-day='$odate'>
-					<span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span>
-					<span class='dhfmt'>$fmtdate</span>
-				</div>";
-			}
-			
-			$path = $value['pic_path'];
-			$linkUrl = "simg.php?".http_build_query(array('file' => $path, 't' => 0, 'w' => 5));
-			$type = $value['pic_type'];
-			$fpath = '/'.trim($thumb_path, '/').'/'.$path;
-			$parts = pathinfo($fpath);
-			$npath = $parts['dirname'].'/'.$parts['filename'].'.webp';
-			$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
-			$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
-			$file = basename($path);
-			$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
-			$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-			$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-os='$lkey' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
-		}
-
+		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
+		//$html.= "\n</div></div>\n</body>\n</html>";
 		$html.= "\n</div>\n</body>\n</html>";
-
 	} else {
-		$html = "";
-		foreach ($merged_arr as $key => $value) {
-			
-			if($odate !== $value['date']) {
-				$odate = $value['date'];
-				$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
-				$html.= "<div class='ddiv' data-day='$odate'>
-					<span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span>
-					<span class='dhfmt'>$fmtdate</span>
-				</div>";
-			}
-			
-			$path = $value['pic_path'];
-			$linkUrl = "simg.php?".http_build_query(array('file' => $path, 't' => 0, 'w' => 5));
-			$type = $value['pic_type'];
-			$fpath = '/'.trim($thumb_path, '/').'/'.$path;
-			$parts = pathinfo($fpath);
-			$npath = $parts['dirname'].'/'.$parts['filename'].'.webp';
-			$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
-			$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
-			$file = basename($path);
-			$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
-			$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-			$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-os='$lkey' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
-		}
-
+		$html = "<div>";
+		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
+		$html.= "\n</div>";
 	}
-
 	die($html);
+}
 
-	$response = [
-		'code' => 200,
-		'images' => $merged_arr,
-		'offset' => $offset,
-		'noffset' => ++$lkey
-	];
-
-	return $response;
+function buildTimelinePhotos($lkey, $odate, $array) {
+	global $rcmail, $thumb_path, $exif_mode;
+	$html = '';
+	foreach ($array as $key => $value) {
+		/*
+		if($odate !== $value['date']) {
+			$odate = $value['date'];
+			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
+			$html.= "</div><div class='ddiv' data-day='$odate'>
+				<span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span>
+				<span class='dhfmt'>$fmtdate</span>
+			</div><div class='fimages'>";
+		}
+		*/
+		$path = $value['pic_path'];
+		$linkUrl = "simg.php?".http_build_query(array('file' => $path, 'w' => 5, 't' => 0));
+		$type = $value['pic_type'];
+		$fpath = '/'.trim($thumb_path, '/').'/'.$path;
+		$parts = pathinfo($fpath);
+		$npath = $parts['dirname'].'/'.$parts['filename'].'.webp';
+		$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
+		$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
+		$file = basename($path);
+		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
+		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
+		//$html.= "<div class='image'><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type' title='$npath'><img src='$imgUrl' $gis /></a><input data-os='$lkey' data-dday='$odate' class='icheckbox' type='checkbox'>$caption</div>";
+		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox' data-os='$lkey' data-dday='$odate'>$caption</div>";
+	}
+	return $html;
 }
 
 function validateUser($data) {
@@ -1414,7 +1383,7 @@ function showGallery($requestedDir, $offset = 0) {
 					$type = 'video';
 				}
 				
-				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-test='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
+				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
 				
 				$files[] = array(
 					"name" => $file,
@@ -1891,7 +1860,7 @@ if(isset($_GET['f'])) {
 	]);
 }
 
-if( isset($_GET['p']) ) {
+if(isset($_GET['p']) ) {
 	$dir = html_entity_decode(urldecode(filter_var($_GET['p'],FILTER_SANITIZE_FULL_SPECIAL_CHARS)));
 	guardAgainstDirectoryTraversal($dir);
 	die(showPage(showGallery($dir), $dir));
