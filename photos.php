@@ -180,12 +180,11 @@ function getTimeline($data) {
 	$dbh->query($query);
 	$rows = $dbh->num_rows();
 	$db_data = [];
-	$lkey = 0;
 	for ($i=0; $i < $rows; $i++) { 
 		array_push($db_data, $dbh->fetch_assoc());
 	}
 
-	if ($offset == 0 && $timestamp == 0) {
+	if ($timestamp == 0) {
 		$query = "SELECT FROM_UNIXTIME(`pic_taken`, '%b. %Y') AS `drange`, `pic_taken` FROM `pic_pictures` WHERE `user_id` = $user_id GROUP BY 1 ORDER BY `pic_taken` DESC;";
 		$res = $dbh->query($query);
 		$rows = $dbh->affected_rows($res);
@@ -200,7 +199,7 @@ function getTimeline($data) {
 	}
 
 	$tmp_data = $db_data;
-	$send_images = array_splice($db_data, $offset, $icount);
+	$send_images = array_splice($db_data, 0, $icount);
 	$last_date = end($send_images)['date'];
 
 	foreach ($send_images as $key => $value) {
@@ -211,7 +210,6 @@ function getTimeline($data) {
 	foreach ($tmp_data as $key => $value) {
 		if($value['date'] === $last_date) {
 			$lday[] = $value;
-			$lkey = $key;
 		}
 	}
 
@@ -240,17 +238,19 @@ function getTimeline($data) {
 		<span id='scount' data-prd='".$rcmail->gettext('pictures','pictures')."' data-title='".$rcmail->gettext('timeline','pictures')."' data-text='".$rcmail->gettext('pselected','pictures')."' data-margin='".$rcmail->config->get('pmargins')."'></span>
 		<div id='timeline'><div>";
 
-		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
+		$html.= buildTimelinePhotos($odate, $merged_arr);
 		$html.= "</div></div></body></html>";
 	} else {
 		$html = "<div>";
-		$html.= buildTimelinePhotos($lkey, $odate, $merged_arr);
+		$html.= buildTimelinePhotos($odate, $merged_arr);
 		$html.= "</div>";
 	}
+
+	$html = str_replace('<div></div>','',$html);
 	die($html);
 }
 
-function buildTimelinePhotos($lkey, $odate, $array) {
+function buildTimelinePhotos($odate, $array) {
 	global $rcmail, $thumb_path, $exif_mode;
 	$html = '';
 	foreach ($array as $key => $value) {
@@ -258,7 +258,7 @@ function buildTimelinePhotos($lkey, $odate, $array) {
 		if($odate !== $value['date']) {
 			$odate = $value['date'];
 			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
-			$html.= "</div><div class='ddiv' data-day='$odate'>
+			$html.= "</div><div class='ddiv' data-ts='".$value['pic_taken']."' data-day='$odate'>
 				<span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span>
 				<span class='dhfmt'>$fmtdate</span>
 			</div><div class='fimages'>";
@@ -275,7 +275,7 @@ function buildTimelinePhotos($lkey, $odate, $array) {
 		$file = basename($path);
 		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox' data-os='$lkey' data-dday='$odate'>$caption</div>";
+		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='".dirname($path)."' /></a><input class='icheckbox' type='checkbox' data-dday='$odate'>$caption</div>";
 	}
 	return $html;
 }

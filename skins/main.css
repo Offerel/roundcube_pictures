@@ -675,13 +675,13 @@ footer a {
 	height: 50px;
 	position: fixed;
 	z-index: 3;
-	padding-left: 26px;
+	padding-left: 20px;
 }
 ul.breadcrumb {
 	list-style: none;
 	padding: 0;
 	margin-inline: auto;
-	max-width: 1300px;
+/*	max-width: 1300px; */
 }
 ul.breadcrumb li {
 	display: inline;

@@ -216,12 +216,26 @@ window.onload = function(){
 		xhr.onload = function() {
 			aLoader('hidden');
 			let response = this.response;
-			$('#timeline').append(response);
-			initGallery();
-			markDay();
 			
 			const html = new DOMParser().parseFromString(response, 'text/html');
 			let day = html.querySelector('.ddiv').dataset.day;
+			let ts = html.querySelector('.ddiv').dataset.ts;
+
+			let ddivs = document.getElementsByClassName('ddiv');
+			let eTSarr = new Array();
+			for (let index = 0; index < ddivs.length; index++) {
+				eTSarr.push(ddivs[index].dataset.ts);
+			}
+
+			const tsCheck = num => eTSarr.find(v => v < num);
+			let iBefore = tsCheck(ts);
+
+			if(iBefore === undefined) {
+				$('#timeline').append(response);
+			} else {
+				$('[data-ts="'+ iBefore + '"]').before(response);
+			}
+
 			html.body.childNodes.forEach(element => {
 				if (element instanceof HTMLDivElement) {
 					if(element.classList.contains('fimages')) {
@@ -234,10 +248,13 @@ window.onload = function(){
 					}
 				}
 			});
+
+			initGallery();
+			markDay();
+
 			lightbox.reload();
 			
-			let topEl = document.querySelector('[data-day=\''+day+'\']');
-			topEl.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
+			document.querySelector('[data-day=\''+day+'\']').scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
 			
 			return false;
 		}
@@ -246,9 +263,11 @@ window.onload = function(){
 		xhr.send(data);
 	};
 
-	document.getElementById('scroller').addEventListener("mousemove", cMove);
-	document.getElementById('scroller').addEventListener("touchmove", cMove);
-	document.getElementById('scroller').addEventListener("click", cClick);
+	if(document.getElementById('scroller')) {
+		document.getElementById('scroller').addEventListener("mousemove", cMove);
+		document.getElementById('scroller').addEventListener("touchmove", cMove);
+		document.getElementById('scroller').addEventListener("click", cClick);
+	}
 }
 
 function isTouchDevice() {
@@ -279,8 +298,9 @@ function initGallery() {
 		margins: gmargin,
 		border: 0,
 		lastRow: 'nojustify',
-		captions: false,
+		captions: true,
 		randomize: false,
+		
 	});
 }
 
@@ -482,8 +502,13 @@ function lazyload(slide = false) {
 	let gal = (document.getElementById('timeline')) ? 'timeline':scount.dataset.title;
 
 	if(wposition > wheight || slide) {
-		let boxes = document.querySelectorAll(".icheckbox");
-		let offset = (gal === 'timeline') ? parseInt(boxes[boxes.length -1].dataset.os) + 1:$('.glightbox').length;
+		let tse = document.querySelectorAll(".ddiv");
+		let ts = (gal === 'timeline') ? parseInt(tse[tse.length -1].dataset.ts) + 1:$('.glightbox').length;
+		let date = new Date(ts * 1000);
+
+		date.setHours(0)
+		date.setMinutes(0)
+		date.setSeconds(-1)
 
 		$.ajax({
 			type: 'POST',
@@ -493,7 +518,8 @@ function lazyload(slide = false) {
 			data: JSON.stringify({
 				action: 'lazyload',
 				g: gal,
-				s: offset,
+				s: ts,
+				t: Date.parse(date)/1000
 			}),
 			contentType: 'application/json; charset=utf-8',
 			success: function(response) {
