@@ -92,9 +92,18 @@ window.onload = function(){
 		} else {
 			pbtn.addEventListener('click', loop_slide.bind(this, 5));
 		}
+
+		let sbtn = document.createElement('button');
+		sbtn.id = 'sbtn';
+		sbtn.addEventListener('click', e => {
+			let href = 'simg.php' + new URL(data.current.slideConfig.href).search;
+			document.querySelector('[href="' + href + '"]').parentElement.querySelector('.icheckbox').checked = true;
+			window.parent.selectShare();
+		});
 		
 		btn_container.appendChild(pbtn);
 		btn_container.appendChild(dlbtn);
+		btn_container.appendChild(sbtn);
 		btn_container.appendChild(infobtn);
 		btn_container.appendChild(fbtn);
 		btn_container.appendChild(closebtn);

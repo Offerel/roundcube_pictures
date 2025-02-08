@@ -668,3 +668,16 @@ a.disabled {
 #picturescontentframe::-webkit-scrollbar{
 	display: none;
 }
+.dark-mode .modal-body {
+    background-color: dimgray;
+}
+.dark-mode .modal-content {
+    background-color: black;
+}
+.dark-mode .modal-header, .dark-mode .close {
+    color: white;
+}
+.dark-mode #spixelfed .tagify {
+    background-color: darkgrey;
+    color: black;
+}

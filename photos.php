@@ -1094,7 +1094,7 @@ function showPage($thumbnails, $dir) {
 			<script src=\"js/justifiedGallery/jquery.justifiedGallery.min.js\"></script>
 			<script src='js/glightbox/glightbox.min.js'></script>
 			<script src='js/plyr/plyr.js'></script>
-			<script src='js/photos.js'></script>
+			<script src='js/photos.min.js'></script>
 			";
 	$aarr = explode('/',$dir);
 	$path = "";
