@@ -661,3 +661,10 @@ a.disabled {
 		padding: 0px 5px !important;
 	}
 }
+#picturescontentframe {
+    width: 100%;
+    height: 100%;
+}
+#picturescontentframe::-webkit-scrollbar{
+	display: none;
+}

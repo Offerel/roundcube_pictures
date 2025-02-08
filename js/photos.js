@@ -184,26 +184,71 @@ window.onload = function(){
 
 	let moveCal = document.getElementById('moveCal');
 
-	const move = (e) => {
+	const cMove = (e) => {
 		try {
-			var y = !isTouchDevice() ? e.pageY : e.touches[0].pageY;
-			var x = !isTouchDevice() ? e.pageX : e.touches[0].pageX;	
+			var y = !isTouchDevice() ? e.clientY : e.touches[0].clientY;
+			var x = !isTouchDevice() ? e.clientX : e.touches[0].clientX	;	
 		} catch (e) {}
+
 		moveCal.style.top = y - 2 + "px";
-		let obj = document.elementFromPoint(x,y);
-		if(obj.classList.contains('myd')) {
-			moveCal.innerText = obj.dataset.range;
-			//console.log(obj.dataset.range);
+		
+		setTimeout(() => {
+			let obj = document.elementFromPoint(x,y);
+
+			if(obj.classList.contains('myd')) {
+				moveCal.innerText = obj.dataset.range;
+				moveCal.dataset.ts = obj.dataset.ts;
+			}
+		}, 10);
+	};
+	const cClick = (e) => {
+		let images = document.querySelectorAll('.icheckbox');
+
+		const data = JSON.stringify({
+			action: 'timeline',
+			data: {
+				s:parseInt(images[images.length -1].dataset.os),
+				t:document.getElementById('moveCal').dataset.ts
+			}
+		});
+	
+		xhr = new XMLHttpRequest();
+		xhr.onload = function() {
+			aLoader('hidden');
+			let response = this.response;
+			$('#timeline').append(response);
+			initGallery();
+			markDay();
+			
+			const html = new DOMParser().parseFromString(response, 'text/html');
+			let day = html.querySelector('.ddiv').dataset.day;
+			html.body.childNodes.forEach(element => {
+				if (element instanceof HTMLDivElement) {
+					if(element.classList.contains('fimages')) {
+						for (let e of element.querySelectorAll('.image')) {
+							lightbox.insertSlide({
+								'href': e.firstChild.href,
+								'type': e.firstChild.dataset.type
+							});
+						}
+					}
+				}
+			});
+			lightbox.reload();
+			
+			let topEl = document.querySelector('[data-day=\''+day+'\']');
+			topEl.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
+			
+			return false;
 		}
+		xhr.open('POST', 'photos.php');
+		xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+		xhr.send(data);
 	};
 
-	document.addEventListener("mousemove", (e) => {
-		move(e);
-	});
-
-	document.addEventListener("touchmove", (e) => {
-		move(e);
-	});
+	document.getElementById('scroller').addEventListener("mousemove", cMove);
+	document.getElementById('scroller').addEventListener("touchmove", cMove);
+	document.getElementById('scroller').addEventListener("click", cClick);
 }
 
 function isTouchDevice() {

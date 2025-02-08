@@ -169,7 +169,14 @@ function getTimeline($data) {
 	$theme = $rcmail->config->get('ptheme');
 	$icount = $rcmail->config->get("thumbs_pr_page", false);
 	$offset = filter_var($data['s'], FILTER_SANITIZE_NUMBER_INT);
-	$query = "SELECT `pic_id`, `pic_type`, `pic_path`, `pic_taken`, `pic_EXIF`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
+	
+	$timestamp = isset($data['t']) ? filter_var($data['t'], FILTER_SANITIZE_NUMBER_INT):0;
+	if($timestamp > 0 ) {
+		$query = "SELECT `pic_id`, `pic_type`, `pic_path`, `pic_taken`, `pic_EXIF`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id AND pic_taken < $timestamp ORDER BY `pic_taken` DESC";
+	} else {
+		$query = "SELECT `pic_id`, `pic_type`, `pic_path`, `pic_taken`, `pic_EXIF`, FROM_UNIXTIME(`pic_taken`, '%Y-%m-%d') AS date FROM `pic_pictures` WHERE `user_id` = $user_id ORDER BY `pic_taken` DESC";
+	}
+
 	$dbh->query($query);
 	$rows = $dbh->num_rows();
 	$db_data = [];
@@ -178,16 +185,18 @@ function getTimeline($data) {
 		array_push($db_data, $dbh->fetch_assoc());
 	}
 
-	if ($offset == 0) {
-		$query = "SELECT FROM_UNIXTIME(`pic_taken`, '%b. %Y') AS `drange` FROM `pic_pictures` WHERE `user_id` = $user_id GROUP BY 1 ORDER BY `pic_taken` DESC;";
+	if ($offset == 0 && $timestamp == 0) {
+		$query = "SELECT FROM_UNIXTIME(`pic_taken`, '%b. %Y') AS `drange`, `pic_taken` FROM `pic_pictures` WHERE `user_id` = $user_id GROUP BY 1 ORDER BY `pic_taken` DESC;";
 		$res = $dbh->query($query);
 		$rows = $dbh->affected_rows($res);
 		$height = round(100 / $rows,2,PHP_ROUND_HALF_DOWN);
 
 		$mydivs = "";
 		for ($i=0; $i < $rows; $i++) {
-			$mydivs.= "<div class='myd' style='height: $height%' data-range='".$dbh->fetch_assoc($res)['drange']."'></div>";
+			$val = $dbh->fetch_assoc($res);
+			$mydivs.= "<div class='myd' style='height: $height%' data-ts='".$val['pic_taken']."' data-range='".$val['drange']."'></div>";
 		}
+		$offset = 0;
 	}
 
 	$tmp_data = $db_data;
@@ -209,7 +218,7 @@ function getTimeline($data) {
 	$merged_arr = array_merge($send_images, $lday);
 	$odate = '';
 
-	if ($offset == 0) {
+	if ($offset == 0 && $timestamp == 0) {
 		$html = "<!DOCTYPE html>
 	<html>
 		<head>
