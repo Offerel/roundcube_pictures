@@ -22,15 +22,13 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 	rcmail.register_command("searchphoto", searchform, !0);
 	rcmail.register_command("edit_meta", metaform, !0);
 
-	if(localStorage.getItem("pnav") == 'timeline') {
-		document.getElementById('picturescontentframe').src = 'plugins/pictures/photos.php?f=1';
+	if(new URL(document.getElementById('picturescontentframe').src).searchParams.has('f')) {
 		document.getElementById('stimeline').classList.remove('time');
 		document.getElementById('stimeline').classList.add('albums');
 		document.getElementById('stimeline').title = rcmail.gettext('albums','pictures');
 		document.getElementById('stimeline').querySelector('.inner').innerText = rcmail.gettext('albums','pictures');
-		localStorage.setItem("pnav", 'timeline');
+		document.cookie = "pnav=timeline; max-age=2592000; secure; samesite=strict";
 	}
-	
 });
 
 window.onload = function(){
@@ -184,14 +182,14 @@ function timeline() {
 		btn.classList.add('albums');
 		btn.title = rcmail.gettext('albums','pictures');
 		btn.querySelector('.inner').innerText = rcmail.gettext('albums','pictures');
-		localStorage.setItem("pnav", 'timeline');
+		document.cookie = "pnav=timeline; max-age=2592000; secure; samesite=strict";
 	} else {
 		frame.src = 'plugins/pictures/photos.php';
 		btn.classList.remove('albums');
 		btn.classList.add('time');
 		btn.title = rcmail.gettext('timeline','pictures');
 		btn.querySelector('.inner').innerText = rcmail.gettext('timeline','pictures');
-		localStorage.setItem("pnav", 'albums');
+		document.cookie = "pnav=albums; max-age=2592000; secure; samesite=strict";
 	}
 }
 
