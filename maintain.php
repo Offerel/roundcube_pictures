@@ -88,11 +88,12 @@ foreach($users as $user) {
 }
 $src = isset($logpieces) ? $logpieces[2]." (".$logpieces[3].")":"Manual Start";
 $message = "Maintenance finished in ".etime($starttime);
+logm($message);
 $message.= "\nNew files: ".count($media);
 $message.= "\nSource: ".$src;
 $message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
-logm($message);
+
 if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
 
 function removePidFile() {
