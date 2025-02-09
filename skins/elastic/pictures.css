@@ -112,7 +112,7 @@
     color: black;
 }
 .tab-active {
-    background-color: dimgray;
+    background-color: dimgray !important;
     color: white;
 }
 .tab-button:hover {

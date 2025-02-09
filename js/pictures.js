@@ -148,7 +148,7 @@ window.onload = function(){
 			document.querySelector('[value="sintern"]').classList.remove('tab-active');
 			document.querySelector('[value="spublic"]').classList.remove('tab-active');
 			document.querySelector('[value="spixelfed"]').classList.remove('tab-active');
-			document.querySelector('[value="'+e.value+'"]').classList.add('tab-active');
+			document.querySelector('[value="' + e.value + '"]').classList.add('tab-active');
 			
 			if(e.value === 'spixelfed') {
 				if(document.getElementById('max_attachments').value == 0) rcmail.display_message(rcmail.gettext('pf_conf_error','pictures'), 'error');
@@ -163,6 +163,8 @@ window.onload = function(){
 				if(document.getElementById('shares')) document.getElementById('shares').disabled = false;
 				document.getElementById('sbtn').classList.remove('disabled');
 			}
+
+			localStorage.setItem("stype", e.value);
 		});
 	}
 
@@ -553,8 +555,7 @@ function selectShare() {
 	document.getElementById('expiredate').valueAsDate = new Date(someDate.setDate(someDate.getDate() + rcmail.env.sdays));
 	sbtn.tabIndex = 5;
 	sbtn.title = rcmail.gettext('extlinktitle','pictures');
-
-	document.querySelector('[value="spublic"]').click();
+	
 	sendRequest(getTags);
 
 	document.getElementById('max_attachments').value = rcmail.env.pfm;
@@ -570,7 +571,8 @@ function selectShare() {
 		document.getElementById('pfsensitive').disabled = true;
 		document.getElementById('sbtn').classList.add('disabled');
 	}
-	
+
+	document.querySelector('[value="' + localStorage.getItem("stype") + '"]').click();
 }
 
 function add_album() {
