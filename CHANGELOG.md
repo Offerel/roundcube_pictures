@@ -4,6 +4,8 @@
 - Added sharing of multiple photos to Mastodon/Pixelfed
 - Added check for char Char Counts
 - Added info about selected photos
+- Added share from opened photo
+- Added timeline
 - Fix CSS
 - Fix photo selection
 
