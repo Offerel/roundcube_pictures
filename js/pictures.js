@@ -571,8 +571,8 @@ function selectShare() {
 		document.getElementById('pfsensitive').disabled = true;
 		document.getElementById('sbtn').classList.add('disabled');
 	}
-
-	document.querySelector('[value="' + localStorage.getItem("stype") + '"]').click();
+	let type = (localStorage.getItem("stype")) ? localStorage.getItem("stype"):'spublic';
+	document.querySelector('[value="' + type + '"]').click();
 }
 
 function add_album() {
