@@ -833,3 +833,7 @@ html::-webkit-scrollbar {
 .dark-mode #header li, .dark-mode #header a {
     color: white;
 }
+.gbtn svg {
+    position: absolute;
+    top: 9px;
+}
