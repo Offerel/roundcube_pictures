@@ -6,6 +6,7 @@
 - Added info about selected photos
 - Added share from opened photo
 - Added timeline
+- Added check for orphaned db entries in maintenance
 - Fix CSS
 - Fix photo selection
 

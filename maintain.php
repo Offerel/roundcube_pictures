@@ -79,6 +79,7 @@ foreach($users as $user) {
 	logm("Search orphaned webp files");
 	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
 
+	orph_db($uid);
 	expired_shares();
 
 	$message = "$username finished in ".etime($utime);
@@ -96,6 +97,36 @@ if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy
 
 function removePidFile() {
 	unlink(PIDFILE);
+}
+
+function orph_db($user) {
+	logm("Search orphaned db files");
+	global $db, $pictures_basepath;
+	$query = "SELECT `pic_path`, `pic_id` FROM `pic_pictures` WHERE `user_id` = $user ORDER BY `pic_taken` DESC;";
+	$result = $db->query($query);
+
+	$db_photos = [];
+	$rcount = $db->num_rows($result);
+	for ($x = 0; $x < $rcount; $x++) {
+		array_push($db_photos, $db->fetch_assoc($result));
+	}
+
+	$notExist = [];
+	foreach ($db_photos as $key => $photo) {
+		$path = $pictures_basepath.'/'.$photo['pic_path'];
+		if(!file_exists("$path")) {
+			logm("Photo doesnt exist: $path");
+			array_push($notExist, $photo['pic_id']);
+		}
+	}
+
+	$ids = implode(',', $notExist);
+	$query = "DELETE FROM `pic_pictures` WHERE `pic_id` IN ($ids)";
+	$count = count($notExist);
+	if($count > 0) {
+		logm("Remove ".count($notExist)." entries from db");
+		$result = $db->query($query);
+	}
 }
 
 function scanGallery($dir, $base, $thumb, $webp, $user) {
@@ -248,7 +279,7 @@ function new_keywords($arr, $uid) {
 	$rcount = $db->num_rows($result);
 
 	for ($x = 0; $x < $rcount; $x++) {
-		array_push($tags, $db->fetch_assoc($result)['tag_name']); //	"('".$db->fetch_assoc($result)['tag_name']."', '$uid)"
+		array_push($tags, $db->fetch_assoc($result)['tag_name']);
 	}
 
 	$diff = array_diff($kw, $tags);
