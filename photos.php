@@ -1421,7 +1421,7 @@ function showGallery($requestedDir, $offset = 0) {
 	} else {
 		error_log('Could not open "'.htmlspecialchars(stripslashes($current_dir)).'" folder for reading!');
 		http_response_code(444);
-		header('Location: photos.php', true, 301);
+		header('Location: photos.php?p=', true, 301);
 		die();
 	}
 

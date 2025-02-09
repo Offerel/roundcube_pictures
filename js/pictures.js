@@ -178,7 +178,7 @@ function timeline() {
 	let url = new URL(frame.src);
 	let btn = document.getElementById('stimeline');
 
-	if(url.searchParams.get('f') == null) {
+	if(!url.searchParams.has('f')) {
 		frame.src = 'plugins/pictures/photos.php?f=1';
 		btn.classList.remove('time');
 		btn.classList.add('albums');

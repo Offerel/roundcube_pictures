@@ -178,6 +178,21 @@ window.onload = function(){
 			}
 			prevScrollpos = currentScrollPos;
 		}
+
+		let page = new URL(location.href).searchParams;
+		if(page.has('p')) {
+			let p = page.get('p');
+			if(p) {
+				localStorage.setItem("pnavp", p);
+			} else {
+				localStorage.setItem("pnavp", 'start');
+			}
+		} else {
+			const data = {
+				p: localStorage.getItem("pnavp"),
+			};
+			location.href = 'photos.php?' + new URLSearchParams(data).toString();
+		}
 	}
 
 	scount.addEventListener('click', e => {
