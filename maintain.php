@@ -677,7 +677,6 @@ function pntfy($message) {
 	$logfile = "$logdir/maintenance.log";
 	$lfile = file_get_contents($logfile);
 	$authHeader = (strlen($token) > 4) ? "Authorization: Bearer $token\r\n":'';
-	'Authorization: Bearer tk_sr6wah33x5wlis3zvk9fzzr49wk2x',
 
 	if(count($media) > 0 || $odb > 0) {
 		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
