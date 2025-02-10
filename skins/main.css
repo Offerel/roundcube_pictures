@@ -1,3 +1,14 @@
+.jg-entry:has(> .icheckbox:checked) img {
+    transform: scale(.92);
+    opacity: .7;
+}
+.jg-entry:has(> .icheckbox:checked) {
+    background-color: lightgray;
+}
+.jg-caption {
+    font-size: 1em !important;
+    font-weight: 600 !important;
+}
 html {
 	font-size: 62.5%;
 	height: 100%;

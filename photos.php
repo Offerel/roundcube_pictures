@@ -273,9 +273,10 @@ function buildTimelinePhotos($odate, $array) {
 		$gis = (is_file($npath)) ? getimagesize($npath)[3]:"";
 		$exifInfo = ($exif_mode != 0 && isset($value['pic_EXIF'])) ? parseEXIF(json_decode($value['pic_EXIF'], true)):'';
 		$file = basename($path);
-		$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
+		$info = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
-		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis alt='".dirname($path)."' /></a><input class='icheckbox' type='checkbox' data-dday='$odate'>$caption</div>";
+		$caption = str_replace('/',' &#187; ',dirname($path));
+		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type' title='$caption'><img src='$imgUrl' $gis alt='$caption' /></a><input class='icheckbox' type='checkbox' data-dday='$odate'>$info</div>";
 	}
 	return $html;
 }
