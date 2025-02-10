@@ -33,6 +33,7 @@ $bc = 0;
 $db = $rcmail->get_dbh();
 $arg = (isset($argv[1])) ? $argv[1]:"manual";
 $media = array();
+$odb = 0;
 
 if($arg === "trigger") {
 	$lines = file("$logdir/fssync.log");
@@ -79,7 +80,7 @@ foreach($users as $user) {
 	logm("Search orphaned webp files");
 	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
 
-	orph_db($uid);
+	$odb = $odb + orph_db($uid);
 	expired_shares();
 
 	$message = "$username finished in ".etime($utime);
@@ -90,6 +91,7 @@ $src = isset($logpieces) ? $logpieces[2]." (".$logpieces[3].")":"Manual Start";
 $message = "Maintenance finished in ".etime($starttime);
 logm($message);
 $message.= "\\nNew files: ".count($media);
+$message.= "\\nOrphaned DB: ".$odb;
 $message.= "\\nSource: ".$src;
 $message.= "\\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
@@ -128,6 +130,8 @@ function orph_db($user) {
 		logm("Remove ".count($notExist)." entries from db");
 		$result = $db->query($query);
 	}
+
+	return $count;
 }
 
 function scanGallery($dir, $base, $thumb, $webp, $user) {
@@ -667,7 +671,7 @@ function logm($message, $mmode = 3) {
 }
 
 function pntfy($message) {
-	global $media, $rcmail, $logdir;
+	global $media, $rcmail, $logdir, $odb;
 	$user = $rcmail->config->get('pntfy_usr');
 	$password = $rcmail->config->get('pntfy_pwd');
 	$purl = $rcmail->config->get('pntfy_url');
@@ -676,7 +680,7 @@ function pntfy($message) {
 	$authHeader = base64_encode("$user:$password");
 	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
 
-	if(count($media) > 0) {
+	if(count($media) > 0 || $odb > 0) {
 		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
 			'http' => [
 				'method' => 'POST',
