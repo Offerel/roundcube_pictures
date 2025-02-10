@@ -1,7 +1,7 @@
-# Pictures Plugin (Roundcube)
-This is a simple pictures/gallery plugin for Roundcube. You can view your personal photos that are synced to your personal storage in a easy way. This plugin does not sync itself, it gives you only easy access to the synced photos. To sync your photos, you can use any software/system which can automatically sync the photos from your smartphone (or any other device) to a storage accessible by Roundcube. 
+# Roundcube Photos
+This is a photos/gallery plugin for Roundcube, similar to Google Photos/Amazon Photos. You can view your personal photos that are synced to your personal storage in a easy way. This plugin does not sync itself, it gives you only easy access to the synced photos. To sync your photos, you can use any software/system which can automatically sync the photos from your smartphone (or any other device) to a storage accessible by Roundcube. 
 
-I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to show the thumbnails on the page in a way i personally like it and [GLightbox](https://biati-digital.github.io/glightbox/) to display the pictures. Videos are integrated via [Plyr](https://github.com/sampotts/plyr). Please see the license details on the page of this projects.
+I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to show the thumbnails on the page in a way i personally like it and [GLightbox](https://biati-digital.github.io/glightbox/) to display the photod. Videos are integrated via [Plyr](https://github.com/sampotts/plyr). Please see the license details on the page of this projects.
 
 # Contribution
 If you would like to support this Plugin, you have various options. You can report bugs via the [Issue Tracker](https://codeberg.org/Offerel/Roundcube_Pictures/issues). This helps me to fix these bugs as quickly as possible.
