@@ -89,9 +89,9 @@ foreach($users as $user) {
 $src = isset($logpieces) ? $logpieces[2]." (".$logpieces[3].")":"Manual Start";
 $message = "Maintenance finished in ".etime($starttime);
 logm($message);
-$message.= "\nNew files: ".count($media);
-$message.= "\nSource: ".$src;
-$message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
+$message.= "\\nNew files: ".count($media);
+$message.= "\\nSource: ".$src;
+$message.= "\\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 
 if($pntfy && etime($starttime, true) > $pntfy) pntfy($message);
@@ -675,8 +675,6 @@ function pntfy($message) {
 	$lfile = file_get_contents($logfile);
 	$authHeader = base64_encode("$user:$password");
 	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
-	$imgc = count($media);
-	$priority = ($imgc < 1) ? 1:3;
 
 	if(count($media) > 0) {
 		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
@@ -686,9 +684,11 @@ function pntfy($message) {
 					"Content-Type: text/plain\r\n".
 					$authHeader.
 					"Title: Roundcube Photos\r\n".
-					"Priority: $priority\r\n".
-					"Tags: Roundcube,Photos\r\n",
-				'content' => $message."\r\n\r\nFor details please check maintenance.log"
+					"Priority: 3\r\n".
+					"Tags: Roundcube, Photos\r\n".
+					"Filename: maintenance.log\r\n".
+					"Message: $message\\n\\nFor details please check maintenance.log",
+				'content' => $lfile
 			]
 		])), true);
 	
