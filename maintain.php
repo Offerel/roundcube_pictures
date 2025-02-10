@@ -60,7 +60,7 @@ foreach($users as $user) {
 	$thumb_basepath = $basepath."/".$username."/photos";
 	$webp_basepath =  $basepath."/".$username."/webp";
 	$broken = array();
-	
+
 	logm("Search photos for $username");
 	scanGallery($pictures_basepath, $pictures_basepath, $thumb_basepath, $webp_basepath, $uid);
 	$bcount = count($broken);
@@ -94,7 +94,7 @@ $message.= "\nSource: ".$src;
 $message.= "\nDate: ".$logpieces[0].' '.$logpieces[1];
 $message.= ($bc > 0) ? ". $bc corrupt media found.":"";
 
-if($pntfy && etime($starttime, true) > $pntfy) pntfy($rcmail->config->get('pntfy_usr'), $rcmail->config->get('pntfy_pwd'), $rcmail->config->get('pntfy_url'), $message);
+if($pntfy && etime($starttime, true) > $pntfy) pntfy($message);
 
 function removePidFile() {
 	unlink(PIDFILE);
@@ -666,29 +666,37 @@ function logm($message, $mmode = 3) {
 	file_put_contents($logfile, $line, FILE_APPEND);
 }
 
-function pntfy($user, $password, $purl, $message) {
-	global $media;
+function pntfy($message) {
+	global $media, $rcmail, $logdir;
+	$user = $rcmail->config->get('pntfy_usr');
+	$password = $rcmail->config->get('pntfy_pwd');
+	$purl = $rcmail->config->get('pntfy_url');
+	$logfile = "$logdir/maintenance.log";
+	$lfile = file_get_contents($logfile);
 	$authHeader = base64_encode("$user:$password");
 	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
 	$imgc = count($media);
 	$priority = ($imgc < 1) ? 1:3;
-	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
-		'http' => [
-			'method' => 'POST',
-			'header' =>
-				"Content-Type: text/plain\r\n".
-				$authHeader.
-				"Title: Roundcube Photos\r\n".
-				"Priority: $priority\r\n".
-				"Tags: Roundcube,Photos",
-			'content' => $message."\r\n\r\nFor details please check maintenance.log"
-		]
-	])), true);
 
-	if(isset($rarr['id'])) 
-		logm("ntfy succesfully", 4);
-	else
-		logm("ntfy failed.", 2);
+	if(count($media) > 0) {
+		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
+			'http' => [
+				'method' => 'POST',
+				'header' =>
+					"Content-Type: text/plain\r\n".
+					$authHeader.
+					"Title: Roundcube Photos\r\n".
+					"Priority: $priority\r\n".
+					"Tags: Roundcube,Photos\r\n",
+				'content' => $message."\r\n\r\nFor details please check maintenance.log"
+			]
+		])), true);
+	
+		if(isset($rarr['id'])) 
+			logm("ntfy succesfully", 4);
+		else
+			logm("ntfy failed.", 2);
+	}	
 }
 
 function etime($start, $s = false) {
