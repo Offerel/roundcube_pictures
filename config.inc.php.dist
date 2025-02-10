@@ -10,8 +10,7 @@ $config['dummy_time'] = 63072000; // Time in seconds after that a 0-byte file wi
 $config['dummy_folder'] = 'Incoming'; // 0-byte files are created only in this directory (and it subdirs), only in effect with dummy_files = true
 $config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via ntfy, or set to false
 $config['pntfy_url'] = "https://ntfy.yourdomain.com/channel"; // the url to your ntfy instance
-$config['pntfy_usr'] = ""; // ntfy username, if needed
-$config['pntfy_pwd'] = ""; // ntfy password
+$config['pntfy_token'] = ""; // ntfy token, if needed
 $config['debug'] = false; // If set true, debug messages are logged
 
 // User default settings

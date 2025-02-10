@@ -672,13 +672,12 @@ function logm($message, $mmode = 3) {
 
 function pntfy($message) {
 	global $media, $rcmail, $logdir, $odb;
-	$user = $rcmail->config->get('pntfy_usr');
-	$password = $rcmail->config->get('pntfy_pwd');
+	$token = $rcmail->config->get('pntfy_token');
 	$purl = $rcmail->config->get('pntfy_url');
 	$logfile = "$logdir/maintenance.log";
 	$lfile = file_get_contents($logfile);
-	$authHeader = base64_encode("$user:$password");
-	$authHeader = (strlen($authHeader) > 4) ? "Authorization: Basic $authHeader\r\n":'';
+	$authHeader = (strlen($token) > 4) ? "Authorization: Bearer $token\r\n":'';
+	'Authorization: Bearer tk_sr6wah33x5wlis3zvk9fzzr49wk2x',
 
 	if(count($media) > 0 || $odb > 0) {
 		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
