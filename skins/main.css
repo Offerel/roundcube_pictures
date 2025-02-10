@@ -704,8 +704,8 @@ ul.breadcrumb li {
 	font-weight: 700;
 }
 ul.breadcrumb li+li:not(:last-child):before {
-    content: '/\00a0';
-    padding: 0 0 0 .4em;
+    content: '\00BB';
+    padding: 0 .3em 0 .3em;
 }
 .glightbox:hover::before {
 	content: ' ';
