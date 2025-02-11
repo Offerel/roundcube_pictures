@@ -88,15 +88,14 @@ foreach($users as $user) {
 	logm($message);
 }
 $src = isset($logpieces) ? $logpieces[2]." (".$logpieces[3].")":"Manual Start";
-$message = "Maintenance finished in ".etime($starttime);
+$message = "Roundcube Photos Maintenance finished in ".etime($starttime);
 logm($message);
-$message.= "\\nNew files: ".count($media);
-$message.= "\\nOrphaned DB: ".$odb;
-$message.= "\\nSource: ".$src;
-$message.= "\\nDate: ".$logpieces[0].' '.$logpieces[1];
-$message.= ($bc > 0) ? ". $bc corrupt media found.":"";
+$message.= "\\n\\nSource: ".$src;
+$message.= "\\nNew: ".count($media);
+$message.= "\\nCorrupt: ".$bc;
+$message.= "\\nRemoved from DB: ".$odb;
 
-if($pntfy && etime($starttime, true) > $pntfy) pntfy($message);
+if($pntfy && etime($starttime, true) > $pntfy && (count($media) > 0 || $odb > 0)) pntfy($message);
 
 function removePidFile() {
 	unlink(PIDFILE);
@@ -678,27 +677,26 @@ function pntfy($message) {
 	$lfile = file_get_contents($logfile);
 	$authHeader = (strlen($token) > 4) ? "Authorization: Bearer $token\r\n":'';
 
-	if(count($media) > 0 || $odb > 0) {
-		$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
-			'http' => [
-				'method' => 'POST',
-				'header' =>
-					"Content-Type: text/plain\r\n".
-					$authHeader.
-					"Title: Roundcube Photos\r\n".
-					"Priority: 3\r\n".
-					"Tags: Roundcube, Photos\r\n".
-					"Filename: maintenance.log\r\n".
-					"Message: $message\\n\\nFor details please check maintenance.log",
-				'content' => $lfile
-			]
-		])), true);
-	
-		if(isset($rarr['id'])) 
-			logm("ntfy succesfully", 4);
-		else
-			logm("ntfy failed.", 2);
-	}	
+	$rarr = json_decode(file_get_contents($purl, false, stream_context_create([
+		'http' => [
+			'method' => 'POST',
+			'header' =>
+				"Content-Type: text/plain\r\n".
+				$authHeader.
+				"Title: Roundcube Photos\r\n".
+				"Priority: 3\r\n".
+				"Tags: Roundcube, Photos\r\n".
+				"Filename: maintenance.log\r\n".
+				"Message: $message\\n\\nFor details please check attached logfile",
+			'content' => $lfile
+		]
+	])), true);
+
+	if(isset($rarr['id'])) 
+		logm("ntfy succesfully", 4);
+	else
+		logm("ntfy failed.", 2);
+
 }
 
 function etime($start, $s = false) {
