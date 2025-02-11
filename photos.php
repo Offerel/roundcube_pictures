@@ -276,7 +276,7 @@ function buildTimelinePhotos($odate, $array) {
 		$info = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
 		$imgUrl = "simg.php?".http_build_query(array('file' => "$path", 't' => 1));
 		$caption = str_replace('/',' &#187; ',dirname($path));
-		$html.= "<div><a class='glightbox' href='$linkUrl' data-type='$type' title='$caption'><img src='$imgUrl' $gis alt='$caption' /></a><input class='icheckbox' type='checkbox' data-dday='$odate'>$info</div>";
+		$html.= "<div title='$caption'><a class='glightbox' href='$linkUrl' data-type='$type'><img alt='$caption' src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox' data-dday='$odate'>$info</div>";
 	}
 	return $html;
 }
