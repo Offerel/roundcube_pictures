@@ -694,8 +694,10 @@ function pntfy($message) {
 
 	if(isset($rarr['id'])) 
 		logm("ntfy succesfully", 4);
-	else
+	else {
 		logm("ntfy failed.", 2);
+		logm(json_encode($rarr), 2);
+	}
 
 }
 
