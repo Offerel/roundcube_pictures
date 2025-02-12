@@ -1,7 +1,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.6
+ * @version 1.5.7
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -595,14 +595,12 @@ function create_album() {
 function albCreate(response) {
 	document.getElementById("album_edit").style.display = "none";
 	if(response.code === 200) {
-		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.source);
-		count_checks();
-		sendRequest(getSubs);
+		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.folder);
 
-		let text = rcmail.gettext('alb_create_ok','pictures').replace('%t%', response.target);
+		let text = rcmail.gettext('alb_create_ok','pictures').replace('%t%', response.source);
 		rcmail.display_message(text, 'confirmation');
 	} else {
-		let text = rcmail.gettext('alb_create_failed','pictures').replace('%t%', response.target);
+		let text = rcmail.gettext('alb_create_failed','pictures').replace('%t%', response.source);
 		rcmail.display_message(text, 'error');
 	}
 }

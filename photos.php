@@ -2,7 +2,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.6
+ * @version 1.5.7
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -441,8 +441,8 @@ function imgMove($data) {
 
 function albCreate($data) {
 	global $pictures_path;
-	$source = rtrim($pictures_path,'/').'/'.filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-	$target = isset($data['target']) ? urldecode(dirname($source).'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
+	$source = rtrim($pictures_path,'/').'/'.urldecode(filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$target = isset($data['target']) ? urldecode($source.'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
 
 	if (!@mkdir($target, 0755, true)) {
 		$error = error_get_last();
@@ -457,7 +457,8 @@ function albCreate($data) {
 	$response = [
 		'code' => $code,
 		'message' => $message,
-		'source' => $data['target']
+		'source' => $data['target'],
+		'folder' => str_replace($pictures_path, '', $target)
 	];
 
 	return $response;
@@ -1101,7 +1102,7 @@ function showPage($thumbnails, $dir) {
 	$path = "";
 	$albumnav = "<li><a href='?p='>Start</a></li>";
 	foreach ($aarr as $folder) {
-		$path = $path.'/'.$folder;
+		$path = urlencode($path.'/'.$folder);
 		if(strlen($folder) > 0) $albumnav.= "<li><a href='?p=$path'>$folder</a></li>";
 	}
 	$page.= "</head>

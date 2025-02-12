@@ -1,3 +1,6 @@
+### v1.5.7
+- Fix album creation
+
 ### v1.5.6
 - Added Mastodon Sharing
 - Added automated way of create Mastodon/Pixelfed App
