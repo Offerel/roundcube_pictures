@@ -404,13 +404,13 @@ function share($data) {
 }
 
 function imgDel($data) {
-	global $pictures_path, $user_id;
+	global $pictures_path, $rcmail;
 	$images = isset($data['images']) ? $data['images']:[];
 
 	foreach($images as $image) {
 		delSymLink($pictures_path.$image);
 		delimg($pictures_path.$image);
-		rmdb($source.'/'.$image, $user_id);
+		rmdb($source.'/'.$image, $rcmail->user->ID);
 	}
 	
 	$response = [
