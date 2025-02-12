@@ -1,5 +1,6 @@
 ### v1.5.7
 - Fix album creation
+- Fix moving thumbnails along with images
 
 ### v1.5.6
 - Added Mastodon Sharing

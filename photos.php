@@ -1832,18 +1832,14 @@ function mvimg($oldpath, $newPath) {
 	$dfolder = $rcmail->config->get('dummy_folder', false);
 	$ftime = filemtime($oldpath);
 
-	if($dfiles > 0 && substr_count($oldpath, $dfolder) > 0) {
-		rename($oldpath, $newPath);
-		touch($oldpath, $ftime);
-	} else {
-		rename($oldpath, $newPath);
-	}
+	rename($oldpath, $newPath);
+	if($dfiles > 0 && substr_count($oldpath, $dfolder) > 0) touch($oldpath, $ftime);
 
 	$th_old = str_replace($pictures_path, $thumb_path, $oldpath);
 	$thumb_parts = pathinfo($th_old);
 	$th_old = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 	$th_new = str_replace($pictures_path, $thumb_path, $newPath);
-	$thumb_parts = pathinfo($th_old);
+	$thumb_parts = pathinfo($th_new);
 	$th_new = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
 
 	if(file_exists($th_old)) {
