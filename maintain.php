@@ -2,7 +2,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.7
+ * @version 1.5.8
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -34,6 +34,8 @@ $db = $rcmail->get_dbh();
 $arg = (isset($argv[1])) ? $argv[1]:"manual";
 $media = array();
 $odb = 0;
+$othmb = 0;
+$owebp = 0;
 
 if($arg === "trigger") {
 	$lines = file("$logdir/fssync.log");
@@ -75,10 +77,14 @@ foreach($users as $user) {
 	logm("Finished photos in ".etime($utime));
 
 	logm("Search orphaned thumbnail files");
+	$assets = 0;
 	read_assets($thumb_basepath, $thumb_basepath, $pictures_basepath, 'thumbnail');
+	$othmb = $othmb + $assets;
 
 	logm("Search orphaned webp files");
+	$assets = 0;
 	read_assets($webp_basepath, $webp_basepath, $pictures_basepath, 'webp');
+	$owebp = $owebp + $assets;
 
 	$odb = $odb + orph_db($uid);
 	expired_shares();
@@ -92,10 +98,12 @@ $message = "Roundcube Photos Maintenance finished in ".etime($starttime);
 logm($message);
 $message.= "\\n\\nSource: ".$src;
 $message.= "\\nNew: ".count($media);
+$message.= "\\nOrphaned Thumbnails: ".$othmb;
+$message.= "\\nOrphaned WebP: ".$owebp;
 $message.= "\\nCorrupt: ".$bc;
 $message.= "\\nRemoved from DB: ".$odb;
 
-if($pntfy && etime($starttime, true) > $pntfy && (count($media) > 0 || $odb > 0)) pntfy($message);
+if($pntfy && etime($starttime, true) > $pntfy && (count($media) > 0 || $odb > 0 || $othmb > 0 || $owebp > 0)) pntfy($message);
 
 function removePidFile() {
 	unlink(PIDFILE);
@@ -546,7 +554,7 @@ function todb($file, $base, $user) {
 }
 
 function read_assets($dir, $a_base, $p_base, $type) {
-	global $supported;
+	global $supported, $assets;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 	foreach ($iterator as $file) {
 		if ($file->isDir()) {
@@ -573,6 +581,7 @@ function read_assets($dir, $a_base, $p_base, $type) {
 			if(count(glob("$psearch.{".implode(',', $extensions)."}", GLOB_BRACE)) === 0) {
 				logm("Delete $type $file");
 				unlink($file);
+				$assets++;
 			}
 
 		}
