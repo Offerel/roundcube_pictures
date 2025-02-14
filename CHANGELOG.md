@@ -1,5 +1,7 @@
 ### v1.5.8
-- Maintenance Fix
+- Fix maintenance
+- Fix date format
+- Fix timeline CSS
 
 ### v1.5.7
 - Fix album creation

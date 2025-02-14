@@ -188,12 +188,32 @@ function getTimeline($data) {
 		$query = "SELECT FROM_UNIXTIME(`pic_taken`, '%b. %Y') AS `drange`, `pic_taken` FROM `pic_pictures` WHERE `user_id` = $user_id GROUP BY 1 ORDER BY `pic_taken` DESC;";
 		$res = $dbh->query($query);
 		$rows = $dbh->affected_rows($res);
-		$height = round(100 / $rows,2,PHP_ROUND_HALF_DOWN);
+		$height = round(100 / $rows, 2, PHP_ROUND_HALF_DOWN);
+		$dd = round(26/($height*10));
+		$ddt = $dd;
+		$year = 0;
 
 		$mydivs = "";
 		for ($i=0; $i < $rows; $i++) {
 			$val = $dbh->fetch_assoc($res);
-			$mydivs.= "<div class='myd' style='height: $height%' data-ts='".$val['pic_taken']."' data-range='".$val['drange']."'></div>";
+			$tyear = explode(' ', $val['drange'])[1];
+
+			if($year != $tyear) {
+				$year = $tyear;
+
+				if($ddt < $dd) {
+					$vyear = '';
+					$ddt++;
+				} else {
+					$vyear = $tyear;
+					$ddt = 0;
+				}
+			} else {
+				$vyear = '';
+				$ddt++;
+			}
+
+			$mydivs.= "<div class='myd' style='height: $height%' data-ts='".$val['pic_taken']."' data-range='".$val['drange']."'>$vyear</div>";
 		}
 		$offset = 0;
 	}
@@ -252,12 +272,19 @@ function getTimeline($data) {
 
 function buildTimelinePhotos($odate, $array) {
 	global $rcmail, $thumb_path, $exif_mode;
+
+	$formatter = new IntlDateFormatter(
+		$rcmail->config->get('language'),
+		IntlDateFormatter::FULL, 
+		IntlDateFormatter::NONE
+	);
+
 	$html = '';
 	foreach ($array as $key => $value) {
-		
 		if($odate !== $value['date']) {
 			$odate = $value['date'];
-			$fmtdate = date($rcmail->config->get('date_format'), $value['pic_taken']);
+			$fmtdate = $formatter->format($value['pic_taken']);
+
 			$html.= "</div><div class='ddiv' data-ts='".$value['pic_taken']."' data-day='$odate'>
 				<span class='marker'><svg fill='currentColor' viewBox='0 0 24 24'><path d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'/></svg></span>
 				<span class='dhfmt'>$fmtdate</span>

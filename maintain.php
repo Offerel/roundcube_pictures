@@ -124,8 +124,8 @@ function orph_db($user) {
 	$notExist = [];
 	foreach ($db_photos as $key => $photo) {
 		$path = $pictures_basepath.'/'.$photo['pic_path'];
-		if(!file_exists("$path")) {
-			logm("Photo doesnt exist: $path");
+		if(!file_exists("$path") || filesize("$path") == 0) {
+			logm("Photo doesnt exist or is 0: $path");
 			array_push($notExist, $photo['pic_id']);
 		}
 	}

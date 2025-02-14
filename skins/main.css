@@ -13,9 +13,6 @@ html {
 	font-size: 62.5%;
 	height: 100%;
 }
-#galdiv a {
-	border: 1px solid #0000001a;
-}
 #images {
 	padding: 0 0 10px 0;
 	top: 50px;
@@ -143,6 +140,24 @@ button.gclose {
 }
 .jg-entry:has(>.icheckbox:checked) .icheckbox {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2300bfff' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9Z'%3E%3C/path%3E%3C/svg%3E");
+}
+.icheckbox {
+    position: absolute;
+    right: 10px;
+    margin: 0;
+    padding: 0;
+    height: 50px;
+    width: 60px;
+    visibility: hidden;
+    appearance: none;
+    background-size: cover;
+    top: 5px;
+    z-index: 2;
+    outline: 0;
+    filter: drop-shadow(2px 4px 6px #000);
+    background-size: 2em;
+    background-repeat: no-repeat;
+    background-position: top right 0;
 }
 .icheckbox:checked {
 	visibility: visible;
@@ -358,21 +373,6 @@ button.btn_active {
 	height: 25px;
 	white-space: nowrap;
 	z-index: 11;
-}
-.icheckbox {
-    position: absolute;
-    right: 10px;
-    margin: 0;
-    padding: 0;
-    height: 30px;
-    width: 30px;
-    visibility: hidden;
-    appearance: none;
-    background-size: cover;
-    top: 5px;
-    z-index: 2;
-    outline: 0;
-    filter: drop-shadow(2px 4px 6px black);
 }
 button.edit {
 	transition: all .2s ease-in;
@@ -712,7 +712,7 @@ ul.breadcrumb li+li:not(:last-child):before {
     content: '\00BB';
     padding: 0 .3em 0 .3em;
 }
-.glightbox:hover::before {
+.glightbox:hover::before, .glightbox:has(+ .icheckbox:hover):before {
 	content: ' ';
 	background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 50%);
 	position: absolute;
@@ -773,7 +773,7 @@ a.mapl {
 	overflow: unset !important;
 }
 #timeline {
-    padding: 2em;
+    padding: 0 50px 70px 0;
 }
 .ddiv {
     display: flex;
@@ -814,7 +814,7 @@ a.mapl {
     height: 100vh;
     bottom: 0;
     cursor: n-resize;
-    z-index: 1;
+    z-index: 4;
 }
 #moveCal {
     height: 1.3em;
@@ -839,6 +839,14 @@ html::-webkit-scrollbar {
 }
 .myd {
     width: 60px;
+    text-align: right;
+    padding: 0 5px 0 0;
+    box-sizing: border-box;
+    color: #d3d3d3;
+    visibility: hidden;
+}
+#scroller:hover .myd {
+    visibility: visible;
 }
 .dark-mode .dhfmt {
 	color: white;
