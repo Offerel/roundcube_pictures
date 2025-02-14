@@ -564,6 +564,7 @@ function lazyload(slide = false) {
 					}
 				});
 				lightbox.reload();
+				checkboxes();
 				
 				return false;
 			}
