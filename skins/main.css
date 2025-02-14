@@ -1,9 +1,11 @@
-.jg-entry:has(> .icheckbox:checked) img {
-    transform: scale(.90);
-    opacity: .7;
+.jg-entry:has(>.icheckbox:checked) img {
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    filter: saturate(0.5) opacity(0.7);
 }
 .jg-entry:has(> .icheckbox:checked) {
-    background-color: lightgray;
+	background-color: #40404040;
 }
 .jg-caption {
     font-size: 1em !important;
@@ -662,7 +664,7 @@ footer a {
 }
 #scount {
 	position: fixed;
-	right: 30px;
+	right: 50px;
 	z-index: 3;
 	color: #fff;
 	padding: .2em .4em;

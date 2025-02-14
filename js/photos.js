@@ -199,7 +199,7 @@ window.onload = function(){
 			var x = !isTouchDevice() ? e.clientX : e.touches[0].clientX	;	
 		} catch (e) {}
 
-		moveCal.style.top = y - 2 + "px";
+		moveCal.style.top = (y > 30) ? y - 2 + "px":"26px";
 		
 		setTimeout(() => {
 			let obj = document.elementFromPoint(x,y);
