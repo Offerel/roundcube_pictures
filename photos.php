@@ -437,7 +437,7 @@ function imgDel($data) {
 	foreach($images as $image) {
 		delSymLink($pictures_path.$image);
 		delimg($pictures_path.$image);
-		rmdb($source.'/'.$image, $rcmail->user->ID);
+		rmdb($image, $rcmail->user->ID);
 	}
 	
 	$response = [
