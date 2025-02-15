@@ -1864,8 +1864,8 @@ function todb($file, $user, $pictures_basepath, $exif) {
 		}
 	}
 
-	$exifj = json_encode($exifj, JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-	$exifj = addcslashes($exif,'\'');
+	$exifj = json_encode($exif, JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	$exifj = addcslashes($exifj,'\'');
 
 	if($count == 0) {
 		$query = "INSERT INTO `pic_pictures` (`pic_path`,`pic_type`,`pic_taken`,`pic_EXIF`,`user_id`) VALUES (\"$ppath\",'$type',$taken,'$exifj',$user)";
