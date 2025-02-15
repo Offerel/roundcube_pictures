@@ -5,7 +5,7 @@ I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to 
 
 ![image](images/screenshot001.webp)
 
-![image](images/screenshot001.webp)
+![image](images/screenshot002.webp)
 
 # Contribution
 If you would like to support this Plugin, you have various options. You can report bugs via the [Issue Tracker](https://codeberg.org/Offerel/Roundcube_Pictures/issues). This helps me to fix these bugs as quickly as possible.
