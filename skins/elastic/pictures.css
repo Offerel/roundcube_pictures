@@ -1,86 +1,16 @@
-/*#fnav {
-    height: 100%;
-    position: absolute;
-    width: 12em;
-    overflow: hidden;
-    padding: 0 5px 0 0;
-}
-#fnav.closed {
-    visibility: hidden;
-}
-#fnav ul {
-    width: calc(100% - .5em);
-    border-right: 1px solid #d4dbde;
-    height: 100%;
-    padding: 1em 0;
-    top: 0;
-    position: absolute;
-    background-color: #ffffffba;
-    backdrop-filter: blur(5px);
-    box-shadow: 5px 0 10px -5px rgba(0,0,0,.34);
-    transition: left .7s;
-    left: 0;
-}
-#fnav ul.closed {
-    left: -12em;
-}
-#naclose {
-    position: relative;
-    display: block;
-    top: 0;
-    left: 12em;
-    transition: left .7s;
-    width: 20px;
-    cursor: pointer;
-}
-#naclose.closed {
-	left: 0px;
-	transition: left 0.7s;
-}
-#fnav li {
-    display: flex;
-    margin: 0;
-    width: 100%;
-    padding: .5em 0;
-}
-#fnav li:hover {
-    background-color: lightgray;
-}
-#fnav > ul > li:last-child {
-    bottom: 60px;
-    position: absolute;
-}
-#fnav a {
-    text-decoration: none;
-    font-weight: 700;
-    color: #2f4f4f;
-    width: 100%;
-    height: 100%;
-}
-#fnav li[aria-current=page] {
-    background-color: dimgray;
-    width: 100%;
-}
-#fnav li[aria-current=page] >a {
-    color: white;
-}
-#fnav svg {
-    height: 1.5em;
-    width: 1.5em;
-    margin: 0 1em;
-}*/
 #pf_auth_link {
-    display: inline-block;
+    display: block;
     background-color: #37beff;
     width: fit-content;
     padding: .7em;
     border-color: #37beff;
     color: white;
     font-weight: 400;
-    font-family: Roboto, sans-serif;
+    font-family: Roboto,sans-serif;
     font-size: 1rem;
     border-radius: .25rem;
     text-decoration: none;
+    margin: 0 auto;
 }
 #pf_auth_link:hover {
     background-color: #1eb6ff;

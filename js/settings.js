@@ -43,11 +43,6 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 			}
 			instance.value = url;
 		});
-		
-		let hint_tr = document.createElement('tr');
-		let hint_td = document.createElement('td');
-		hint_td.colSpan = 2;
-		hint_td.classList.add('tdhint');
 
 		let auth_link = document.createElement('a');
 		auth_link.id = 'pf_auth_link';
@@ -55,11 +50,7 @@ window.rcmail && rcmail.addEventListener("init", function(a) {
 		auth_link.href = '#';
 		auth_link.addEventListener('click', registerApp);
 
-		hint_td.appendChild(auth_link);
-		hint_tr.appendChild(hint_td);
-
-		let pft = document.getElementById('pft').parentElement.parentElement;
-		pft.parentNode.insertBefore(hint_tr, pft);
+		document.getElementById('pft').parentElement.appendChild(auth_link);
 	}
 });
 
@@ -154,6 +145,9 @@ function registerApp(e) {
 
 function ProcessChildMessage(message) {
 	document.getElementById('pixelfed_token').value = message;
+	setTimeout(() => {
+		document.getElementById('rcmbtnfrm100').click();
+	}, 10);
 }
 
 function sendRequest(url, data, endpoint, method = 'POST', token) {
