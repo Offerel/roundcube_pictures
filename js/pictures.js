@@ -595,7 +595,11 @@ function create_album() {
 function albCreate(response) {
 	document.getElementById("album_edit").style.display = "none";
 	if(response.code === 200) {
-		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php?p=" + encodeURIComponent(response.folder);
+		document.getElementById("picturescontentframe").contentWindow.document.getElementById('folders').innerHTML = response.html;
+		
+		setTimeout(() => {
+			document.getElementById("picturescontentframe").contentWindow.initGallery();
+		}, 50);
 
 		let text = rcmail.gettext('alb_create_ok','pictures').replace('%t%', response.source);
 		rcmail.display_message(text, 'confirmation');
@@ -653,7 +657,7 @@ function sendRequest(action, dat = {}) {
 
 	xhr = new XMLHttpRequest();
 	xhr.onload = function() {
-		action(this.response);		
+		action(this.response);
 	}
 	xhr.open('POST', './plugins/pictures/photos.php');
 	xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');

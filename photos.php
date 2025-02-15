@@ -162,6 +162,59 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
+function rfolders($data) {
+	global $pictures_path, $rcmail;
+	$requestedDir = trim($data, '/');
+	$current_dir = $pictures_path.$requestedDir;
+	$forbidden = $rcmail->config->get('skip_objects', false);
+
+	if (is_dir($current_dir) && $handle = @opendir($current_dir)) {
+		while (false !== ($file = readdir($handle))) {
+			if(!in_array($file, $forbidden)) {
+				if (is_dir($current_dir."/".$file)) {
+					if ($file != "." && $file != ".." && strpos($file, '.') !== 0) {
+						checkpermissions($current_dir."/".$file);
+						$requestedDir = trim($requestedDir,"/");
+						$npath = trim($requestedDir.'/'.$file,'/');
+						$arr_params = array('p' => $npath);
+						$fparams = http_build_query($arr_params,'','&amp;');
+	
+						if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
+							$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
+						} else {
+							//unset($firstimage);
+							$firstimage = getfirstImage("$current_dir/".$file);
+							if ($firstimage != "") {
+								$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
+								$imgParams = http_build_query($params);
+								$imgUrl = "simg.php?$imgParams";
+							} else {
+								$imgUrl = "images/defaultimage.jpg";
+							}
+						}
+	
+						$dirs[] = array(
+							"name" => $file,
+							"date" => filemtime($current_dir."/".$file),
+							"html" => "<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
+						);
+					}
+				}
+			}
+		}
+	}
+
+	$keys = array_column($dirs, 'name');
+	array_multisort($keys, SORT_ASC, $dirs);
+
+	$html = '';
+	foreach ($dirs as $key => $dir) {
+		$html.= $dir['html'];
+	}
+
+	return $html;
+}
+
 function getTimeline($data) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
@@ -468,7 +521,8 @@ function imgMove($data) {
 
 function albCreate($data) {
 	global $pictures_path;
-	$source = rtrim($pictures_path,'/').'/'.urldecode(filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$src = urldecode(filter_var($data['source'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+	$source = rtrim($pictures_path,'/').'/'.$src;
 	$target = isset($data['target']) ? urldecode($source.'/'.filter_var($data['target'], FILTER_SANITIZE_FULL_SPECIAL_CHARS)):'';
 
 	if (!@mkdir($target, 0755, true)) {
@@ -485,7 +539,8 @@ function albCreate($data) {
 		'code' => $code,
 		'message' => $message,
 		'source' => $data['target'],
-		'folder' => str_replace($pictures_path, '', $target)
+		'folder' => str_replace($pictures_path, '', $target),
+		'html' => rfolders($src),
 	];
 
 	return $response;
@@ -1376,74 +1431,74 @@ function showGallery($requestedDir, $offset = 0) {
 
 		while (false !== ($file = readdir($handle))) {
 			if(!in_array($file, $forbidden)) {
-			if (is_dir($current_dir."/".$file)) {
-				if ($file != "." && $file != ".." && strpos($file, '.') !== 0) {
-					checkpermissions($current_dir."/".$file);
-					$requestedDir = trim($requestedDir,"/");
-					$npath = trim($requestedDir.'/'.$file,'/');
-					$arr_params = array('p' => $npath);
-					$fparams = http_build_query($arr_params,'','&amp;');
-					
-					if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
-						$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
-					} else {
-						unset($firstimage);
-						$firstimage = getfirstImage("$current_dir/".$file);
-						if ($firstimage != "") {
-							$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
-							$imgParams = http_build_query($params);
-							$imgUrl = "simg.php?$imgParams";
+				if (is_dir($current_dir."/".$file)) {
+					if ($file != "." && $file != ".." && strpos($file, '.') !== 0) {
+						checkpermissions($current_dir."/".$file);
+						$requestedDir = trim($requestedDir,"/");
+						$npath = trim($requestedDir.'/'.$file,'/');
+						$arr_params = array('p' => $npath);
+						$fparams = http_build_query($arr_params,'','&amp;');
+						
+						if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
+							$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
 						} else {
-							$imgUrl = "images/defaultimage.jpg";
+							unset($firstimage);
+							$firstimage = getfirstImage("$current_dir/".$file);
+							if ($firstimage != "") {
+								$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
+								$imgParams = http_build_query($params);
+								$imgUrl = "simg.php?$imgParams";
+							} else {
+								$imgUrl = "images/defaultimage.jpg";
+							}
 						}
+						
+						$dirs[] = array("name" => $file,
+									"date" => filemtime($current_dir."/".$file),
+									"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
+									);
+					}
+				}
+				
+				$allowed = (in_array(strtolower(substr($file, strrpos($file,".")+1)), $ballowed)) ? true:false;
+				$fullpath = $current_dir."/".$file;
+				$fs = filesize($fullpath);
+
+				$tpath = str_replace($pictures_path, $thumb_path, $fullpath);
+				$path_parts = pathinfo($tpath);
+				$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
+				$gis = (is_file($tpath)) ? getimagesize($tpath)[3]:"";
+				$shared = (is_link("$current_dir/$file")) ? " is_shared":"";
+
+				if ($file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
+					$requestedDir = trim($requestedDir,'/').'/';
+					$linkUrl = "simg.php?file=".rawurlencode("$requestedDir$file").'&w=5&t=0';
+					$dbpath = str_replace($pictures_path, '', $fullpath);
+					$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
+					$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):'';
+					$taken = $pdata[$key]['pic_taken'];
+
+					checkpermissions("$current_dir/$file");
+
+					$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
+					$imgUrl = "simg.php?$imgParams";
+					$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
+
+					if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {
+						$type = 'image';
+					} elseif (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
+						$type = 'video';
 					}
 					
-					$dirs[] = array("name" => $file,
-								"date" => filemtime($current_dir."/".$file),
-								"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
-								);
+					$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
+					
+					$files[] = array(
+						"name" => $file,
+						"date" => $taken,
+						"size" => filesize($current_dir."/".$file),
+						"html" => $html
+					);
 				}
-			}
-			
-			$allowed = (in_array(strtolower(substr($file, strrpos($file,".")+1)), $ballowed)) ? true:false;
-			$fullpath = $current_dir."/".$file;
-			$fs = filesize($fullpath);
-
-			$tpath = str_replace($pictures_path, $thumb_path, $fullpath);
-			$path_parts = pathinfo($tpath);
-			$tpath = $path_parts['dirname'].'/'.$path_parts['filename'].'.webp';
-			$gis = (is_file($tpath)) ? getimagesize($tpath)[3]:"";
-			$shared = (is_link("$current_dir/$file")) ? " is_shared":"";
-
-			if ($file != "folder.jpg" && $allowed && $fs > 0 && strpos($file, '.') !== 0) {
-				$requestedDir = trim($requestedDir,'/').'/';
-				$linkUrl = "simg.php?file=".rawurlencode("$requestedDir$file").'&w=5&t=0';
-				$dbpath = str_replace($pictures_path, '', $fullpath);
-				$key = array_search("$requestedDir$file", array_column($pdata, 'pic_path'));
-				$exifInfo = ($exif_mode != 0 && isset($pdata[$key]['pic_EXIF'])) ? parseEXIF(json_decode($pdata[$key]['pic_EXIF'], true)):'';
-				$taken = $pdata[$key]['pic_taken'];
-
-				checkpermissions("$current_dir/$file");
-
-				$imgParams = http_build_query(array('file' => "$requestedDir$file", 't' => 1));
-				$imgUrl = "simg.php?$imgParams";
-				$caption = (strlen($exifInfo) > 10) ? "<div id='$file' class='exinfo'><span class='infotop'>".$rcmail->gettext('metadata','pictures')."</span>$exifInfo</div>":"";
-
-				if (preg_match("/.jpeg$|.jpg$|.gif$|.png$/i", strtolower($file))) {
-					$type = 'image';
-				} elseif (preg_match("/\.mp4$|\.mpg$|\.mov$|\.avi$|\.wmv$|\.webm$/i", strtolower($file))) {
-					$type = 'video';
-				}
-				
-				$html = "\t\t\t\t\t\t<div><a class='glightbox' href='$linkUrl' data-type='$type'><img src='$imgUrl' $gis /></a><input class='icheckbox' type='checkbox'>$caption</div>";
-				
-				$files[] = array(
-					"name" => $file,
-					"date" => $taken,
-					"size" => filesize($current_dir."/".$file),
-					"html" => $html
-				);
-			}
 			}
 		}
 		closedir($handle);
