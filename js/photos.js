@@ -446,7 +446,12 @@ function handleDrop(event){
 function startUpload(files, folder) {
 	let formdata = new FormData();
 	xhr = new XMLHttpRequest();
-	let maxfiles = $maxfiles;
+	let cookies = document.cookie.split('; ');
+	let maxfiles = 0;
+	cookies.forEach(element => {
+		let e = element.split('=');
+		if(e[0] === 'rcpmf') maxfiles = e[1];
+	});
 	let mimeTypes = ['image/jpeg', 'video/mp4'];
 	folder = decodeURIComponent((folder + '').replace(/\+/g, '%20'));
 	let progressBar = document.getElementById('progress');

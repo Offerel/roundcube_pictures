@@ -182,7 +182,6 @@ function rfolders($data) {
 						if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
 							$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
 						} else {
-							//unset($firstimage);
 							$firstimage = getfirstImage("$current_dir/".$file);
 							if ($firstimage != "") {
 								$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
@@ -1163,7 +1162,6 @@ function showPage($thumbnails, $dir) {
 	$theme = $rcmail->config->get('ptheme');
 	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
-	$maxfiles = ini_get("max_file_uploads");
 	$page = "<!DOCTYPE html>
 	<html>
 		<head>

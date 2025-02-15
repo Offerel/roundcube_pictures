@@ -186,6 +186,7 @@ class pictures extends rcube_plugin {
 			$rcmail->output->set_env('c', $rcmail->config->get('pfc', 0));
 			$rcmail->output->set_env('pfm', $rcmail->config->get('pfm', 0));
 			$rcmail->output->set_env('t', $rcmail->config->get('pft', 'Mastodon'));
+			setcookie('rcpmf', ini_get("max_file_uploads"), time() + (86400 * 30), "/");
 			$this->include_script('js/glightbox/glightbox.min.js');
 			$rcmail->output->set_env('ptags', json_encode($this->get_tags()));
 			$this->include_stylesheet('js/tagify/tagify.css');
