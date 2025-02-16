@@ -2,6 +2,8 @@
 - Fix maintenance
 - Fix date format
 - Fix timeline CSS
+- Fix delete albums
+- Fix upload
 
 ### v1.5.7
 - Fix album creation
