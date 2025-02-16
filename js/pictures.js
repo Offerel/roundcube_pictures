@@ -820,8 +820,8 @@ function move_album() {
 }
 
 function delete_album() {
-	var a = document.getElementById("album_org").value;
-	if(confirm(rcmail.gettext("galdconfirm", "pictures"))) {
+	let text = rcmail.gettext("galdconfirm", "pictures");
+	if(confirm(text.replace('%gal%', document.getElementById("album_name").value))) {
 		let dalb = document.getElementById('dalb');
 		dloader('#album_edit', dalb, 'add');
 		
@@ -835,16 +835,19 @@ function albDel(response) {
 	dloader('#album_edit', dalb, 'remove');
 	document.getElementById("album_edit").style.display = "none";
 	if(response.code === 200) {
-		document.getElementById("picturescontentframe").contentWindow.location.href = "plugins/pictures/photos.php";
-		sendRequest(getSubs);
-		count_checks();
+		let url = 'plugins/pictures/photos.php';
+		let params = new URLSearchParams();
+		let pArr = response.path.split('/');
+		let lastItem = pArr[pArr.length - 1];
+		pArr = pArr.slice(0,-1);
+		let path = pArr.join('/');
+		params.append('p', path);
+		document.getElementById("picturescontentframe").contentWindow.location.href = url + '?' + params.toString();
 
-		let text = rcmail.gettext('alb_del_ok','pictures').replace('%s%', response.path);
-		text = text.replace('%t%', response.new);
+		let text = rcmail.gettext('alb_del_ok','pictures').replace('%s%', lastItem);
 		rcmail.display_message(text, 'confirmation');
 	} else {
-		let text = rcmail.gettext('alb_del_fail','pictures').replace('%s%', response.path);
-		text = text.replace('%t%', response.new);
+		let text = rcmail.gettext('alb_del_fail','pictures').replace('%s%', lastItem);
 		rcmail.display_message(text, 'error');
 	}
 }

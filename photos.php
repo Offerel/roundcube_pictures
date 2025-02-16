@@ -1462,10 +1462,10 @@ function showGallery($requestedDir, $offset = 0, $opts = 0) {
 	if (isset($dirs) && sizeof($dirs) > 0) {
 		$keys = array_column($dirs, 'name');
 		array_multisort($keys, SORT_ASC, $dirs);
-	}
-
-	foreach ($dirs as $key => $folder) {
-		$folders.= $folder['html'];
+		
+		foreach ($dirs as $key => $folder) {
+			$folders.= $folder['html'];
+		}
 	}
 
 	if($opts == 'folders') return $folders;
