@@ -162,58 +162,6 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 }
 
-function rfolders($data) {
-	global $pictures_path, $rcmail;
-	$requestedDir = trim($data, '/');
-	$current_dir = $pictures_path.$requestedDir;
-	$forbidden = $rcmail->config->get('skip_objects', false);
-
-	if (is_dir($current_dir) && $handle = @opendir($current_dir)) {
-		while (false !== ($file = readdir($handle))) {
-			if(!in_array($file, $forbidden)) {
-				if (is_dir($current_dir."/".$file)) {
-					if ($file != "." && $file != ".." && strpos($file, '.') !== 0) {
-						checkpermissions($current_dir."/".$file);
-						$requestedDir = trim($requestedDir,"/");
-						$npath = trim($requestedDir.'/'.$file,'/');
-						$arr_params = array('p' => $npath);
-						$fparams = http_build_query($arr_params,'','&amp;');
-	
-						if (file_exists($current_dir.'/'.$file.'/folder.jpg')) {
-							$imgUrl = "simg.php?file=".urlencode($requestedDir.'/'.$file."/folder.jpg");
-						} else {
-							$firstimage = getfirstImage("$current_dir/".$file);
-							if ($firstimage != "") {
-								$params = array('file' 	=> "$requestedDir/$file/$firstimage", 't' => 1);
-								$imgParams = http_build_query($params);
-								$imgUrl = "simg.php?$imgParams";
-							} else {
-								$imgUrl = "images/defaultimage.jpg";
-							}
-						}
-	
-						$dirs[] = array(
-							"name" => $file,
-							"date" => filemtime($current_dir."/".$file),
-							"html" => "<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
-						);
-					}
-				}
-			}
-		}
-	}
-
-	$keys = array_column($dirs, 'name');
-	array_multisort($keys, SORT_ASC, $dirs);
-
-	$html = '';
-	foreach ($dirs as $key => $dir) {
-		$html.= $dir['html'];
-	}
-
-	return $html;
-}
-
 function getTimeline($data) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
@@ -539,7 +487,7 @@ function albCreate($data) {
 		'message' => $message,
 		'source' => $data['target'],
 		'folder' => str_replace($pictures_path, '', $target),
-		'html' => rfolders($src),
+		'html' => showGallery($src, 0, 'folders')
 	];
 
 	return $response;
@@ -1406,7 +1354,7 @@ function flash($val) {
 	return $str;
 }
 
-function showGallery($requestedDir, $offset = 0) {
+function showGallery($requestedDir, $offset = 0, $opts = 0) {
 	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
 	$ballowed = ['jpg','jpeg','mp4'];
 	$files = array();
@@ -1451,10 +1399,11 @@ function showGallery($requestedDir, $offset = 0) {
 							}
 						}
 						
-						$dirs[] = array("name" => $file,
-									"date" => filemtime($current_dir."/".$file),
-									"html" => "\n\t\t\t\t\t\t<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
-									);
+						$dirs[] = array(
+							"name" => $file,
+							"date" => filemtime($current_dir."/".$file),
+							"html" => "<a id='".trim("$requestedDir/$file", '/')."' class='folder' href='photos.php?$fparams' title='$file'><img src='$imgUrl' /><span class='dropzone'>$file</span></a>"
+						);
 					}
 				}
 				
@@ -1507,23 +1456,22 @@ function showGallery($requestedDir, $offset = 0) {
 		die();
 	}
 
-	$thumbnails = "";
-	$start = 0;
+	$thumbnails = "<div id='folders'>";
+	$folders = '';
 
 	if (isset($dirs) && sizeof($dirs) > 0) {
-		$thumbnails.= "\n\t\t\t\t\t<div id='folders'>";
-		array_walk($dirs, function (&$row) {
-			$row['name'] = $row['name'] ?? null;
-		});
 		$keys = array_column($dirs, 'name');
 		array_multisort($keys, SORT_ASC, $dirs);
-		foreach ($dirs as $folder) {
-			$thumbnails.= $folder["html"];
-			$start++;
-		}
-		$thumbnails.= "\n\t\t\t\t\t</div>";
 	}
 
+	foreach ($dirs as $key => $folder) {
+		$folders.= $folder['html'];
+	}
+
+	if($opts == 'folders') return $folders;
+
+	$thumbnails.= $folders;
+	$thumbnails.= "</div>";
 	$thumbnails.= "\n\t\t\t\t\t<div id='images' class='fimages alb'>";
 	$thumbnails2 = "";
 	$offset_end = 0;
