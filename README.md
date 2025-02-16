@@ -3,9 +3,9 @@ This is a photos/gallery plugin for Roundcube, similar to Google Photos/Amazon P
 
 I used [Justified-Gallery](https://github.com/miromannino/Justified-Gallery) to show the thumbnails on the page in a way i personally like it and [GLightbox](https://biati-digital.github.io/glightbox/) to display the photod. Videos are integrated via [Plyr](https://github.com/sampotts/plyr). Please see the license details on the page of this projects.
 
-![Album View](images/screenshot001.webp "Album View")
+![Album View](https://codeberg.org/Offerel/Roundcube_Pictures/media/branch/master/images/screenshot001.webp "Album View")
 
-![Timeline View](images/screenshot002.webp "Timeline View")
+![Timeline View](https://codeberg.org/Offerel/Roundcube_Pictures/media/branch/master/images/screenshot002.webp "Timeline View")
 
 # Contribution
 If you would like to support this Plugin, you have various options. You can report bugs via the [Issue Tracker](https://codeberg.org/Offerel/Roundcube_Pictures/issues). This helps me to fix these bugs as quickly as possible.
