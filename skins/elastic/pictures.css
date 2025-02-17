@@ -255,8 +255,11 @@ a.disabled {
 	background:#c6c6c6!important;
 	border:1px solid #c6c6c6!important
 }
-#albedit,#albadd,#searchphotof{
-	display:none
+#albadd, #albedit, #searchphotof {
+    display: none;
+}
+#albedit, #albadd, #sphoto {
+    margin-top: .7em;
 }
 .modal-body-text{
 	padding:2px 8px!important;

@@ -2,7 +2,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.8
+ * @version 1.5.9
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -166,7 +166,6 @@ function getTimeline($data) {
 	global $rcmail;
 	$dbh = rcmail_utils::db();
 	$user_id = $rcmail->user->ID;
-	$theme = $rcmail->config->get('ptheme');
 	$icount = $rcmail->config->get("thumbs_pr_page", false);
 	$offset = filter_var($data['s'], FILTER_SANITIZE_NUMBER_INT);
 	
@@ -244,7 +243,6 @@ function getTimeline($data) {
 			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
-			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>
@@ -1107,7 +1105,6 @@ function showPage($thumbnails, $dir) {
 	$rcmail = rcmail::get_instance();
 	$pselected = $rcmail->gettext('pselected','pictures');
 	$nalb = $rcmail->gettext('new_album','pictures');
-	$theme = $rcmail->config->get('ptheme');
 	$dir = ltrim(rawurldecode($dir), '/');
 	$gal = ltrim($dir, '/');
 	$page = "<!DOCTYPE html>
@@ -1117,7 +1114,6 @@ function showPage($thumbnails, $dir) {
 			<link rel='icon' type='image/png' sizes='16x16' href='images/favicon-16x16.png'>
 			<link rel=\"stylesheet\" href=\"js/justifiedGallery/justifiedGallery.min.css\" type=\"text/css\" />
 			<link rel='stylesheet' href='skins/main.min.css' type='text/css' />
-			<link rel='stylesheet' href='skins/pth_$theme.css' type='text/css' />
 			<link rel='stylesheet' href='js/glightbox/glightbox.min.css' type='text/css' />
 			<link rel='stylesheet' href='js/plyr/plyr.css' type='text/css' />
 			<script src=\"../../program/js/jquery.min.js\"></script>

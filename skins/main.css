@@ -281,9 +281,9 @@ td.tvalue {
 #bc {
 	margin: 0 0 10px 0;
 }
-#folders {
-	margin: 0 0 10px 0;
-	top: 50px;
+#folders:has(a) {
+    margin: 0 0 10px 0;
+    top: 50px;
 }
 #folders a {
 	border-radius: 8px;
@@ -857,6 +857,12 @@ html::-webkit-scrollbar {
     fill: dimgrey;
 }
 .dark-mode #header li, .dark-mode #header a {
+    color: white;
+}
+.dark-mode body{
+	background-color: #212529;
+}
+.dark-mode ul.breadcrumb, .dark-mode ul.breadcrumb a {
     color: white;
 }
 .gbtn svg {

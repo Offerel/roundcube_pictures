@@ -2,7 +2,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.8
+ * @version 1.5.9
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
@@ -215,13 +215,6 @@ class pictures extends rcube_plugin {
 		$rcmail = rcmail::get_instance();
 		$p['blocks']['main']['name']=$this->gettext('pictures');
 
-		$field_id='ptheme';
-		$select   = new html_select(array('name' => 'ptheme', 'id' => $field_id));
-		foreach (array("dark", "dynamic") as $m) {$select->add($this->gettext('ptheme'.$m), $m);}
-		$p['blocks']['main']['options']['ptheme'] = array(
-														'title'=> html::label($field_id, $this->gettext('ptheme')),
-														'content'=> $select->show($rcmail->config->get('ptheme')));
-
 		$field_id='thumbs_pr_page';
 		$input = new html_inputfield(array('name' => 'thumbs_pr_page', 'id' => $field_id));
 		$p['blocks']['main']['options']['thumbs_pr_page'] = array(
@@ -270,7 +263,6 @@ class pictures extends rcube_plugin {
 	function preferences_save($p) {
 		if ($p['section'] == 'pictures') {
             $p['prefs'] = array(
-                'ptheme'			=> rcube_utils::get_input_value('ptheme', rcube_utils::INPUT_POST),
 				'thumbs_pr_page'	=> intval(rcube_utils::get_input_value('thumbs_pr_page', rcube_utils::INPUT_POST)),
 				'pmargins'			=> intval(rcube_utils::get_input_value('pmargins', rcube_utils::INPUT_POST)),
 				'sharedays'			=> intval(rcube_utils::get_input_value('sharedays', rcube_utils::INPUT_POST)),
