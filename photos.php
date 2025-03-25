@@ -124,6 +124,9 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 		case 'validateUser':
 			$response = validateUser($jarr['data']);
 			break;
+		case 'cbroken':
+			clearBroken();
+			break;
 		case 'lazyload':
 			$dir = $jarr['g'];
 			if($dir === 'timeline') {
@@ -160,6 +163,14 @@ if(json_last_error() === JSON_ERROR_NONE && isset($jarr['action'])) {
 	http_response_code($response['code']);
 	header('Content-Type: application/json; charset=utf-8');
 	die(json_encode($response, JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+}
+
+function clearBroken() {
+	global $rcmail;
+	$dbh = rcmail_utils::db();
+	$user_id = $rcmail->user->ID;
+	$query = "DELETE FROM `pic_broken` WHERE `user_id` = $user_id;";
+	$dbh->query($query);
 }
 
 function getTimeline($data) {

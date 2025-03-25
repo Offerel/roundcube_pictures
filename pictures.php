@@ -316,6 +316,7 @@ class pictures extends rcube_plugin {
 	}
 
 	function checkbroken() {
+		if(isset($_COOKIE['broken'])) return false;
 		$rcmail = rcmail::get_instance();
 		$uid = $rcmail->user->ID;
 		$dbh = $rcmail->get_dbh();
@@ -347,6 +348,18 @@ class pictures extends rcube_plugin {
 						click: function() {
 							var newURL = window.location.protocol + '//' + window.location.host + window.location.pathname + '?_task=pictures';
 							window.location.href = newURL;
+							document.cookie = 'broken=open';
+							picturesinfo.dialog('close');
+						}
+					},{
+						text: 'Clear',
+						click: function() {
+							const data = JSON.stringify({
+								action: 'cbroken',
+							});
+							xhr = new XMLHttpRequest();
+							xhr.open('POST', './plugins/pictures/photos.php');
+							xhr.send(data);
 							picturesinfo.dialog('close');
 						}
 					});

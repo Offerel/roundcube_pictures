@@ -1,3 +1,6 @@
+### v1.5.9
+- Fix broken images function
+
 ### v1.5.8
 - Fix maintenance
 - Fix date format
