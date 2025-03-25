@@ -56,8 +56,8 @@ window.onload = function(){
 		});
 	});
 
-	if(document.getElementById('skeywords')) document.getElementById('skeywords').addEventListener('input', function(e) {
-		if(document.getElementById('skeywords').value.length > 0) document.getElementById('spb').classList.remove('disabled');
+	if(document.getElementById('photo-search')) document.getElementById('photo-search').addEventListener('input', function(e) {
+		if(document.getElementById('photo-search').value.length > 0) document.getElementById('spb').classList.remove('disabled');
 	});
 
 	if(document.getElementById('spb')) document.getElementById('spb').addEventListener('click', function() {
@@ -266,7 +266,7 @@ function shareDel(response) {
 }
 
 function dosearch() {
-	let keywords = document.getElementById('skeywords').value.split(' ').filter(elm => elm);
+	let keywords = document.getElementById('photo-search').value.split(' ').filter(elm => elm);
 	if (keywords.length <= 0) {
 		document.getElementById('searchphotof').style.display='none';
 		return false;
@@ -346,7 +346,7 @@ function search(response) {
 function searchform() {
 	$("#searchphotof").contents().find("h2").html(rcmail.gettext('search','pictures'));
 	document.getElementById("searchphotof").style.display = "block";
-	document.getElementById('skeywords').focus();
+	document.getElementById('photo-search').focus();
 }
 
 function metaform() {
