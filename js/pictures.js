@@ -747,7 +747,7 @@ function getshares(response) {
 		document.getElementById('link').value = '';
 		document.getElementById('rsh').disabled = (parseInt(name.target.selectedOptions[0].value)) ? false:true;
 
-		if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn) {
+		if(name.target.selectedOptions[0].dataset.dn == undefined || name.target.selectedOptions[0].dataset.dn == 1) {
 			document.getElementById('download').checked = true;
 		} else {
 			document.getElementById('download').checked = false;

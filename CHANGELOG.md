@@ -2,6 +2,7 @@
 - Fix broken images function
 - Fix closeing slide on share
 - Fix default name for new share
+- Fix selection if downloadable
 
 ### v1.5.8
 - Fix maintenance
