@@ -536,7 +536,7 @@ function selectShare() {
 	document.getElementById('sid').value = '';
 	
 	let sbtn = document.getElementById('sbtn');
-	document.getElementById('sname').value = currentName;
+	document.getElementById('sname').value = currentName.substring(currentName.lastIndexOf('/') + 1);
 	document.getElementById('expiredate').value = '';
 	document.getElementById('expiredate').disabled = false;
 	document.getElementById('rsh').disabled = true;
