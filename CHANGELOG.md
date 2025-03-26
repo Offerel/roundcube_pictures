@@ -1,5 +1,6 @@
 ### v1.5.9
 - Fix broken images function
+- Fix closeing slide on Share
 
 ### v1.5.8
 - Fix maintenance

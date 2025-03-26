@@ -6,6 +6,7 @@
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
  */
+var intervalID
 window.onload = function(){
 	if( $('#images').length ) {
 		$('#images').justifiedGallery({
@@ -184,7 +185,7 @@ function stop_loop() {
 }
 
 function loop_slide(duration=3) {
-	document.getElementById('pbtn').classList.add('on');
+	if(document.getElementById('pbtn')) document.getElementById('pbtn').classList.add('on');
 	
 	lightbox.nextSlide();
 	var width = 1;
