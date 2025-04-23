@@ -694,7 +694,7 @@ function pntfy($message) {
 				$authHeader.
 				"Title: Roundcube Photos\r\n".
 				"Priority: 3\r\n".
-				"Tags: Roundcube, Photos, envelope, camera\r\n".
+				"Tags: Roundcube, Photos, camera\r\n".
 				"Filename: maintenance.log\r\n".
 				"Message: $message\\n\\nFor details please check attached logfile",
 			'content' => $lfile
