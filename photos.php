@@ -1363,7 +1363,7 @@ function flash($val) {
 
 function showGallery($requestedDir, $offset = 0, $opts = 0) {
 	global $pictures_path, $rcmail, $label_max_length, $exif_mode, $thumb_path;
-	$ballowed = ['jpg','jpeg','mp4'];
+	$ballowed = ['jpg','jpeg', 'png', 'mp4'];
 	$files = array();
 	$pnavigation = "";
 	

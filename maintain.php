@@ -701,13 +701,12 @@ function pntfy($message) {
 		]
 	])), true);
 
-	if(isset($rarr['id'])) 
+	if(isset($rarr['id']))
 		logm("ntfy succesfully", 4);
 	else {
 		logm("ntfy failed.", 2);
 		logm(json_encode($rarr), 2);
 	}
-
 }
 
 function etime($start, $s = false) {
