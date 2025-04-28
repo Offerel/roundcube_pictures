@@ -504,6 +504,16 @@ function todb($file, $base, $user) {
 	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$ppath = trim(str_replace($base, '', $image),'/');
 	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user;";
+	try {
+		$result = $db->query($query);
+	} catch(\PDOException $e) {
+		if($e->getCode() != 'HY000' || !stristr($e->getMessage(), 'server has gone away')) {
+			//throw $e;
+			$db = null;
+			$db = $rcmail->get_dbh();
+			$result = $db->query($query);
+		}
+	}
 	$result = $db->query($query);
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
