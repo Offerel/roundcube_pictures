@@ -264,7 +264,8 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 
 				foreach($imgarr as $file) {
 					$rthumb = create_thumb($file, $thumb, $base);
-					$rwebp = create_webp($file, $webp, $base);
+					$rwebp = str_contains($file['MIMEType'], 'image/') ? create_webp($file, $webp, $base):0;
+
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
 						logm("Set time for thumbnail ".$rthumb[1]." to ".date('Y-m-d H:i:s', $rthumb[0]), 4);
 						touch($rthumb[1], $rthumb[0]);
