@@ -499,9 +499,11 @@ function corrupt_thmb($thumb_pic) {
 
 function todb($file, $base, $user) {
 	global $db;
+	//global $rcmail;
+	//$db = $rcmail->get_dbh();
 	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$ppath = trim(str_replace($base, '', $image),'/');
-	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user";
+	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user;";
 	$result = $db->query($query);
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
