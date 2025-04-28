@@ -31,6 +31,7 @@ $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescripti
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
+$db->query( 'SET SESSION wait_timeout = '.$rcmail->config->get('wait_timeout') );
 $arg = (isset($argv[1])) ? $argv[1]:"manual";
 $media = array();
 $odb = 0;
@@ -498,15 +499,12 @@ function corrupt_thmb($thumb_pic) {
 }
 
 function todb($file, $base, $user) {
-	//global $db;
-	//global $rcmail;
-	$rcmail = rcube::get_instance();
-	$dbase = $rcmail->get_dbh();
+	global $db;
 	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$ppath = trim(str_replace($base, '', $image),'/');
 	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user;";
-	$result = $dbase->query($query);
-	$rarr = $dbase->fetch_array($result);
+	$result = $db->query($query);
+	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];
 	$id = $rarr[1];
 
@@ -541,18 +539,18 @@ function todb($file, $base, $user) {
 		$query = "UPDATE `pic_pictures` SET `pic_taken` = $taken, `pic_EXIF` = '$exif' WHERE `pic_id` = $id";
 	}
 
-	$dbase->startTransaction();
-	$dbase->query($query);
-	if($dbase->is_error()) {
+	$db->startTransaction();
+	$db->query($query);
+	if($db->is_error()) {
 		sleep(2);
-		$dbase->query($query);
-		$dbase->endTransaction();
-		if($dbase->is_error()) {
-			logm($dbase->is_error(), 1);
-			return $dbase->is_error();
+		$db->query($query);
+		$db->endTransaction();
+		if($db->is_error()) {
+			logm($db->is_error(), 1);
+			return $db->is_error();
 		}
 	} else {
-		$dbase->endTransaction();
+		$db->endTransaction();
 	}
 	return 0;
 }
