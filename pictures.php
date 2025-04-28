@@ -287,11 +287,7 @@ class pictures extends rcube_plugin {
 	function content($attrib) {
 		$rcmail = rcmail::get_instance();
 		$gallery = trim(rcube_utils::get_input_string('_gallery', rcube_utils::INPUT_GPC));
-
-		if(isset($_COOKIE['pnav'])) {
-			$p = ($_COOKIE['pnav'] == 'timeline') ? 'f=1':'p=';
-		}
-
+		$p = (isset($_COOKIE['pnav']) && $_COOKIE['pnav'] == 'timeline') ? 'f=1':'p=';
 		$attrib['src'] = (strlen($gallery > 0)) ? 'plugins/pictures/photos.php?p='.$gallery:'plugins/pictures/photos.php?'.$p;
 
 		$this->include_script('js/pictures.js');
