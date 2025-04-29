@@ -15,7 +15,6 @@ $users = array();
 $thumbsize = 300;
 $webp_res = array(1920,1080);
 $ccmd = $rcmail->config->get('ffmpeg_cmd');
-$wt = $rcmail->config->get('wait_timeout');
 $pictures_path = $rcmail->config->get('pictures_path');
 $basepath = rtrim($rcmail->config->get('work_path'), '/');
 $logdir = $rcmail->config->get('log_dir');
@@ -32,7 +31,7 @@ $etags = "-Model -FocalLength# -FNumber# -ISO# -DateTimeOriginal -ImageDescripti
 $eoptions = "-q -j -d '%s'";
 $bc = 0;
 $db = $rcmail->get_dbh();
-if(isset($wt) && $wt > 0) $db->query( 'SET SESSION wait_timeout = '.$wt );
+$wt = $db->get_variable('wait_timeout');
 $arg = (isset($argv[1])) ? $argv[1]:"manual";
 $media = array();
 $odb = 0;
@@ -164,7 +163,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$thumbp = str_replace($base, $thumb, $image);
 			$thumb_parts = pathinfo($thumbp);
 			$thumbp = $thumb_parts['dirname'].'/'.$thumb_parts['filename'].'.webp';
-			$otime = filemtime($image);
+			$otime = @filemtime($image);
 			$ttime = @filemtime($thumbp);
 
 			if($otime == $ttime) {
@@ -266,7 +265,7 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 
 				foreach($imgarr as $file) {
 					$rthumb = create_thumb($file, $thumb, $base);
-					$rwebp = str_contains($file['MIMEType'], 'image/') ? create_webp($file, $webp, $base):0;
+					$rwebp = create_webp($file, $webp, $base);
 
 					if(todb($file, $base, $user) == 0 && $rthumb[0] > 0) {
 						logm("Set time for thumbnail ".$rthumb[1]." to ".date('Y-m-d H:i:s', $rthumb[0]), 4);
@@ -393,6 +392,9 @@ function create_thumb($file, $thumb, $base) {
 			return array(0, $thumb_image);
 		}
 	} elseif ($type == "video") {
+		$sv_codecs = array('h264', 'h265', 'av1', 'vp8', 'vp9');
+		$codec = exec("ffprobe -loglevel error -select_streams v -show_entries stream=codec_name -of default=nw=1:nk=1 '$image'");
+
 		exec("ffmpeg -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_image\" 2>&1", $output, $error);
 		if($error != 0) {
 			logm("Video $image seems corrupt. ".$output[0], 2);
@@ -400,8 +402,8 @@ function create_thumb($file, $thumb, $base) {
 			corrupt_thmb($thumb_image);
 			return array(0, $thumb_image);
 		}
-		
-		if(strlen($ccmd) > 1) {
+
+		if(strlen($ccmd) > 1 && !in_array($codec, $sv_codecs)) {
 			$pathparts = pathinfo($image);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			logm("Convert to $hidden_vid", 3);
@@ -434,6 +436,8 @@ function create_webp($file, $webp, $base) {
 	if($otime == @filemtime($webp_image)) return array($otime, $webp_image);
 	$owidth = $file['ExifImageWidth'];
 	$oheight = $file['ExifImageHeight'];
+
+	if(!str_contains($file['MIMEType'], 'image/')) return array(0, $webp_image);
 
 	switch ($file['MIMEType']) {
 		case 'image/gif': $imaget = @imagecreatefromgif($image); break;
@@ -500,20 +504,17 @@ function corrupt_thmb($thumb_pic) {
 }
 
 function todb($file, $base, $user) {
-	global $db;
+	global $db, $wt, $utime;
 	$image = preg_replace('#/+#','/', $file['SourceFile']);
 	$ppath = trim(str_replace($base, '', $image),'/');
 	$query = "SELECT count(*), `pic_id` FROM `pic_pictures` WHERE `pic_path` = \"$ppath\" AND `user_id` = $user;";
-	try {
-		$result = $db->query($query);
-	} catch(\PDOException $e) {
-		if($e->getCode() != 'HY000' || !stristr($e->getMessage(), 'server has gone away')) {
-			//throw $e;
-			$db = null;
-			$db = $rcmail->get_dbh();
-			$result = $db->query($query);
-		}
+
+	if(etime($utime, true) > $wt) {
+		logm("Database 'wait_timeout' ($wt) exceeded, try to reconnect...", 2);
+		$db->closeConnection();
+		$db->db_connect('w', true);
 	}
+
 	$result = $db->query($query);
 	$rarr = $db->fetch_array($result);
 	$count = $rarr[0];

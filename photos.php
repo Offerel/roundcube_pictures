@@ -1753,6 +1753,9 @@ function createthumb($image, $mimetype) {
 	} elseif ($mtype == "video") {
 		$ffmpeg = exec("which ffmpeg");
 		if(file_exists($ffmpeg)) {
+			$sv_codecs = array('h264', 'h265', 'av1', 'vp8', 'vp9');
+			$codec = exec("ffprobe -loglevel error -select_streams v -show_entries stream=codec_name -of default=nw=1:nk=1 '$image'");
+
 			$pathparts = pathinfo($image);
 			exec($ffmpeg." -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=".$thumbsize."\" \"".$thumbnailpath."\" 2>&1", $output, $error);
 			if($error != 0) {
@@ -1760,7 +1763,7 @@ function createthumb($image, $mimetype) {
 				return $exif;
 			}
 			touch($thumbnailpath, $otime);
-			if(strlen($ccmd) > 1) {
+			if(strlen($ccmd) > 1 && !in_array($codec, $sv_codecs)) {
 				$ccmd = str_replace('%o', $out, str_replace('%i', $image, $ccmd));
 				$out = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 				exec($ccmd, $output, $error);

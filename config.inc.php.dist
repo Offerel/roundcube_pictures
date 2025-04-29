@@ -12,7 +12,6 @@ $config['pntfy_sec'] = 60; // Set time in seconds if you want to be notified via
 $config['pntfy_url'] = "https://ntfy.yourdomain.com/channel"; // the url to your ntfy instance
 $config['pntfy_token'] = ""; // ntfy token, if needed
 $config['debug'] = false; // If set true, debug messages are logged
-$config['wait_timeout'] = 0; // if mysql/mariadb is used and you hav long running convert tasks
 
 // User default settings
 $config['thumbs_pr_page'] = 30; // Number of thumbnails on a single page

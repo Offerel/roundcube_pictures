@@ -3,6 +3,8 @@
 - Fix closeing slide on share
 - Fix default name for new share
 - Fix selection if downloadable
+- Add check if reconnect to DB is needed
+- Add check if video conversion is needed
 
 ### v1.5.8
 - Fix maintenance
