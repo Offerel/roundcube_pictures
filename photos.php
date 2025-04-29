@@ -1884,6 +1884,11 @@ function mvimg($oldpath, $newPath) {
 		rename($th_old, $th_new);
 		touch($th_new, $ftime);
 	}
+
+	$old_parts = pathinfo($oldpath);
+	$new_parts = pathinfo($newPath);
+	$old_hid = $old_parts['dirname'].'/'.'.'.$old_parts['basename'];
+	if(file_exists($old_hid)) rename($old_hid, $new_parts['dirname'].'/'.'.'.$new_parts['basename']);
 }
 
 function delimg($file) {
@@ -1899,7 +1904,7 @@ function delimg($file) {
 	}
 	
 	$pathparts = pathinfo($file);
-	$hiddenvid = $pathparts['dirname'].'/.'.$pathparts['filename'].'mp4';
+	$hiddenvid = $pathparts['dirname'].'/.'.$pathparts['filename'].'.mp4';
 	if(file_exists($hiddenvid)) unlink($hiddenvid);
 
 	$thumbnailpath = str_replace($pictures_path, $thumb_path, $file);
