@@ -2,7 +2,7 @@
 /**
  * Roundcube Photos Plugin
  *
- * @version 1.5.9
+ * @version 1.5.10
  * @author Offerel
  * @copyright Copyright (c) 2025, Offerel
  * @license GNU General Public License, version 3
