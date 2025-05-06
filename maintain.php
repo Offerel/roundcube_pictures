@@ -166,22 +166,22 @@ function scanGallery($dir, $base, $thumb, $webp, $user) {
 			$otime = @filemtime($image);
 			$ttime = @filemtime($thumbp);
 
+			if(filesize($image) < 1) {
+				if($mtime > 0) del_dummy($image, $mtime);
+				unset($images[$key]);
+				logm("O-Byte, Ignore $image", 4);
+				continue;
+			}
+
 			if($otime == $ttime) {
 				$image_parts = pathinfo($image);
 				$hiddenv = $image_parts['dirname'].'/.'.$image_parts['filename'].'.mp4';
-				if(in_array(strtolower($image_parts['extension']), $svideos) && !file_exists($hiddenv)) {
+				if(in_array(strtolower($image_parts['extension']), $svideos) && !file_exists($hiddenv) && conv($image)) {
 					logm("Hidden video missing, continue $image", 3);
 					continue;
 				}
 				unset($images[$key]);
 				logm("No change, Ignore $image", 4);
-				continue;
-			}
-
-			if(filesize($image) < 1) {
-				if($mtime > 0) del_dummy($image, $mtime);
-				unset($images[$key]);
-				logm("O-Byte, Ignore $image", 4);
 				continue;
 			}
 
@@ -392,9 +392,6 @@ function create_thumb($file, $thumb, $base) {
 			return array(0, $thumb_image);
 		}
 	} elseif ($type == "video") {
-		$sv_codecs = array('h264', 'h265', 'av1', 'vp8', 'vp9');
-		$codec = exec("ffprobe -loglevel error -select_streams v -show_entries stream=codec_name -of default=nw=1:nk=1 '$image'");
-
 		exec("ffmpeg -y -v error -i \"".$image."\" -vf \"select=gte(n\,100)\" -vframes 1 -vf \"scale=w=-1:h=$thumbsize\" \"$thumb_image\" 2>&1", $output, $error);
 		if($error != 0) {
 			logm("Video $image seems corrupt. ".$output[0], 2);
@@ -403,7 +400,7 @@ function create_thumb($file, $thumb, $base) {
 			return array(0, $thumb_image);
 		}
 
-		if(strlen($ccmd) > 1 && !in_array($codec, $sv_codecs)) {
+		if(strlen($ccmd) > 1 && conv($image)) {
 			$pathparts = pathinfo($image);
 			$hidden_vid = $pathparts['dirname']."/.".$pathparts['filename'].".mp4";
 			logm("Convert to $hidden_vid", 3);
@@ -421,6 +418,14 @@ function create_thumb($file, $thumb, $base) {
 		}
 	}
 	return array($otime, $thumb_image);
+}
+
+function conv($video) {
+	$sv_codecs = array('h264', 'h265', 'av1', 'vp8', 'vp9');
+	$codec = exec("ffprobe -loglevel error -select_streams v -show_entries stream=codec_name -of default=nw=1:nk=1 '$video'");
+
+	$conv = (!in_array($codec, $sv_codecs)) ? true:false;
+	return $conv;
 }
 
 function create_webp($file, $webp, $base) {

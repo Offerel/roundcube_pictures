@@ -3,6 +3,7 @@
 - Fix closeing slide on share
 - Fix default name for new share
 - Fix move/delete hidden video
+- Fix maintenance hidden video
 - Fix selection if downloadable
 - Add check if reconnect to DB is needed
 - Add check if video conversion is needed
